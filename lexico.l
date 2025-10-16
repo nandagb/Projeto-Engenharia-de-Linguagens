@@ -68,6 +68,9 @@
 
 [a-zA-Z][a-zA-Z0-9\_]*   {printf("ID(%s)\n", yytext); }
 [0-9]+			             {printf("INT_LITERAL(%s)\n", yytext); }
+[0-9]+\.[0-9]+		       {printf("FLOAT_LITERAL(%s)\n", yytext);}
+\"[^\"]*\"               { printf("STRING_LITERAL(%s)\n", yytext); }
+
 
 
 "#".*                 ; {/* ignora comentário de linha */}
