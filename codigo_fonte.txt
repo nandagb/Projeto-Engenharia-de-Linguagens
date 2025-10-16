@@ -1,0 +1,99 @@
+# função recursiva que particiona a lista em 2 partes 
+vazio func ordenar(Lista<int> a, int inicio, int fim) {
+   se (inicio < fim) {
+      meio = ( inicio + fim );
+
+      ordenar(a, inicio, meio);
+      ordenar(a, meio+1, fim);
+      mesclar(a, inicio, meio, fim);
+   };
+};
+
+# função que une duas listas criando uma lista ordenada
+vazio func mesclar (Lista<int> a, int inicio, int meio, int fim){
+   Lista<int> aux = novo Lista<int>();
+
+   # copiando trecho da lista que vai ser ordenada
+   repita (int i = inicio, i < fim, i++){
+      aux.adicionar(a[i]);
+   };
+
+   int i = inicio;
+   int j = meio + 1;
+   int k = inicio;
+
+   # junção e ordenação das duas listas
+   enquanto ( i <= meio && j <= fim){
+      se (aux[i] < aux[j]){
+         a[k] = aux[i];
+         i++;
+      }
+      senao {
+         a[k] = aux[j];
+         j++;
+      };
+      k++;
+   };
+
+   # adiciona os itens que não foram adicionados da primeira lista
+   enquanto ( i <= meio ) {
+      a[k] = aux[i];
+      i++;
+      k++;
+   };
+
+   # adiciona os itens que não foram adicionados da segunda lista
+   enquanto ( j <= meio ) {
+      a[k] = aux[j];
+      j++;
+      k++;
+   };
+};
+	
+# Função principal que aplica o algoritmo Quicksort recursivamente. 
+vazio func ordenacao_rapida(Lista<int> a, int inicio, int fim) { 
+    # O caso base da recursão: continua apenas se houver mais de um elemento para ordenar. 
+    se (inicio < fim) { 
+        # Chama a função para particionar a lista e obter o índice final do pivô.
+        int pivo_indice = particionar(a, inicio, fim);
+
+        # Chama recursivamente a função para a sub-lista à esquerda do pivô. 
+        ordenacao_rapida(a, inicio, pivo_indice, - 1);
+
+        # Chama recursivamente a função para a sub-lista à direita do pivô. 
+        ordenacao_rapida(a, pivo_indice + 1, fim);
+    } ;
+};
+
+# Função que particiona a lista, colocando os elementos menores que o pivô à sua esquerda e os maiores à sua direita. Retorna o novo índice do pivô. 
+int func particionar(Lista<int> a, int inicio, int fim) { 
+    # Estratégia simples: escolher o último elemento como pivô. 
+    int pivo_valor = a[fim];
+
+    # 'i' será o índice do último elemento que é menor que o pivô. 
+    # Começa antes do primeiro elemento. 
+    int i = inicio - 1;
+
+    # Percorre a lista do início até o penúltimo elemento. 
+    repita (j int = inicio, j < fim, j++) { 
+        # Se o elemento atual for menor ou igual ao pivô... 
+        se (a[j] <= pivo_valor) { 
+            # ...incrementa 'i' e troca o elemento em 'i' com o elemento em 'j'. 
+            i = i + 1;
+            trocar(a, i, j); 
+        };
+    };
+
+    # Ao final, coloca o pivô em sua posição correta, trocando-o com o elemento que está logo após o último elemento menor que ele. 
+    trocar(a, i + 1, fim); 
+
+    # Retorna a posição final do pivô. 
+    retorne i + 1; 
+} 
+
+# Função auxiliar para trocar dois elementos de posição na lista. 
+vazio func trocar(Lista<int> a, int pos1, int pos2) { 
+    int temp = a[pos1];
+    a[pos1] = a[pos2];
+    a[pos2] = temp; 
+};
