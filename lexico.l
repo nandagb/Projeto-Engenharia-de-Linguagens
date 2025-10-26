@@ -1,7 +1,9 @@
 %{
   #include <stdio.h>  
+  #include "sintatico.tab.h"
   
   extern int yyerror (char *msg);  
+  int yylineno = 1;
 %}
 
 %%
@@ -30,7 +32,7 @@
 
 "Lista"                {printf("LIST\n");}
 "Registro"             {printf("STRUCT\n");}
-"int"                  {printf("INTEGER\n");}
+"int"                  {return(INTEGER);}
 "real"                 {printf("FLOAT\n");}
 "texto"                {printf("STRING\n");}
 "vazio"                {printf("VOID\n");}
@@ -66,7 +68,7 @@
 ":"                    { printf(":\n"); }
 “%”                    { return'%'; }
 
-[a-zA-Z][a-zA-Z0-9\_]*   {printf("ID(%s)\n", yytext); }
+[a-zA-Z][a-zA-Z0-9\_]*   {return(ID); }
 [0-9]+			             {printf("INT_LITERAL(%s)\n", yytext); }
 [0-9]+\.[0-9]+		       {printf("FLOAT_LITERAL(%s)\n", yytext);}
 \"[^\"]*\"               { printf("STRING_LITERAL(%s)\n", yytext); }
@@ -83,8 +85,10 @@
    int yywrap (void) {return 1;}
 #endif
 
+/* removendo a main pois será chamada pelo parser
 int main(void)
 {
   yylex();  
   return 0;
 }
+*/
