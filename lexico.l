@@ -30,13 +30,13 @@
 "enquanto"             {printf("WHILE\n");}
 "const"                {printf("CONST\n");}
 
-"Lista"                {printf("LIST\n");}
-"Registro"             {printf("STRUCT\n");}
+"Lista"                {return(LIST);}
+"Registro"             {return(STRUCT);}
 "int"                  {return(INTEGER);}
-"real"                 {printf("FLOAT\n");}
-"texto"                {printf("STRING\n");}
-"vazio"                {printf("VOID\n");}
-"logico"               {printf("BOOLEAN\n");}
+"real"                 {return(FLOAT);}
+"texto"                {return(STRING);}
+"vazio"                {return(VOID);}
+"logico"               {return(BOOLEAN);}
 
 "&&"                   { printf("AND\n");}
 "||"                   { printf("OR\n");}
@@ -55,7 +55,7 @@
 "}"                    { printf("}\n"); }
 "["                    { printf("[\n"); }
 "]"                    { printf("]\n"); }
-";"                    { printf(";\n"); }
+";"                    { return(yytext[0]); }
 ","                    { printf(",\n"); }
 "="                    { printf("=\n"); }
 "!"                    { printf("!\n"); }

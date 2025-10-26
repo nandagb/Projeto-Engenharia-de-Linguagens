@@ -14,15 +14,35 @@ extern char * yytext;
 
 %token <sValue> ID
 %token INTEGER
+%token LIST
+%token STRUCT
+%token FLOAT
+%token STRING
+%token VOID
+%token BOOLEAN
 
 
-%start var_declaration
+%start stmt_list
 
 %%
-var_declaration : TYPE ID {printf("VAR DECLARATION\n");} 
+stmt_list : stmt
+          | stmt_list stmt
+;
+
+stmt : var_declaration
+;
+
+var_declaration : type ID ';' {printf("VAR DECLARATION\n");}
 	 ;
 
-TYPE : INTEGER                 ;
+type : INTEGER
+     | LIST
+     | STRUCT
+     | FLOAT
+     | STRING
+     | VOID
+     | BOOLEAN
+;
 	
 
 %%
