@@ -68,10 +68,10 @@
 ":"                    { printf(":\n"); }
 “%”                    { return'%'; }
 
-[a-zA-Z][a-zA-Z0-9\_]*   {return(ID); }
-[0-9]+			             {printf("INT_LITERAL(%s)\n", yytext); }
-[0-9]+\.[0-9]+		       {printf("FLOAT_LITERAL(%s)\n", yytext);}
-\"[^\"]*\"               { printf("STRING_LITERAL(%s)\n", yytext); }
+[a-zA-Z][a-zA-Z0-9\_]*   { return(ID); }
+[0-9]+			             { return(INT_LITERAL); }
+[0-9]+\.[0-9]+		       { return(FLOAT_LITERAL);}
+\"[^\"]*\"               { return(STRING_LITERAL); }
 
 
 

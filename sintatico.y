@@ -12,7 +12,7 @@ extern char * yytext;
 	char * sValue;  /* string value */
 	};
 
-%token <sValue> ID
+%token <sValue> ID INT_LITERAL FLOAT_LITERAL STRING_LITERAL
 %token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN
 NEW
 
@@ -28,6 +28,11 @@ stmt : var_declaration ';'
      | list_initialization ';'
      | list_assign ';'
 ;
+
+unary : ID                                                                                         {printf("ID\n");}
+      | INT_LITERAL                                                                                {printf("INT LITERAL\n");}
+      | FLOAT_LITERAL                                                                              {printf("FLOAT LITERAL\n");}
+      | STRING_LITERAL                                                                             {printf("STRING LITERAL\n");}
 
 var_declaration : primitive_type ID                                                                {printf("VAR DECLARATION\n");}
                 | list_declaration                                                                 {printf("LIST DECLARATION\n");}
