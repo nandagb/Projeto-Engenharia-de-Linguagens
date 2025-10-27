@@ -26,14 +26,19 @@ stmt_list : stmt
 
 stmt : var_declaration ';'
      | list_initialization ';'
+     | list_assign ';'
 ;
 
-var_declaration : primitive_type ID {printf("VAR DECLARATION\n");}
-                | list_declaration  {printf("LIST DECLARATION\n");}
+var_declaration : primitive_type ID                                                                {printf("VAR DECLARATION\n");}
+                | list_declaration                                                                 {printf("LIST DECLARATION\n");}
 ;
 
 list_initialization : list_declaration '=' NEW LIST '<' primitive_type '>' '(' ')'                 {printf("LIST INITIALIZATION\n");}
-                    | list_declaration '=' NEW LIST '<' primitive_type '>' '(' ID ')'  {printf("LIST INITIALIZATION FROM ANOTHER LIST\n");}
+                    | list_declaration '=' NEW LIST '<' primitive_type '>' '(' ID ')'              {printf("LIST INITIALIZATION FROM ANOTHER LIST (NEW COPY)\n");}
+;
+
+list_assign : ID '=' NEW LIST '<' primitive_type '>' '(' ')'                                       {printf("LIST ASSIGN\n");}
+            | ID '=' NEW LIST '<' primitive_type '>' '(' ID ')'                                    {printf("LIST ASSIGN FROM ANOTHER LIST (NEW COPY)\n");}
 ;
 
 list_declaration : LIST '<' primitive_type '>' ID
