@@ -32,12 +32,13 @@ stmt_list : stmt
 stmt : var_declaration
 ;
 
-var_declaration : type ID ';' {printf("VAR DECLARATION\n");}
+var_declaration : primary_type ID ';' {printf("VAR DECLARATION\n");}
+                | list_declaration  {printf("LIST DECLARATION\n");}
 	 ;
 
-type : INTEGER
-     | LIST
-     | STRUCT
+list_declaration : LIST '<' primary_type '>' ID ';'
+
+primary_type : INTEGER
      | FLOAT
      | STRING
      | VOID

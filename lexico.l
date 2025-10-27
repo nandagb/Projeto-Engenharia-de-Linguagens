@@ -63,8 +63,8 @@
 "-"                    { printf("-\n"); }
 "/"                    { printf("/\n"); }
 "*"                    { printf("*\n"); }
-">"                    { printf(">\n"); }
-"<"                    { printf("<\n"); }
+">"                    { return(yytext[0]); }
+"<"                    { return(yytext[0]); }
 ":"                    { printf(":\n"); }
 “%”                    { return'%'; }
 
