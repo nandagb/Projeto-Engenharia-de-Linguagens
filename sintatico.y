@@ -13,13 +13,8 @@ extern char * yytext;
 	};
 
 %token <sValue> ID
-%token INTEGER
-%token LIST
-%token STRUCT
-%token FLOAT
-%token STRING
-%token VOID
-%token BOOLEAN
+%token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN
+NEW
 
 
 %start stmt_list
@@ -29,16 +24,22 @@ stmt_list : stmt
           | stmt_list stmt
 ;
 
-stmt : var_declaration
+stmt : var_declaration ';'
+     | list_initialization ';'
 ;
 
-var_declaration : primary_type ID ';' {printf("VAR DECLARATION\n");}
+var_declaration : primitive_type ID {printf("VAR DECLARATION\n");}
                 | list_declaration  {printf("LIST DECLARATION\n");}
-	 ;
+;
 
-list_declaration : LIST '<' primary_type '>' ID ';'
+list_initialization : list_declaration '=' NEW LIST '<' primitive_type '>' '(' ')'                 {printf("LIST INITIALIZATION\n");}
+                    | list_declaration '=' NEW LIST '<' primitive_type '>' '(' ID ')'  {printf("LIST INITIALIZATION FROM ANOTHER LIST\n");}
+;
 
-primary_type : INTEGER
+list_declaration : LIST '<' primitive_type '>' ID
+;
+
+primitive_type : INTEGER
      | FLOAT
      | STRING
      | VOID

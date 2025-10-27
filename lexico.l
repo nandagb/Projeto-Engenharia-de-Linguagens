@@ -12,7 +12,7 @@
 
 "func"                 {printf("FUNCTION\n");}
 "retorne"              {printf("RETURN\n");}
-"novo"                 {printf("NEW\n");}
+"novo"                 {return(NEW);}
 "liberar"              {printf("FREE\n");}
 "adicionar"            {printf("ADD\n");}
 "remover"              {printf("REMOVE\n");}
@@ -49,15 +49,15 @@
 "--"                   { printf("UNARY_SUBTRACTION\n"); }
 
 "."                    { printf(".\n"); }
-"("                    { printf("(\n"); }
-")"                    { printf(")\n"); }
+"("                    { return(yytext[0]); }
+")"                    { return(yytext[0]); }
 "{"                    { printf("{\n"); }
 "}"                    { printf("}\n"); }
 "["                    { printf("[\n"); }
 "]"                    { printf("]\n"); }
 ";"                    { return(yytext[0]); }
 ","                    { printf(",\n"); }
-"="                    { printf("=\n"); }
+"="                    { return(yytext[0]); }
 "!"                    { printf("!\n"); }
 "+"                    { printf("+\n"); }
 "-"                    { printf("-\n"); }
