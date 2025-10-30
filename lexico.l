@@ -10,7 +10,7 @@
 
 [ \r?\n\t]             ;
 
-"func"                 {printf("FUNCTION\n");}
+"func"                 {return(FUNCTION);}
 "retorne"              {printf("RETURN\n");}
 "novo"                 {return(NEW);}
 "liberar"              {printf("FREE\n");}
@@ -51,8 +51,8 @@
 "."                    { printf(".\n"); }
 "("                    { return(yytext[0]); }
 ")"                    { return(yytext[0]); }
-"{"                    { printf("{\n"); }
-"}"                    { printf("}\n"); }
+"{"                    { return(yytext[0]); }
+"}"                    { return(yytext[0]); }
 "["                    { printf("[\n"); }
 "]"                    { printf("]\n"); }
 ";"                    { return(yytext[0]); }
