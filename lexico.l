@@ -3,8 +3,8 @@
   #include "sintatico.tab.h"
   
   extern int yyerror (char *msg);  
-  int yylineno = 1;
 %}
+%option yylineno
 
 %%
 

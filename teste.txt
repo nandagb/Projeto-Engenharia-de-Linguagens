@@ -1,0 +1,4 @@
+int teste;
+vazio func teste(){
+    int teste;
+}

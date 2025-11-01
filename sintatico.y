@@ -30,6 +30,7 @@ stmt_list : stmt
 ;
 
 stmt : global ';'                                                                                 {printf("GLOBAL\n");}
+     | func_declaration                                                                           {printf("FUNÇÃO DECLARAÇÃO\n");}
 ;
 
 func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'                         {printf("FUNÇÃO\n");}
