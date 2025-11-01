@@ -25,31 +25,39 @@ NEW
 %start stmt_list
 
 %%
-stmt_list : stmt
-            | stmt_list stmt
+prog : general_stmt_list func_declaration                                                         {printf("PROGRAMA\n");}
 ;
 
-stmt : global ';'                                                                                 {printf("GLOBAL\n");}
-     | func_declaration                                                                           {printf("FUNÇÃO DECLARAÇÃO\n");}
+stmt_list : stmt                                                                                   
+            | stmt_list stmt                                                                      {/*printf("STATEMENT\n");*/}   
+;
+
+stmt : general_stmt ';'                                                                           {/*printf("STATEMENT\n");*/}
+     | func_declaration                                                                           
 ;
 
 func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'                         {printf("FUNÇÃO\n");}
 ;
 
-global : var_declaration                                                                          {/*printf("ID\n");*/}
+general_stmt : var_declaration                                                                    {printf("STATEMENT GERAL\n");}
      | list_initialization                                                                        {/*printf("ID\n");*/}
      | list_assign                                                                                {/*printf("ID\n");*/}
 ;
 
-global_list : |
-              | global_list global ';'                                                             {/*printf("ID\n");*/}
-              | global ';'
+general_stmt_list : general_stmt_union                                          {printf("LISTA STATEMENT GERAL\n");}
+                  |                                                                             
 ;
 
-params_list : |
-              | params_list ',' var_declaration
-              | var_declaration
+general_stmt_union : general_stmt                                         {printf("LISTA STATEMENT GERAL\n");}
+                   | general_stmt ';' general_stmt_list 
 ;
+
+params_list : params_union
+              |
+;
+
+params_union : var_declaration
+             | var_declaration ',' params_union
 
 unary : ID                                                                                         {/*printf("ID\n");*/}
       | INT_LITERAL                                                                                {/*printf("INT LITERAL\n");*/}
