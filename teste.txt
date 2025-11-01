@@ -1,3 +1,13 @@
+Lista<int> lista = novo Lista<int>();
+Lista<int> lista;
+
+Registro aluno = novo Registro{
+    texto nome,
+    int matricula,
+    real ira
+};
+
+
 vazio func teste(){
 
     logico func isAlive2(texto player,texto player){

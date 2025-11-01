@@ -18,15 +18,13 @@ extern char * yytext;
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
-%token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN FUNCTION
-NEW
-
+%token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN FUNCTION NEW
 
 %start stmt_list
 
 %%
-prog : general_stmt_list func_declaration                                                         {printf("PROGRAMA\n");}
-;
+/* prog : general_stmt_list func_declaration                                                         {printf("PROGRAMA\n");}
+; */
 
 stmt_list : stmt                                                                                   
             | stmt_list stmt                                                                      {/*printf("STATEMENT\n");*/}   
@@ -39,18 +37,21 @@ stmt : general_stmt ';'                                                         
 func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'                         {printf("FUNÇÃO\n");}
 ;
 
-general_stmt : var_declaration                                                                    {printf("STATEMENT GERAL\n");}
-     | list_initialization                                                                        {/*printf("ID\n");*/}
+general_stmt : var_declaration                                                                    {printf("STATEMENT GERAL - var declaration\n");}
+     /* | var_assign */
+     | list_initialization                                                                        {printf("STATEMENT GERAL - list initialization\n");}
      | list_assign                                                                                {/*printf("ID\n");*/}
+     | struct_initialization
+     /* | type_declaration */
 ;
 
-general_stmt_list : general_stmt_union                                          {printf("LISTA STATEMENT GERAL\n");}
+/* general_stmt_list : general_stmt_union                                          {printf("LISTA STATEMENT GERAL\n");}
                   |                                                                             
 ;
 
 general_stmt_union : general_stmt                                         {printf("LISTA STATEMENT GERAL\n");}
                    | general_stmt ';' general_stmt_list 
-;
+; */
 
 params_list : params_union
               |
@@ -59,14 +60,18 @@ params_list : params_union
 params_union : var_declaration
              | var_declaration ',' params_union
 
-unary : ID                                                                                         {/*printf("ID\n");*/}
-      | INT_LITERAL                                                                                {/*printf("INT LITERAL\n");*/}
-      | FLOAT_LITERAL                                                                              {/*printf("FLOAT LITERAL\n");*/}
-      | STRING_LITERAL                                                                             {/*printf("STRING LITERAL\n");*/}
+//unary : ID                                                                                         {/*printf("ID\n");*/}
+  //    | INT_LITERAL                                                                                {/*printf("INT LITERAL\n");*/}
+    //  | FLOAT_LITERAL                                                                              {/*printf("FLOAT LITERAL\n");*/}
+      //| STRING_LITERAL                                                                             {/*printf("STRING LITERAL\n");*/}
+//;
+
+var_declaration : primitive_type ID                                                                {printf("VAR DECLARATION\n");}
+                | list_declaration                                                                 {/*printf("LIST DECLARATION\n");*/}
 ;
 
-var_declaration : primitive_type ID                                                                {/*printf("VAR DECLARATION\n");*/}
-                | list_declaration                                                                 {/*printf("LIST DECLARATION\n");*/}
+var_declaration_list : var_declaration                                                             {printf("VAR DECLARATION LIST\n");}
+                     | var_declaration ',' var_declaration_list                                    {/*printf("LIST DECLARATION\n");*/}
 ;
 
 list_initialization : list_declaration '=' NEW LIST '<' primitive_type '>' '(' ')'                 {/*printf("LIST INITIALIZATION\n");*/}
@@ -91,7 +96,9 @@ primitive_type : INTEGER
      | VOID
      | BOOLEAN
 ;
-	
+
+struct_initialization: STRUCT ID '=' NEW STRUCT '{' var_declaration_list '}'                       {printf("INICIALIZAÇÃO DE REGISTRO");}
+;	
 
 %%
 
