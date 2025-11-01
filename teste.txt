@@ -1,4 +1,8 @@
-int teste;
 vazio func teste(){
+
+    logico func isAlive2(texto player,texto player){
+        int teste3;
+    }
+
     int teste;
 }
