@@ -1,0 +1,4 @@
+flex lexico.l
+bison -d -v sintatico.y
+gcc lex.yy.c sintatico.tab.c -o parser
+./parser < teste.txt
