@@ -1,13 +1,11 @@
+real ira2;
 Registro aluno = novo Registro{
     texto nome,
     int matricula,
     real ira
 };
-real ira2;
-
 Lista<int> lista = novo Lista<int>();
 Lista<int> lista;
-
 
 vazio func teste(){
 
