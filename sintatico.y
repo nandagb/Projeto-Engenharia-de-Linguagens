@@ -34,7 +34,8 @@ stmt_list : stmt
 stmt : general_stmt ';'                                                                           {/*printf("STATEMENT\n");*/}
      | var_assign ';'                                                                     
      | list_assign ';'                                                                            {/*printf("ID\n");*/}
-     | func_declaration     
+     | func_call ';'
+     | func_declaration
 ;
 
 func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'                         {printf("FUNÇÃO\n");}
@@ -134,16 +135,16 @@ unary : unary UNARY_SUM
       | FLOAT_LITERAL                                                                              {/*printf("UNARY - FLOAT LITERAL\n");*/} 
       | BOOL_LITERAL                                                                               {/*printf("UNARY - BOOL LITERAL\n");*/} 
       | STRING_LITERAL                                                                             {/*printf("UNARY - STRING LITERAL\n");*/} 
-      /* | func_call                                                                             {printf("STRING LITERAL\n");}  */
+      | func_call                                                                                  {printf("UNARY - FUNC CALL\n");} 
 ; 
-/* 
-func_call: ID '(' args ')'
+
+func_call: ID '(' args ')'                                                                         {printf("FUNC CALL\n");} 
 ;
 
 args : args ',' expression
      | expression
      |
-; */
+;
 
 %%
 
