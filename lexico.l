@@ -75,7 +75,7 @@
 [a-zA-Z][a-zA-Z0-9\_]*   { yylval.sValue = strdup(yytext); return(ID); }
 [0-9]+			             { return(INT_LITERAL); }
 [0-9]+\.[0-9]+		       { return(FLOAT_LITERAL);}
-\"[^\"]*\"               { return(STRING_LITERAL); }
+\"[^\"]*\"               { yylval.sValue = strdup(yytext); return(STRING_LITERAL);}
 
 
 
