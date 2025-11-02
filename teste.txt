@@ -8,11 +8,12 @@
 #Lista<int> lista;
 
 vazio func teste(){
-    var_assign_test = "&";
-    var_assign_test += "&";
-    var_assign_test -= "&";
-    var_assign_test *= "&";
-    var_assign_test /= "&";
+    var_assign_test = 2 * 3;
+
+    #var_assign_test += "&";
+    #var_assign_test -= "&";
+    #var_assign_test *= "&";
+    #var_assign_test /= "&";
     
     logico func isAlive2(texto player,texto player){
         int teste3;
