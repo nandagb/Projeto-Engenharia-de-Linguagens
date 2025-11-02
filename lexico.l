@@ -16,9 +16,9 @@
 "liberar"              {printf("FREE\n");}
 "adicionar"            {printf("ADD\n");}
 "remover"              {printf("REMOVE\n");}
-"se"                   {printf("IF\n");}
-"senao se"             {printf("ELSE_IF\n");}
-"senao"                {printf("ELSE\n");}
+"se"                   {return();}
+"senao se"             {return();}
+"senao"                {return();}
 "escolha"              {printf("SWITCH\n");}
 "padrao"               {printf("DEFAULT\n");}
 "pare"                 {printf("BREAK\n");}
