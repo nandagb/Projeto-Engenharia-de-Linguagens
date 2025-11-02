@@ -15,7 +15,7 @@ extern char * yytext;
      /* float type??? */
 	};
 
-%token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL
+%token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
 %token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION
@@ -88,8 +88,8 @@ primitive_type : INTEGER
 struct_initialization: STRUCT ID '=' NEW STRUCT '{' var_declaration_list '}'                       {printf("INICIALIZAÇÃO DE REGISTRO\n");}
 ;	
 
-var_assign : ID '=' STRING_LITERAL                                                                            {printf("VAR_ASSIGN\n");}
-           | ID composite_assign_operator STRING_LITERAL                                                      {printf("VAR_ASSIGN WITH OPERATOR\n");}
+var_assign : ID '=' unary                                                                            {printf("VAR_ASSIGN\n");}
+           | ID composite_assign_operator unary                                                      {printf("VAR_ASSIGN WITH OPERATOR\n");}
 ;
 
 composite_assign_operator : SUM_ASSIGN                                                             {printf("SUM_ASSIGN\n");}
@@ -126,16 +126,16 @@ relation_expression : relation_expression '>' arithmatic_expression
        | unary
 ; */
  
-/* unary : unary UNARY_SUM */
-      /* | unary UNARY_SUBTRACTION */
-      /* | expression */
-      /* | ID                                                                                         {printf("ID\n");} */
-      /* | INT_LITERAL                                                                                {printf("INT LITERAL\n");} */
-      /* | FLOAT_LITERAL                                                                              {printf("FLOAT LITERAL\n");} */
-      /* | BOOLEAN                                                                                {printf("INT LITERAL\n");} */
-      /* | STRING_LITERAL                                                                             {printf("STRING LITERAL\n");} */
-      /* | func_call                                                                             {printf("STRING LITERAL\n");} */
-/* ; */
+unary : unary UNARY_SUM
+      | unary UNARY_SUBTRACTION 
+      /* | expression  */
+      | ID                                                                                         {printf("UNARY - ID\n");} 
+      | INT_LITERAL                                                                                {printf("UNARY - INT LITERAL\n");} 
+      | FLOAT_LITERAL                                                                              {printf("UNARY - FLOAT LITERAL\n");} 
+      | BOOL_LITERAL                                                                               {printf("UNARY - BOOL LITERAL\n");} 
+      | STRING_LITERAL                                                                             {printf("UNARY - STRING LITERAL\n");} 
+      /* | func_call                                                                             {printf("STRING LITERAL\n");}  */
+; 
 /* 
 func_call: ID '(' args ')'
 ;
