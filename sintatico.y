@@ -18,13 +18,14 @@ extern char * yytext;
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
-%token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN FUNCTION NEW
+%token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION
 
-%start stmt_list
+%start prog
 
 %%
-/* prog : general_stmt_list func_declaration                                                         {printf("PROGRAMA\n");}
-; */
+prog : func_declaration
+     | general_stmt_list func_declaration                                                         {printf("PROGRAMA\n");}
+;
 
 stmt_list : stmt                                                                                   
             | stmt_list stmt                                                                      {/*printf("STATEMENT\n");*/}   
@@ -45,28 +46,15 @@ general_stmt : var_declaration                                                  
      /* | type_declaration */
 ;
 
-/* general_stmt_list : general_stmt_union                                          {printf("LISTA STATEMENT GERAL\n");}
-                  |                                                                             
+general_stmt_list : general_stmt ';'
+                  | general_stmt_list ';' general_stmt                                             {printf("LISTA STATEMENT GERAL\n");}                                                                            
 ;
 
-general_stmt_union : general_stmt                                         {printf("LISTA STATEMENT GERAL\n");}
-                   | general_stmt ';' general_stmt_list 
-; */
-
-params_list : params_union
-              |
+params_list : 
+            | var_declaration_list {printf("LISTA PARAM\n");}
 ;
 
-params_union : var_declaration
-             | var_declaration ',' params_union
-
-//unary : ID                                                                                         {/*printf("ID\n");*/}
-  //    | INT_LITERAL                                                                                {/*printf("INT LITERAL\n");*/}
-    //  | FLOAT_LITERAL                                                                              {/*printf("FLOAT LITERAL\n");*/}
-      //| STRING_LITERAL                                                                             {/*printf("STRING LITERAL\n");*/}
-//;
-
-var_declaration : primitive_type ID                                                                {printf("VAR DECLARATION\n");}
+var_declaration : primitive_type ID                                                                {printf("VAR DECLARATION - %s\n", $2);}
                 | list_declaration                                                                 {/*printf("LIST DECLARATION\n");*/}
 ;
 
@@ -97,8 +85,65 @@ primitive_type : INTEGER
      | BOOLEAN
 ;
 
-struct_initialization: STRUCT ID '=' NEW STRUCT '{' var_declaration_list '}'                       {printf("INICIALIZAÇÃO DE REGISTRO");}
+struct_initialization: STRUCT ID '=' NEW STRUCT '{' var_declaration_list '}'                       {printf("INICIALIZAÇÃO DE REGISTRO\n");}
 ;	
+
+/* var_assign : ID '=' expression
+           | ID composite_assign_operator expression
+; */
+
+composite_assign_operator : SUM_ASSIGN                                                             {printf("SUM_ASSIGN\n");}
+                | SUBTRACTION_ASSIGN                                                               {printf("SUBTRACTION_ASSIGN\n");}
+                | TIMES_ASSIGN                                                                     {printf("TIMES_ASSIGN\n");}
+                | DIVISION_ASSIGN                                                                  {printf("DIVISION_ASSIGN\n");}
+;
+
+/* expression : expression AND composite_expression
+           | expression OR composite_expression
+           | composite_expression
+; */
+
+/* composite_expression : composite_expression EQUALS relation_expression
+                     | composite_expression DIFF relation_expression
+                     | relation_expression
+; */
+/* 
+relation_expression : relation_expression '>' arithmatic_expression
+                    | relation_expression '<' arithmatic_expression
+                    | relation_expression GTE arithmatic_expression
+                    | relation_expression LTE arithmatic_expression
+                    | arithmatic_expression
+; */
+
+/* arithmatic_expression : arithmatic_expression '+' factor
+                      | arithmatic_expression '-' factor
+                      | factor
+; */
+
+/* factor : factor '*' unary
+       | factor '-' unary
+       | factor INT_DIVISION unary
+       | unary
+; */
+ 
+unary : unary UNARY_SUM
+      | unary UNARY_SUBTRACTION
+      /* | expression */
+      | ID                                                                                         {printf("ID\n");}
+      | INT_LITERAL                                                                                {printf("INT LITERAL\n");}
+      | FLOAT_LITERAL                                                                              {printf("FLOAT LITERAL\n");}
+      | BOOLEAN                                                                                {printf("INT LITERAL\n");}
+      | STRING_LITERAL                                                                             {printf("STRING LITERAL\n");}
+      /* | func_call                                                                             {printf("STRING LITERAL\n");} */
+;
+/* 
+func_call: ID '(' args ')'
+;
+
+args : args ',' expression
+     | expression
+     |
+; */
 
 %%
 
