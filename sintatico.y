@@ -33,6 +33,7 @@ stmt_list : stmt
 
 stmt : general_stmt ';'                                                                           {/*printf("STATEMENT\n");*/}
      | var_assign ';'                                                                     
+     | list_assign ';'                                                                            {/*printf("ID\n");*/}
      | func_declaration     
 ;
 
@@ -41,13 +42,12 @@ func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'       
 
 general_stmt : var_declaration                                                                    {printf("STATEMENT GERAL - var declaration\n");}
      | list_initialization                                                                        {printf("STATEMENT GERAL - list initialization\n");}
-     | list_assign                                                                                {/*printf("ID\n");*/}
      | struct_initialization
      /* | type_declaration */
 ;
 
 general_stmt_list : general_stmt ';'
-                  | general_stmt_list general_stmt ';'                                             {printf("STATEMENT GERAL LISTA\n");}                                                                            
+                  | general_stmt_list general_stmt ';'                                             {/*printf("STATEMENT GERAL LISTA\n");*/}
 ;
 
 params_list : 
@@ -88,8 +88,8 @@ primitive_type : INTEGER
 struct_initialization: STRUCT ID '=' NEW STRUCT '{' var_declaration_list '}'                       {printf("INICIALIZAÇÃO DE REGISTRO\n");}
 ;	
 
-var_assign : ID '=' factor                                                                            {printf("VAR_ASSIGN\n");}
-           | ID composite_assign_operator factor                                                      {printf("VAR_ASSIGN WITH OPERATOR\n");}
+var_assign : ID '=' expression                                                                     {printf("VAR_ASSIGN\n");}
+           | ID composite_assign_operator expression                                               {printf("VAR_ASSIGN WITH OPERATOR\n");}
 ;
 
 composite_assign_operator : SUM_ASSIGN                                                             {printf("SUM_ASSIGN\n");}
@@ -98,37 +98,37 @@ composite_assign_operator : SUM_ASSIGN                                          
                 | DIVISION_ASSIGN                                                                  {printf("DIVISION_ASSIGN\n");}
 ;
 
-/* expression : expression AND composite_expression
-           | expression OR composite_expression
-           | composite_expression
-; */
+expression : expression AND comparison_expression                                                  {printf("EXPRESSION - AND\n");} 
+           | expression OR comparison_expression                                                   {printf("EXPRESSION - OR\n");} 
+           | comparison_expression                                                                 {printf("EXPRESSION - COMPOSITE\n");}
+;
 
-/* composite_expression : composite_expression EQUALS relation_expression
-                     | composite_expression DIFF relation_expression
-                     | relation_expression
-; */
-/* 
-relation_expression : relation_expression '>' arithmatic_expression
-                    | relation_expression '<' arithmatic_expression
-                    | relation_expression GTE arithmatic_expression
-                    | relation_expression LTE arithmatic_expression
-                    | arithmatic_expression
-; */
+comparison_expression : comparison_expression EQUALS relation_expression                           {/*printf("COMPARISON_EXPRESSION - EQUALS\n");*/}
+                      | comparison_expression DIFF relation_expression                             {/*printf("COMPARISON_EXPRESSION - DIFF\n");*/}
+                      | relation_expression                                                        {/*printf("COMPARISON_EXPRESSION - RELATION\n");*/}
+;
 
-/* arithmatic_expression : arithmatic_expression '+' factor
-                      | arithmatic_expression '-' factor
-                      | factor
-; */
+relation_expression : relation_expression '>' arithmatic_expression                                {/*printf("RELATION_EXPRESSION - GREATER\n");*/}
+                    | relation_expression '<' arithmatic_expression                                {/*printf("RELATION_EXPRESSION - LESSER\n");*/}
+                    | relation_expression GTE arithmatic_expression                                {/*printf("RELATION_EXPRESSION - GREATER EQUAL\n");*/}
+                    | relation_expression LTE arithmatic_expression                                {/*printf("RELATION_EXPRESSION - LESSER EQUAL\n");*/}
+                    | arithmatic_expression                                                        {/*printf("RELATION_EXPRESSION - ARITHMATIC\n");*/}
+;
 
-factor : factor '*' unary                                                                          {printf("FACTOR - TIMES\n");} 
-       | factor '/' unary                                                                          {printf("FACTOR - DIVISION\n");} 
-       | factor INT_DIVISION unary                                                                 {printf("FACTOR - INT DIVISION\n");} 
-       | unary                                                                                     {printf("FACTOR - UNARY\n");} 
+arithmatic_expression : arithmatic_expression '+' factor                                           {/* printf("ARITHMATIC - SUM\n");*/ }
+                      | arithmatic_expression '-' factor                                           {/* printf("ARITHMATIC - MINUS\n");*/ }
+                      | factor                                                                     {/* printf("ARITHMATIC - FACTOR\n");*/ }
+;
+
+factor : factor '*' unary                                                                          {/* printf("FACTOR - TIMES\n");*/} 
+       | factor '/' unary                                                                          {/* printf("FACTOR - DIVISION\n");*/} 
+       | factor INT_DIVISION unary                                                                 {/* printf("FACTOR - INT DIVISION\n");*/} 
+       | unary                                                                                     {/* printf("FACTOR - UNARY\n");*/} 
 ;
  
 unary : unary UNARY_SUM
       | unary UNARY_SUBTRACTION 
-      /* | expression  */
+      | '(' expression ')'                                                                         {printf("UNARY - EXPRESSION\n");}
       | ID                                                                                         {/*printf("UNARY - ID\n");*/} 
       | INT_LITERAL                                                                                {/*printf("UNARY - INT LITERAL\n");*/} 
       | FLOAT_LITERAL                                                                              {/*printf("UNARY - FLOAT LITERAL\n");*/} 
