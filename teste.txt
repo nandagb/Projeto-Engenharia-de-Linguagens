@@ -1,14 +1,19 @@
-real ira2;
-Registro aluno = novo Registro{
-    texto nome,
-    int matricula,
-    real ira
-};
-Lista<int> lista = novo Lista<int>();
-Lista<int> lista;
+#real ira2;
+#Registro aluno = novo Registro{
+#    texto nome,
+#    int matricula,
+#    real ira
+#};
+#Lista<int> lista = novo Lista<int>();
+#Lista<int> lista;
 
 vazio func teste(){
-
+    var_assign_test = "&";
+    var_assign_test += "&";
+    var_assign_test -= "&";
+    var_assign_test *= "&";
+    var_assign_test /= "&";
+    
     logico func isAlive2(texto player,texto player){
         int teste3;
     }
