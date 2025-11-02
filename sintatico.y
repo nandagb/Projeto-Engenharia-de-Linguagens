@@ -47,11 +47,11 @@ general_stmt : var_declaration                                                  
 ;
 
 general_stmt_list : general_stmt ';'
-                  | general_stmt_list ';' general_stmt                                             {printf("LISTA STATEMENT GERAL\n");}                                                                            
+                  | general_stmt_list general_stmt ';'                                             {printf("STATEMENT GERAL LISTA\n");}                                                                            
 ;
 
 params_list : 
-            | var_declaration_list {printf("LISTA PARAM\n");}
+            | var_declaration_list {printf("PARAM LISTA\n");}
 ;
 
 var_declaration : primitive_type ID                                                                {printf("VAR DECLARATION - %s\n", $2);}
