@@ -18,7 +18,7 @@ extern char * yytext;
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
-%token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION
+%token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE 
 
 %start prog
 
@@ -36,15 +36,16 @@ stmt : general_stmt ';'                                                         
      | list_assign ';'                                                                            {/*printf("ID\n");*/}
      | func_call ';'
      | func_declaration
+     | if
 ;
 
 func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'                         {printf("FUNÇÃO\n");}
 ;
 
 general_stmt : var_declaration                                                                    {printf("STATEMENT GERAL - var declaration\n");}
-     | list_initialization                                                                        {printf("STATEMENT GERAL - list initialization\n");}
-     | struct_initialization
-     /* | type_declaration */
+             | list_initialization                                                                        {printf("STATEMENT GERAL - list initialization\n");}
+             | struct_initialization
+             /* | type_declaration */
 ;
 
 general_stmt_list : general_stmt ';'
@@ -145,6 +146,19 @@ args : args ',' expression
      | expression
      |
 ;
+
+if : IF '(' expression ')' '{' stmt_list '}' if_complement
+;
+
+if_complement : ELSE '{' stmt_list '}'
+              | else_if
+              | else_if ELSE '{' stmt_list '}'
+              |
+
+else_if : ELSE IF '(' expression ')' '{' stmt_list '}' else_if
+        | ELSE IF '(' expression ')' '{' stmt_list '}'
+
+/* type_declaration : STRUCT ID '{' var_declaration_list '}' */
 
 %%
 
