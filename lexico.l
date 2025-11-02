@@ -72,6 +72,8 @@
 ":"                    { printf(":\n"); }
 “%”                    { return'%'; }
 
+"verdadeiro"             { yylval.sValue = strdup(yytext); return(BOOL_LITERAL);}
+"falso"                  { yylval.sValue = strdup(yytext); return(BOOL_LITERAL);}
 [a-zA-Z][a-zA-Z0-9\_]*   { yylval.sValue = strdup(yytext); return(ID); }
 [0-9]+			             { return(INT_LITERAL); }
 [0-9]+\.[0-9]+		       { return(FLOAT_LITERAL);}
