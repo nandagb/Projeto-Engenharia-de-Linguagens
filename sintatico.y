@@ -32,14 +32,14 @@ stmt_list : stmt
 ;
 
 stmt : general_stmt ';'                                                                           {/*printf("STATEMENT\n");*/}
-     | func_declaration                                                                           
+     | var_assign ';'                                                                     
+     | func_declaration     
 ;
 
 func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'                         {printf("FUNÇÃO\n");}
 ;
 
 general_stmt : var_declaration                                                                    {printf("STATEMENT GERAL - var declaration\n");}
-     /* | var_assign */
      | list_initialization                                                                        {printf("STATEMENT GERAL - list initialization\n");}
      | list_assign                                                                                {/*printf("ID\n");*/}
      | struct_initialization
@@ -88,9 +88,9 @@ primitive_type : INTEGER
 struct_initialization: STRUCT ID '=' NEW STRUCT '{' var_declaration_list '}'                       {printf("INICIALIZAÇÃO DE REGISTRO\n");}
 ;	
 
-/* var_assign : ID '=' expression
-           | ID composite_assign_operator expression
-; */
+var_assign : ID '=' STRING_LITERAL                                                                            {printf("VAR_ASSIGN\n");}
+           | ID composite_assign_operator STRING_LITERAL                                                      {printf("VAR_ASSIGN WITH OPERATOR\n");}
+;
 
 composite_assign_operator : SUM_ASSIGN                                                             {printf("SUM_ASSIGN\n");}
                 | SUBTRACTION_ASSIGN                                                               {printf("SUBTRACTION_ASSIGN\n");}
@@ -126,16 +126,16 @@ relation_expression : relation_expression '>' arithmatic_expression
        | unary
 ; */
  
-unary : unary UNARY_SUM
-      | unary UNARY_SUBTRACTION
+/* unary : unary UNARY_SUM */
+      /* | unary UNARY_SUBTRACTION */
       /* | expression */
-      | ID                                                                                         {printf("ID\n");}
-      | INT_LITERAL                                                                                {printf("INT LITERAL\n");}
-      | FLOAT_LITERAL                                                                              {printf("FLOAT LITERAL\n");}
-      | BOOLEAN                                                                                {printf("INT LITERAL\n");}
-      | STRING_LITERAL                                                                             {printf("STRING LITERAL\n");}
+      /* | ID                                                                                         {printf("ID\n");} */
+      /* | INT_LITERAL                                                                                {printf("INT LITERAL\n");} */
+      /* | FLOAT_LITERAL                                                                              {printf("FLOAT LITERAL\n");} */
+      /* | BOOLEAN                                                                                {printf("INT LITERAL\n");} */
+      /* | STRING_LITERAL                                                                             {printf("STRING LITERAL\n");} */
       /* | func_call                                                                             {printf("STRING LITERAL\n");} */
-;
+/* ; */
 /* 
 func_call: ID '(' args ')'
 ;
