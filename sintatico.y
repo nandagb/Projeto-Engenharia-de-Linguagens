@@ -34,14 +34,14 @@ stmt_list : stmt
 stmt : general_stmt ';'                                                                           {/*printf("STATEMENT\n");*/}
      | var_assign ';'                                                                     
      | list_assign ';'                                                                            {/*printf("ID\n");*/}
-     | func_call ';'
      | func_declaration
      | if
      | return ';'
      | BREAK ';'                                                                                  {printf("BREAK\n");}
      | while
      | do_while ';'
-     | for                                                                                        
+     | for
+     | expression ';'                                                       
 ;
 
 
@@ -142,9 +142,9 @@ factor : factor '*' unary                                                       
        | unary                                                                                     {/* printf("FACTOR - UNARY\n");*/} 
 ;
  
-unary : ID UNARY_SUM                                                                               {printf("UNARY +\n");}
-      | ID UNARY_SUBTRACTION 
-      | '(' expression ')'                                                                         {printf("UNARY - EXPRESSION\n");}
+unary : ID UNARY_SUM                                                                               {/* printf("UNARY +\n");*/}
+      | ID UNARY_SUBTRACTION                                                                       {/* printf("UNARY -\n");*/}
+      | '(' expression ')'                                                                         {/* printf("UNARY - EXPRESSION\n");*/}
       | ID                                                                                         {/*printf("UNARY - ID\n");*/} 
       | INT_LITERAL                                                                                {/*printf("UNARY - INT LITERAL\n");*/} 
       | FLOAT_LITERAL                                                                              {/*printf("UNARY - FLOAT LITERAL\n");*/} 
