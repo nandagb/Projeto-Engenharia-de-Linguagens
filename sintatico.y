@@ -18,7 +18,7 @@ extern char * yytext;
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
-%token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF
+%token INTEGER LIST STRUCT WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF
 
 %start prog
 
@@ -37,14 +37,26 @@ stmt : general_stmt ';'                                                         
      | func_call ';'
      | func_declaration
      | if
+     | return ';'
+     | BREAK ';'                                                                                  {printf("BREAK\n");}
+     | while
+     | do_while ';'
+     | for                                                                                        
 ;
+
+
+return : RETURN 
+       | RETURN expression                                                                        {printf("RETURN\n");}
+       ;
+
 
 func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'                         {printf("FUNÇÃO\n");}
 ;
 
 general_stmt : var_declaration                                                                    {printf("STATEMENT GERAL - var declaration\n");}
              | list_initialization                                                                        {printf("STATEMENT GERAL - list initialization\n");}
-             | struct_initialization
+             | struct_declaration
+             | var_initialization
              /* | type_declaration */
 ;
 
@@ -55,6 +67,8 @@ general_stmt_list : general_stmt ';'
 params_list : 
             | var_declaration_list {printf("PARAM LISTA\n");}
 ;
+
+var_initialization : primitive_type ID '=' expression                                              {printf("VAR INITIALIZATION - %s\n", $2);}
 
 var_declaration : primitive_type ID                                                                {printf("VAR DECLARATION - %s\n", $2);}
                 | list_declaration                                                                 {/*printf("LIST DECLARATION\n");*/}
@@ -87,7 +101,7 @@ primitive_type : INTEGER
      | BOOLEAN
 ;
 
-struct_initialization: STRUCT ID '=' NEW STRUCT '{' var_declaration_list '}'                       {printf("INICIALIZAÇÃO DE REGISTRO\n");}
+struct_declaration: STRUCT ID '=' NEW STRUCT '{' var_declaration_list '}'                       {printf("INICIALIZAÇÃO DE REGISTRO\n");}
 ;	
 
 var_assign : ID '=' expression                                                                     {printf("VAR_ASSIGN\n");}
@@ -128,8 +142,8 @@ factor : factor '*' unary                                                       
        | unary                                                                                     {/* printf("FACTOR - UNARY\n");*/} 
 ;
  
-unary : unary UNARY_SUM
-      | unary UNARY_SUBTRACTION 
+unary : ID UNARY_SUM                                                                               {printf("UNARY +\n");}
+      | ID UNARY_SUBTRACTION 
       | '(' expression ')'                                                                         {printf("UNARY - EXPRESSION\n");}
       | ID                                                                                         {/*printf("UNARY - ID\n");*/} 
       | INT_LITERAL                                                                                {/*printf("UNARY - INT LITERAL\n");*/} 
@@ -157,6 +171,23 @@ if_complement : ELSE '{' stmt_list '}'                                          
 
 else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
         | ELSE_IF '(' expression ')' '{' stmt_list '}'
+
+
+
+while : WHILE '(' expression ')' '{' stmt_list '}'                                                  {printf("WHILE\n");}
+
+
+do_while : DO '{' stmt_list '}' WHILE '(' expression ')'                                          {printf("DO WHILE\n");}
+
+for_initialization : var_initialization
+                   | var_assign
+                   ;
+
+for_step : var_assign
+         | expression
+         ;
+
+for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'                     {printf("FOR\n");}
 
 /* type_declaration : STRUCT ID '{' var_declaration_list '}' */
 

@@ -11,7 +11,7 @@
 [ \r?\n\t]             ;
 
 "func"                 {return(FUNCTION);}
-"retorne"              {printf("RETURN\n");}
+"retorne"              {return(RETURN);}
 "novo"                 {return(NEW);}
 "liberar"              {printf("FREE\n");}
 "adicionar"            {printf("ADD\n");}
@@ -21,13 +21,13 @@
 "senao"                {return(ELSE);}
 "escolha"              {printf("SWITCH\n");}
 "padrao"               {printf("DEFAULT\n");}
-"pare"                 {printf("BREAK\n");}
-"repita"               {printf("FOR\n");}
+"pare"                 {return(BREAK);}
+"repita"               {return(FOR);}
 "continue"             {printf("CONTINUE\n");}
-"execute"              {printf("DO\n");}
+"execute"              {return(DO);}
 "entrada"              {printf("IN\n");}
 "saida"                {printf("OUT\n");}
-"enquanto"             {printf("WHILE\n");}
+"enquanto"             {return(WHILE);}
 "const"                {printf("CONST\n");}
 
 "Lista"                {return(LIST);}
