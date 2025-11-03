@@ -17,8 +17,18 @@ vazio func teste(){
     #var_assign_test /= "&";
 
     #var_assign_test = 2 == 2 || (2 == 2 && 2 == 2);
+        se (4==3){
+            se (4==3) {
+                b = 4;
+            }
+            
+            
+        }
+        senao{
+                b = 3;
+            } 
+        
 
-    var_assign_test = 2 + (2 + func_call_teste());
     
     #logico func isAlive2(texto player,texto player){
      #   int teste3;

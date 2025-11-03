@@ -18,7 +18,7 @@ extern char * yytext;
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
-%token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE 
+%token INTEGER LIST STRUCT FLOAT STRING VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF
 
 %start prog
 
@@ -147,16 +147,16 @@ args : args ',' expression
      |
 ;
 
-if : IF '(' expression ')' '{' stmt_list '}' if_complement
+if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          {printf("IF \n");} 
 ;
 
-if_complement : ELSE '{' stmt_list '}'
-              | else_if
-              | else_if ELSE '{' stmt_list '}'
+if_complement : ELSE '{' stmt_list '}'                                                              {printf("ELSE \n");} 
+              | else_if                                                                             {printf("ELSE IF \n");}
+              | else_if ELSE '{' stmt_list '}'                                                      {printf("ELSE IF COM ELSE \n");}
               |
 
-else_if : ELSE IF '(' expression ')' '{' stmt_list '}' else_if
-        | ELSE IF '(' expression ')' '{' stmt_list '}'
+else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
+        | ELSE_IF '(' expression ')' '{' stmt_list '}'
 
 /* type_declaration : STRUCT ID '{' var_declaration_list '}' */
 
