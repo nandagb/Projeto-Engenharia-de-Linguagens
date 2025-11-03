@@ -25,8 +25,8 @@
 "repita"               {return(FOR);}
 "continue"             {printf("CONTINUE\n");}
 "execute"              {return(DO);}
-"entrada"              {printf("IN\n");}
-"saida"                {printf("OUT\n");}
+"entrada"              {return(INPUT);}
+"saida"                {return(OUTPUT);}
 "enquanto"             {return(WHILE);}
 "const"                {printf("CONST\n");}
 

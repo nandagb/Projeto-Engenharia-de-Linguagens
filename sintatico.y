@@ -18,7 +18,7 @@ extern char * yytext;
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
-%token INTEGER LIST STRUCT WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF
+%token INTEGER LIST STRUCT WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT
 
 %start prog
 
@@ -41,7 +41,9 @@ stmt : general_stmt ';'                                                         
      | while
      | do_while ';'
      | for
-     | expression ';'                                                       
+     | expression ';'         
+     /* | read ';' */
+     | write ';'
 ;
 
 
@@ -151,6 +153,7 @@ unary : ID UNARY_SUM                                                            
       | BOOL_LITERAL                                                                               {/*printf("UNARY - BOOL LITERAL\n");*/} 
       | STRING_LITERAL                                                                             {/*printf("UNARY - STRING LITERAL\n");*/} 
       | func_call                                                                                  {printf("UNARY - FUNC CALL\n");} 
+      | read
 ; 
 
 func_call: ID '(' args ')'                                                                         {printf("FUNC CALL\n");} 
@@ -188,6 +191,16 @@ for_step : var_assign
          ;
 
 for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'                     {printf("FOR\n");}
+
+read : INPUT '(' input_args ')'                                                                        {printf("INPUT\n");}
+;
+
+write : OUTPUT '(' expression ')'                                                                      {printf("OUTPUT\n");}
+;
+
+input_args :                                                                                           {/*printf("\n")*/}
+           | STRING_LITERAL                                                                            {/*printf("\n")*/}
+;
 
 /* type_declaration : STRUCT ID '{' var_declaration_list '}' */
 
