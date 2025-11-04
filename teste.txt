@@ -1,36 +1,43 @@
-#real ira2;
-#Registro aluno = novo Registro{
-#    texto nome,
-#    int matricula,
-#    real ira
-#};
-#Lista<int> lista = novo Lista<int>();
-#Lista<int> lista;
-
-vazio func teste(){
-    #var_assign_test = 2 + 3;
-    #var_assign_test = 2 + (2 + 2);
-
-    #var_assign_test += "&";
-    #var_assign_test -= "&";
-    #var_assign_test *= "&";
-    #var_assign_test /= "&";
-
-    #var_assign_test = 2 == 2 || (2 == 2 && 2 == 2);
-        se (4==3){
-            se (4==3) {
-                b = 4;
-            }
-            
-            
-        }
-        senao{
-                b = 3;
-            } 
-        
-
+vazio func testarSwitch() {
     
-    #logico func isAlive2(texto player,texto player){
-     #   int teste3;
-    #}
+    int dia = 3;
+
+    saida("Teste 1:");
+    escolha (dia) {
+        caso 1:
+            saida("Segunda");
+            pare;
+        caso 2:
+            saida("Terca");
+            pare;
+        caso 3:
+            saida("Quarta");
+            pare;
+        padrao:
+            saida("Outro dia");
+    }
+
+    int valor = 1;
+    saida("Teste 2:");
+    escolha (valor) {
+        caso 1:
+            saida("Caso 1");
+        caso 2:
+            saida("Caso 2");
+            pare;
+        caso 3:
+            saida("Caso 3");
+            pare;
+    }
+
+    int x = 10;
+    saida("Teste 3:");
+    escolha (x) {
+        caso 10:
+            saida("Dez");
+            pare;
+        caso 20:
+            saida("Vinte");
+            pare;
+    }
 }

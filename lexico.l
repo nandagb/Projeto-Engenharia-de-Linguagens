@@ -19,8 +19,9 @@
 "se"                   {return(IF);}
 "senao se"             {return(ELSE_IF);}
 "senao"                {return(ELSE);}
-"escolha"              {printf("SWITCH\n");}
-"padrao"               {printf("DEFAULT\n");}
+"escolha"              {return(SWITCH);}
+"caso"                 {return(CASE);}
+"padrao"               {return(DEFAULT);}
 "pare"                 {return(BREAK);}
 "repita"               {return(FOR);}
 "continue"             {printf("CONTINUE\n");}
@@ -69,7 +70,7 @@
 "*"                    { return(yytext[0]); }
 ">"                    { return(yytext[0]); }
 "<"                    { return(yytext[0]); }
-":"                    { printf(":\n"); }
+":"                    { return(yytext[0]); }
 “%”                    { return'%'; }
 
 "verdadeiro"             { yylval.sValue = strdup(yytext); return(BOOL_LITERAL);}

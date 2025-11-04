@@ -18,7 +18,7 @@ extern char * yytext;
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
-%token INTEGER LIST STRUCT WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT
+%token INTEGER LIST STRUCT WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT
 
 %start prog
 
@@ -44,6 +44,7 @@ stmt : general_stmt ';'                                                         
      | expression ';'         
      /* | read ';' */
      | write ';'
+     | switch
 ;
 
 
@@ -175,7 +176,16 @@ if_complement : ELSE '{' stmt_list '}'                                          
 else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
         | ELSE_IF '(' expression ')' '{' stmt_list '}'
 
+switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'                                      {printf("SWITCH COM DEFAULT \n");}
+       | SWITCH '(' ID ')' '{' cases '}'                                                            {printf("SWITCH SEM DEFAULT \n");}
+;
 
+cases : cases case                                                                        
+      | case
+;
+
+case : CASE expression ':' stmt_list                                                                {printf("CASE \n");}
+;
 
 while : WHILE '(' expression ')' '{' stmt_list '}'                                                  {printf("WHILE\n");}
 
