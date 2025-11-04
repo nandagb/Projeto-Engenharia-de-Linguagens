@@ -44,6 +44,7 @@ stmt : general_stmt ';'                                                         
      | expression ';'         
      /* | read ';' */
      | write ';'
+     | struct_attr_assign ';'
      | switch
 ;
 
@@ -68,17 +69,18 @@ general_stmt_list : general_stmt ';'
 ;
 
 params_list : 
-            | var_declaration_list {printf("PARAM LISTA\n");}
+            | var_declaration_list                                                                 {printf("PARAM LISTA\n");}
 ;
 
 var_initialization : primitive_type ID '=' expression                                              {printf("VAR INITIALIZATION - %s\n", $2);}
 
 var_declaration : primitive_type ID                                                                {printf("VAR DECLARATION - %s\n", $2);}
                 | list_declaration                                                                 {/*printf("LIST DECLARATION\n");*/}
+                | ID ID                                                                            {/*printf("VAR DECLARATION - ID ID\n");*/}
 ;
 
 var_declaration_list : var_declaration                                                             {printf("VAR DECLARATION LIST\n");}
-                     | var_declaration ',' var_declaration_list                                    {/*printf("LIST DECLARATION\n");*/}
+                     | var_declaration_list ',' var_declaration                                      {/*printf("LIST DECLARATION\n");*/}
 ;
 
 list_initialization : list_declaration '=' NEW LIST '<' primitive_type '>' '(' ')'                 {/*printf("LIST INITIALIZATION\n");*/}
@@ -104,8 +106,15 @@ primitive_type : INTEGER
      | BOOLEAN
 ;
 
-struct_declaration: STRUCT ID '=' NEW STRUCT '{' var_declaration_list '}'                       {printf("INICIALIZAÇÃO DE REGISTRO\n");}
+struct_declaration: STRUCT ID '=' '{' var_declaration_list '}'                                     {printf("INICIALIZAÇÃO DE REGISTRO\n");}
 ;	
+
+struct_attr_access: ID '.' ID
+                  | struct_attr_access '.' ID                                                      {printf("struct_attr_access - RECURSIVO\n");}
+;
+
+struct_attr_assign: struct_attr_access '=' expression
+;
 
 var_assign : ID '=' expression                                                                     {printf("VAR_ASSIGN\n");}
            | ID composite_assign_operator expression                                               {printf("VAR_ASSIGN WITH OPERATOR\n");}

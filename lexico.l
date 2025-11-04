@@ -53,7 +53,7 @@
 "*="                   { return(TIMES_ASSIGN); }
 "/="                   { return(DIVISION_ASSIGN); }
 
-"."                    { printf(".\n"); }
+"."                    { return(yytext[0]); }
 "("                    { return(yytext[0]); }
 ")"                    { return(yytext[0]); }
 "{"                    { return(yytext[0]); }

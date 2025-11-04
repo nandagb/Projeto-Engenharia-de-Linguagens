@@ -1,43 +1,12 @@
-vazio func testarSwitch() {
-    
-    int dia = 3;
+vazio func main() {
+    Registro reg = {
+        int cpf,
+        texto nome,
+        reg2 r
+    };
 
-    saida("Teste 1:");
-    escolha (dia) {
-        caso 1:
-            saida("Segunda");
-            pare;
-        caso 2:
-            saida("Terca");
-            pare;
-        caso 3:
-            saida("Quarta");
-            pare;
-        padrao:
-            saida("Outro dia");
-    }
-
-    int valor = 1;
-    saida("Teste 2:");
-    escolha (valor) {
-        caso 1:
-            saida("Caso 1");
-        caso 2:
-            saida("Caso 2");
-            pare;
-        caso 3:
-            saida("Caso 3");
-            pare;
-    }
-
-    int x = 10;
-    saida("Teste 3:");
-    escolha (x) {
-        caso 10:
-            saida("Dez");
-            pare;
-        caso 20:
-            saida("Vinte");
-            pare;
-    }
+    reg r;
+    r.cpf = "valor";
+    r.nome = "oi";
+    r.r.cpf = 1312321;
 }
