@@ -18,7 +18,7 @@ extern char * yytext;
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
-%token INTEGER LIST STRUCT WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT
+%token INTEGER LIST STRUCT CONTINUE WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT
 
 %start prog
 
@@ -38,6 +38,7 @@ stmt : general_stmt ';'                                                         
      | if
      | return ';'
      | BREAK ';'                                                                                  {printf("BREAK\n");}
+     | CONTINUE ';'                                                                               {printf("CONTINUE\n");}
      | while
      | do_while ';'
      | for

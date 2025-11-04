@@ -5,6 +5,7 @@ vazio func main() {
         reg2 r
     };
 
+    continue;
     reg r;
     r.cpf = "valor";
     r.nome = "oi";

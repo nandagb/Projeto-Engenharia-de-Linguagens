@@ -24,7 +24,7 @@
 "padrao"               {return(DEFAULT);}
 "pare"                 {return(BREAK);}
 "repita"               {return(FOR);}
-"continue"             {printf("CONTINUE\n");}
+"continue"             {return(CONTINUE);}
 "execute"              {return(DO);}
 "entrada"              {return(INPUT);}
 "saida"                {return(OUTPUT);}
