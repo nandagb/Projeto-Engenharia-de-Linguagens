@@ -31,9 +31,10 @@ stmt_list : stmt
             | stmt_list stmt                                                                      {/*printf("STATEMENT\n");*/}   
 ;
 
-stmt : general_stmt ';'                                                                           {/*printf("STATEMENT\n");*/}
+stmt : general_stmt ';' 
+     | access_assign ';'                                                                           {/*printf("STATEMENT\n");*/}
      | var_assign ';'                                                                     
-     | list_assign ';'                                                                            {/*printf("ID\n");*/}
+     | list_assign ';'                                                                           {/*printf("ID\n");*/}
      | func_declaration
      | if
      | return ';'
@@ -45,7 +46,7 @@ stmt : general_stmt ';'                                                         
      | expression ';'         
      /* | read ';' */
      | write ';'
-     | struct_attr_assign ';'
+     /* | struct_attr_assign ';' */
      | switch
 ;
 
@@ -84,19 +85,40 @@ var_declaration_list : var_declaration                                          
                      | var_declaration_list ',' var_declaration                                      {/*printf("LIST DECLARATION\n");*/}
 ;
 
-list_initialization : list_declaration '=' NEW LIST '<' primitive_type '>' '(' ')'                 {/*printf("LIST INITIALIZATION\n");*/}
-                    | list_declaration '=' NEW LIST '<' primitive_type '>' '(' ID ')'              {/*printf("LIST INITIALIZATION FROM ANOTHER LIST (NEW COPY)\n");*/}
+
+list_declaration : LIST '<' list_types '>' ID
 ;
 
-list_assign : ID '=' NEW LIST '<' primitive_type '>' '(' ')'                                       {/*printf("LIST ASSIGN\n");*/}
-            | ID '=' NEW LIST '<' primitive_type '>' '(' ID ')'                                    {/*printf("LIST ASSIGN FROM ANOTHER LIST (NEW COPY)\n");*/}
+list_types : primitive_type
+           | ID
+           | LIST '<' list_types '>'
+           
 ;
 
-list_declaration : LIST '<' primitive_type '>' ID
+list_initialization : list_declaration '=' NEW LIST '<' '>' '(' ')'                                  { /* printf("LIST INITIALIZATION\n"); */ }
+                    | list_declaration '=' NEW LIST '<' '>' '(' ID ')'                               { /* printf("LIST INITIALIZATION FROM ANOTHER LIST (NEW COPY)\n"); */ }
+;
+
+list_assign : ID '=' NEW LIST '<' '>' '(' ')'                                                { /* printf("LIST ASSIGN\n"); */ }
+            | ID '=' NEW LIST '<' '>' '(' ID ')'                                             { /* printf("LIST ASSIGN FROM ANOTHER LIST (NEW COPY)\n"); */ }
+;
+
+access_assign : access '=' expression                                                          { /* printf("ACCESS ASSIGN\n"); */ }
+;
+
+access : ID access_suffix_list
+;
+
+access_suffix_list : access_suffix
+                   | access_suffix_list access_suffix
+;
+
+access_suffix : '[' expression ']'
+              | '.' ID
 ;
 
 type : primitive_type
-     | LIST
+     | LIST '<' list_types '>'
      | STRUCT
 ;
 
@@ -165,6 +187,7 @@ unary : ID UNARY_SUM                                                            
       | STRING_LITERAL                                                                             {/*printf("UNARY - STRING LITERAL\n");*/} 
       | func_call                                                                                  {printf("UNARY - FUNC CALL\n");} 
       | read
+      | access
 ; 
 
 func_call: ID '(' args ')'                                                                         {printf("FUNC CALL\n");} 
