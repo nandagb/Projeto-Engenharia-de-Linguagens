@@ -165,7 +165,7 @@ vazio func main() {
     logico a = teste[0];
     teste[1] = a;
 
-    Lista<reg> outro_teste = Lista<>();
+    Lista<reg> outro_teste = novo Lista<>();
     teste[0].cpf = a;
     teste[1].lista[0].cpf = a;
     r.lista[0] = a;
