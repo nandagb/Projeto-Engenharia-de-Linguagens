@@ -129,6 +129,14 @@ access_suffix : '[' expression ']'
               | '.' ID
 ;
 
+int_literal : INT_LITERAL
+            | '-' INT_LITERAL
+;
+
+float_literal : FLOAT_LITERAL
+              | '-'FLOAT_LITERAL
+;
+
 type : primitive_type
      | LIST '<' list_types '>'
      | STRUCT
@@ -186,8 +194,8 @@ unary : ID UNARY_SUM                                                            
       | ID UNARY_SUBTRACTION                                                                       {/* printf("UNARY -\n");*/}
       | '(' expression ')'                                                                         {/* printf("UNARY - EXPRESSION\n");*/}
       | ID                                                                                         {/*printf("UNARY - ID\n");*/} 
-      | INT_LITERAL                                                                                {/*printf("UNARY - INT LITERAL\n");*/} 
-      | FLOAT_LITERAL                                                                              {/*printf("UNARY - FLOAT LITERAL\n");*/} 
+      | int_literal                                                                                {/*printf("UNARY - INT LITERAL\n");*/} 
+      | float_literal                                                                              {/*printf("UNARY - FLOAT LITERAL\n");*/} 
       | BOOL_LITERAL                                                                               {/*printf("UNARY - BOOL LITERAL\n");*/} 
       | STRING_LITERAL                                                                             {/*printf("UNARY - STRING LITERAL\n");*/} 
       | func_call                                                                                  {/*printf("UNARY - FUNC CALL\n");*/} 
