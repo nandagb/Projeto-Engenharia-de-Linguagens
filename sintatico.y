@@ -23,8 +23,12 @@ extern char * yytext;
 %start prog
 
 %%
-prog : func_declaration
-     | general_stmt_list func_declaration                                                         {printf("PROGRAMA\n");}
+prog : func_declaration_list
+     | general_stmt_list func_declaration_list                                                         {/*printf("PROGRAMA\n");*/}
+;
+
+func_declaration_list: func_declaration
+                     | func_declaration_list func_declaration
 ;
 
 stmt_list : stmt                                                                                   
