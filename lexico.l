@@ -14,8 +14,8 @@
 "retorne"              {return(RETURN);}
 "novo"                 {return(NEW);}
 "liberar"              {printf("FREE\n");}
-"adicionar"            {printf("ADD\n");}
-"remover"              {printf("REMOVE\n");}
+"adicionar"            {return(ADD);}
+"remover"              {return(REMOVE);}
 "se"                   {return(IF);}
 "senao se"             {return(ELSE_IF);}
 "senao"                {return(ELSE);}

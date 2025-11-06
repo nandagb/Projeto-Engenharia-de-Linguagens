@@ -18,7 +18,7 @@ extern char * yytext;
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
-%token INTEGER LIST STRUCT CONTINUE WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT
+%token INTEGER LIST STRUCT CONTINUE WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT ADD REMOVE
 
 %start prog
 
@@ -48,6 +48,8 @@ stmt : general_stmt ';'
      | write ';'
      /* | struct_attr_assign ';' */
      | switch
+     | list_push ';'
+     | list_remove ';'
 ;
 
 
@@ -103,10 +105,18 @@ list_assign : ID '=' NEW LIST '<' '>' '(' ')'                                   
             | ID '=' NEW LIST '<' '>' '(' ID ')'                                             { /* printf("LIST ASSIGN FROM ANOTHER LIST (NEW COPY)\n"); */ }
 ;
 
-access_assign : access '=' expression                                                          { /* printf("ACCESS ASSIGN\n"); */ }
+list_push: ID access_suffix_list '.' ADD '(' expression ')'                                                 {}
+         | ID '.' ADD '(' expression ')'                                                 {}
 ;
 
-access : ID access_suffix_list
+list_remove: ID access_suffix_list '.' REMOVE '(' ')'                                                      {}
+           | ID '.' REMOVE '(' ')'                                                      {}
+;
+
+access_assign : access '=' expression                                                          {  printf("ACCESS ASSIGN\n");  }
+;
+
+access : ID access_suffix_list                                                                 { /* printf("ACCESS TO LIST POSITION\n"); */ }
 ;
 
 access_suffix_list : access_suffix
@@ -144,7 +154,7 @@ composite_assign_operator : SUM_ASSIGN                                          
 
 expression : expression AND comparison_expression                                                  {printf("EXPRESSION - AND\n");} 
            | expression OR comparison_expression                                                   {printf("EXPRESSION - OR\n");} 
-           | comparison_expression                                                                 {printf("EXPRESSION - COMPOSITE\n");}
+           | comparison_expression                                                                 {/*printf("EXPRESSION - COMPOSITE\n");*/}
 ;
 
 comparison_expression : comparison_expression EQUALS relation_expression                           {/*printf("COMPARISON_EXPRESSION - EQUALS\n");*/}
