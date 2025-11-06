@@ -132,13 +132,6 @@ primitive_type : INTEGER
 struct_declaration: STRUCT ID '=' '{' var_declaration_list '}'                                     {printf("INICIALIZAÇÃO DE REGISTRO\n");}
 ;	
 
-struct_attr_access: ID '.' ID
-                  | struct_attr_access '.' ID                                                      {printf("struct_attr_access - RECURSIVO\n");}
-;
-
-struct_attr_assign: struct_attr_access '=' expression
-;
-
 var_assign : ID '=' expression                                                                     {printf("VAR_ASSIGN\n");}
            | ID composite_assign_operator expression                                               {printf("VAR_ASSIGN WITH OPERATOR\n");}
 ;
