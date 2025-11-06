@@ -27,7 +27,7 @@ prog : func_declaration_list
      | general_stmt_list func_declaration_list                                                         {/*printf("PROGRAMA\n");*/}
 ;
 
-func_declaration_list: func_declaration
+func_declaration_list : func_declaration
                      | func_declaration_list func_declaration
 ;
 
@@ -36,14 +36,14 @@ stmt_list : stmt
 ;
 
 stmt : general_stmt ';' 
-     | access_assign ';'                                                                           {/*printf("STATEMENT\n");*/}
+     | access_assign ';'                                                                          {/*printf("STATEMENT\n");*/}
      | var_assign ';'                                                                     
-     | list_assign ';'                                                                           {/*printf("ID\n");*/}
+     | list_assign ';'                                                                            {/*printf("ID\n");*/}
      | func_declaration
      | if
      | return ';'
-     | BREAK ';'                                                                                  {printf("BREAK\n");}
-     | CONTINUE ';'                                                                               {printf("CONTINUE\n");}
+     | BREAK ';'                                                                                  {/*printf("BREAK\n");*/}
+     | CONTINUE ';'                                                                               {/*printf("CONTINUE\n");*/}
      | while
      | do_while ';'
      | for
@@ -58,69 +58,67 @@ stmt : general_stmt ';'
 
 
 return : RETURN 
-       | RETURN expression                                                                        {printf("RETURN\n");}
-       ;
-
-
-func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'                         {printf("FUNÇÃO\n");}
+       | RETURN expression                                                                        {/*printf("RETURN\n");*/}
 ;
 
-general_stmt : var_declaration                                                                    {printf("STATEMENT GERAL - var declaration\n");}
-             | list_initialization                                                                        {printf("STATEMENT GERAL - list initialization\n");}
+
+func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'                         {/*printf("FUNÇÃO\n");*/}
+;
+
+general_stmt : var_declaration                                                                    {/*printf("STATEMENT GERAL - var declaration\n");*/}
+             | list_initialization                                                                {/*printf("STATEMENT GERAL - list initialization\n");*/}
              | struct_declaration
              | var_initialization
-             /* | type_declaration */
 ;
 
 general_stmt_list : general_stmt ';'
-                  | general_stmt_list general_stmt ';'                                             {/*printf("STATEMENT GERAL LISTA\n");*/}
+                  | general_stmt_list general_stmt ';'                                            {/*printf("STATEMENT GERAL LISTA\n");*/}
 ;
 
 params_list : 
-            | var_declaration_list                                                                 {printf("PARAM LISTA\n");}
+            | var_declaration_list                                                                {/*printf("PARAM LISTA\n");*/}
 ;
 
-var_initialization : primitive_type ID '=' expression                                              {printf("VAR INITIALIZATION - %s\n", $2);}
+var_initialization : primitive_type ID '=' expression                                             {/*printf("VAR INITIALIZATION - %s\n", $2);*/}
 
-var_declaration : primitive_type ID                                                                {printf("VAR DECLARATION - %s\n", $2);}
-                | list_declaration                                                                 {/*printf("LIST DECLARATION\n");*/}
-                | ID ID                                                                            {/*printf("VAR DECLARATION - ID ID\n");*/}
+var_declaration : primitive_type ID                                                               {/*printf("VAR DECLARATION - %s\n", $2);*/}
+                | list_declaration                                                                {/*printf("LIST DECLARATION\n");*/}
+                | ID ID                                                                           {/*printf("VAR DECLARATION - ID ID\n");*/}
 ;
 
-var_declaration_list : var_declaration                                                             {printf("VAR DECLARATION LIST\n");}
-                     | var_declaration_list ',' var_declaration                                      {/*printf("LIST DECLARATION\n");*/}
+var_declaration_list : var_declaration                                                            {/*printf("VAR DECLARATION LIST\n");*/}
+                     | var_declaration_list ',' var_declaration                                   {/*printf("LIST DECLARATION\n");*/}
 ;
 
 
-list_declaration : LIST '<' list_types '>' ID
+list_declaration : LIST '<' list_types '>' ID                                                     {}
 ;
 
-list_types : primitive_type
-           | ID
-           | LIST '<' list_types '>'
-           
+list_types : primitive_type                                                                       {}
+           | ID                                                                                   {}
+           | LIST '<' list_types '>'                                                              {}
 ;
 
-list_initialization : list_declaration '=' NEW LIST '<' '>' '(' ')'                                  { /* printf("LIST INITIALIZATION\n"); */ }
-                    | list_declaration '=' NEW LIST '<' '>' '(' ID ')'                               { /* printf("LIST INITIALIZATION FROM ANOTHER LIST (NEW COPY)\n"); */ }
+list_initialization : list_declaration '=' NEW LIST '<' '>' '(' ')'                               { /* printf("LIST INITIALIZATION\n"); */ }
+                    | list_declaration '=' NEW LIST '<' '>' '(' ID ')'                            { /* printf("LIST INITIALIZATION FROM ANOTHER LIST (NEW COPY)\n"); */ }
 ;
 
-list_assign : ID '=' NEW LIST '<' '>' '(' ')'                                                { /* printf("LIST ASSIGN\n"); */ }
-            | ID '=' NEW LIST '<' '>' '(' ID ')'                                             { /* printf("LIST ASSIGN FROM ANOTHER LIST (NEW COPY)\n"); */ }
+list_assign : ID '=' NEW LIST '<' '>' '(' ')'                                                     { /* printf("LIST ASSIGN\n"); */ }
+            | ID '=' NEW LIST '<' '>' '(' ID ')'                                                  { /* printf("LIST ASSIGN FROM ANOTHER LIST (NEW COPY)\n"); */ }
 ;
 
-list_push: ID access_suffix_list '.' ADD '(' expression ')'                                                 {}
-         | ID '.' ADD '(' expression ')'                                                 {}
+list_push: ID access_suffix_list '.' ADD '(' expression ')'                                       {}
+         | ID '.' ADD '(' expression ')'                                                          {}
 ;
 
-list_remove: ID access_suffix_list '.' REMOVE '(' ')'                                                      {}
-           | ID '.' REMOVE '(' ')'                                                      {}
+list_remove: ID access_suffix_list '.' REMOVE '(' ')'                                             {}
+           | ID '.' REMOVE '(' ')'                                                                {}
 ;
 
-access_assign : access '=' expression                                                          {  printf("ACCESS ASSIGN\n");  }
+access_assign : access '=' expression                                                             {/*  printf("ACCESS ASSIGN\n");  */}
 ;
 
-access : ID access_suffix_list                                                                 { /* printf("ACCESS TO LIST POSITION\n"); */ }
+access : ID access_suffix_list                                                                    { /* printf("ACCESS TO LIST POSITION\n"); */ }
 ;
 
 access_suffix_list : access_suffix
@@ -143,21 +141,21 @@ primitive_type : INTEGER
      | BOOLEAN
 ;
 
-struct_declaration: STRUCT ID '=' '{' var_declaration_list '}'                                     {printf("INICIALIZAÇÃO DE REGISTRO\n");}
+struct_declaration: STRUCT ID '=' '{' var_declaration_list '}'                                     {/*printf("INICIALIZAÇÃO DE REGISTRO\n");*/}
 ;	
 
-var_assign : ID '=' expression                                                                     {printf("VAR_ASSIGN\n");}
-           | ID composite_assign_operator expression                                               {printf("VAR_ASSIGN WITH OPERATOR\n");}
+var_assign : ID '=' expression                                                                     {/*printf("VAR_ASSIGN\n");*/}
+           | ID composite_assign_operator expression                                               {/*printf("VAR_ASSIGN WITH OPERATOR\n");*/}
 ;
 
-composite_assign_operator : SUM_ASSIGN                                                             {printf("SUM_ASSIGN\n");}
-                | SUBTRACTION_ASSIGN                                                               {printf("SUBTRACTION_ASSIGN\n");}
-                | TIMES_ASSIGN                                                                     {printf("TIMES_ASSIGN\n");}
-                | DIVISION_ASSIGN                                                                  {printf("DIVISION_ASSIGN\n");}
+composite_assign_operator : SUM_ASSIGN                                                             {/*printf("SUM_ASSIGN\n");*/}
+                | SUBTRACTION_ASSIGN                                                               {/*printf("SUBTRACTION_ASSIGN\n");*/}
+                | TIMES_ASSIGN                                                                     {/*printf("TIMES_ASSIGN\n");*/}
+                | DIVISION_ASSIGN                                                                  {/*printf("DIVISION_ASSIGN\n");*/}
 ;
 
-expression : expression AND comparison_expression                                                  {printf("EXPRESSION - AND\n");} 
-           | expression OR comparison_expression                                                   {printf("EXPRESSION - OR\n");} 
+expression : expression AND comparison_expression                                                  {/*printf("EXPRESSION - AND\n");*/} 
+           | expression OR comparison_expression                                                   {/*printf("EXPRESSION - OR\n");*/} 
            | comparison_expression                                                                 {/*printf("EXPRESSION - COMPOSITE\n");*/}
 ;
 
@@ -192,12 +190,12 @@ unary : ID UNARY_SUM                                                            
       | FLOAT_LITERAL                                                                              {/*printf("UNARY - FLOAT LITERAL\n");*/} 
       | BOOL_LITERAL                                                                               {/*printf("UNARY - BOOL LITERAL\n");*/} 
       | STRING_LITERAL                                                                             {/*printf("UNARY - STRING LITERAL\n");*/} 
-      | func_call                                                                                  {printf("UNARY - FUNC CALL\n");} 
+      | func_call                                                                                  {/*printf("UNARY - FUNC CALL\n");*/} 
       | read
       | access
 ; 
 
-func_call: ID '(' args ')'                                                                         {printf("FUNC CALL\n");} 
+func_call: ID '(' args ')'                                                                         {/*printf("FUNC CALL\n");*/}
 ;
 
 args : args ',' expression
@@ -205,32 +203,32 @@ args : args ',' expression
      |
 ;
 
-if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          {printf("IF \n");} 
+if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          {/*printf("IF \n");*/} 
 ;
 
-if_complement : ELSE '{' stmt_list '}'                                                              {printf("ELSE \n");} 
-              | else_if                                                                             {printf("ELSE IF \n");}
-              | else_if ELSE '{' stmt_list '}'                                                      {printf("ELSE IF COM ELSE \n");}
+if_complement : ELSE '{' stmt_list '}'                                                              {/*printf("ELSE \n");*/} 
+              | else_if                                                                             {/*printf("ELSE IF \n")*/;}
+              | else_if ELSE '{' stmt_list '}'                                                      {/*printf("ELSE IF COM ELSE \n")*/;}
               |
 
 else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
         | ELSE_IF '(' expression ')' '{' stmt_list '}'
 
-switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'                                      {printf("SWITCH COM DEFAULT \n");}
-       | SWITCH '(' ID ')' '{' cases '}'                                                            {printf("SWITCH SEM DEFAULT \n");}
+switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'                                      {/*printf("SWITCH COM DEFAULT \n");*/}
+       | SWITCH '(' ID ')' '{' cases '}'                                                            {/*printf("SWITCH SEM DEFAULT \n");*/}
 ;
 
 cases : cases case                                                                        
       | case
 ;
 
-case : CASE expression ':' stmt_list                                                                {printf("CASE \n");}
+case : CASE expression ':' stmt_list                                                                {/*printf("CASE \n");*/}
 ;
 
-while : WHILE '(' expression ')' '{' stmt_list '}'                                                  {printf("WHILE\n");}
+while : WHILE '(' expression ')' '{' stmt_list '}'                                                  {/*printf("WHILE\n");*/}
 
 
-do_while : DO '{' stmt_list '}' WHILE '(' expression ')'                                          {printf("DO WHILE\n");}
+do_while : DO '{' stmt_list '}' WHILE '(' expression ')'                                            {/*printf("DO WHILE\n");*/}
 
 for_initialization : var_initialization
                    | var_assign
@@ -240,16 +238,16 @@ for_step : var_assign
          | expression
          ;
 
-for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'                     {printf("FOR\n");}
+for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'                  {/*printf("FOR\n");*/}
 
-read : INPUT '(' input_args ')'                                                                        {printf("INPUT\n");}
+read : INPUT '(' input_args ')'                                                                     {/*printf("INPUT\n");*/}
 ;
 
-write : OUTPUT '(' expression ')'                                                                      {printf("OUTPUT\n");}
+write : OUTPUT '(' expression ')'                                                                   {/*printf("OUTPUT\n");*/}
 ;
 
-input_args :                                                                                           {/*printf("\n")*/}
-           | STRING_LITERAL                                                                            {/*printf("\n")*/}
+input_args :                                                                                        {/*printf("\n")*/}
+           | STRING_LITERAL                                                                         {/*printf("\n")*/}
 ;
 
 /* type_declaration : STRUCT ID '{' var_declaration_list '}' */
