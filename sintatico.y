@@ -192,13 +192,13 @@ factor : factor '*' unary                                                       
  
 unary : ID UNARY_SUM                                                                               {/* printf("UNARY +\n");*/}
       | ID UNARY_SUBTRACTION                                                                       {/* printf("UNARY -\n");*/}
-      | '(' expression ')'                                                                         {/* printf("UNARY - EXPRESSION\n");*/}
-      | ID                                                                                         {/*printf("UNARY - ID\n");*/} 
-      | int_literal                                                                                {/*printf("UNARY - INT LITERAL\n");*/} 
-      | float_literal                                                                              {/*printf("UNARY - FLOAT LITERAL\n");*/} 
-      | BOOL_LITERAL                                                                               {/*printf("UNARY - BOOL LITERAL\n");*/} 
-      | STRING_LITERAL                                                                             {/*printf("UNARY - STRING LITERAL\n");*/} 
-      | func_call                                                                                  {/*printf("UNARY - FUNC CALL\n");*/} 
+      | '(' expression ')'                                                                         {$$ = $1;}
+      | ID                                                                                         {$$ = $1;}}
+      | int_literal                                                                                {$$ = $1;}}
+      | float_literal                                                                              {$$ = $1;}}
+      | BOOL_LITERAL                                                                               {$$ = $1;}}
+      | STRING_LITERAL                                                                             {$$ = $1;}}
+      | func_call                                                                                  {$$ = $1;}}
       | read
       | access
 ; 
@@ -269,4 +269,26 @@ int main (void) {
 int yyerror (char *msg) {
 	fprintf (stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
 	return 0;
+}
+
+char * cat(char ** char_list, int list_size){
+  int tam = 1;
+  char * output;
+
+  for (int i=0; i < list_size; i++){
+     tam = tam + strlen(char_list[i]);
+  }
+
+  output = (char *) malloc(sizeof(char) * tam);
+
+  if (!output){
+    printf("Allocation problem. Closing application...\n");
+    exit(0);
+  }
+
+  for (int i=0; i < list_size; i++){
+     sprintf(output, "%s", char_list[i]);
+  }
+
+  return output;
 }
