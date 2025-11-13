@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "./lib/record.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -13,6 +14,7 @@ extern char * yytext;
      char   cValue; 	/* char value */
      char * sValue;      /* string value */
      /* float type??? */
+     struct record * rec;
 	};
 
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
@@ -20,8 +22,10 @@ extern char * yytext;
 /* %token <iValue>  */
 %token INTEGER LIST STRUCT CONTINUE WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT ADD REMOVE
 
-%start prog
+%type <rec> func_declaration_list general_stmt_list func_declaration stmt_list stmt general_stmt access_assign var_assign list_assign if return while do_while for expression write switch list_push list_remove type params_list var_declaration list_initialization struct_declaration var_initialization var_declaration_list primitive_type list_declaration unary
 
+%start prog
+ 
 %%
 prog : func_declaration_list
      | general_stmt_list func_declaration_list                                                         {/*printf("PROGRAMA\n");*/}
@@ -35,7 +39,7 @@ stmt_list : stmt
             | stmt_list stmt                                                                      {/*printf("STATEMENT\n");*/}   
 ;
 
-stmt : general_stmt ';' 
+stmt : general_stmt ';'  
      | access_assign ';'                                                                          {/*printf("STATEMENT\n");*/}
      | var_assign ';'                                                                     
      | list_assign ';'                                                                            {/*printf("ID\n");*/}
@@ -75,6 +79,7 @@ general_stmt_list : general_stmt ';'
                   | general_stmt_list general_stmt ';'                                            {/*printf("STATEMENT GERAL LISTA\n");*/}
 ;
 
+/* ANALISAR A POSSIBILIDADE DE UTILIZAR UMA LISTA LIGADA PARA LISTA DE PARÂMETROS OU LISTA DE STATEMENTS */
 params_list : 
             | var_declaration_list                                                                {/*printf("PARAM LISTA\n");*/}
 ;
@@ -87,7 +92,12 @@ var_declaration : primitive_type ID                                             
 ;
 
 var_declaration_list : var_declaration                                                            {/*printf("VAR DECLARATION LIST\n");*/}
-                     | var_declaration_list ',' var_declaration                                   {/*printf("LIST DECLARATION\n");*/}
+                     | var_declaration_list ',' var_declaration                                   { char * s = cat($1->code, ", ", $3->code, "", "");
+                                                                                                    freeRecord($1);
+                                                                                                    freeRecord($3);
+                                                                                                    $$ = createRecord(s, "");
+                                                                                                    free(s);                      
+                                                                                                  }
 ;
 
 
@@ -190,17 +200,17 @@ factor : factor '*' unary                                                       
        | unary                                                                                     {/* printf("FACTOR - UNARY\n");*/} 
 ;
  
-unary : ID UNARY_SUM                                                                               {/* printf("UNARY +\n");*/}
-      | ID UNARY_SUBTRACTION                                                                       {/* printf("UNARY -\n");*/}
+unary : ID UNARY_SUM                                                                               {;}
+      | ID UNARY_SUBTRACTION                                                                       {$$ = $1;}
       | '(' expression ')'                                                                         {$$ = $1;}
-      | ID                                                                                         {$$ = $1;}}
-      | int_literal                                                                                {$$ = $1;}}
-      | float_literal                                                                              {$$ = $1;}}
-      | BOOL_LITERAL                                                                               {$$ = $1;}}
-      | STRING_LITERAL                                                                             {$$ = $1;}}
-      | func_call                                                                                  {$$ = $1;}}
-      | read
-      | access
+      | ID                                                                                         {$$ = $1;}
+      | int_literal                                                                                {$$ = createRecord($1, INTEGER); free($1);}
+      | float_literal                                                                              {$$ = createRecord($1, FLOAT); free($1);}
+      | BOOL_LITERAL                                                                               {$$ = createRecord($1, BOOL); free($1);}
+      | STRING_LITERAL                                                                             {$$ = createRecord($1, STRING); free($1);}
+      | func_call                                                                                  {$$ = $1;}
+      | read                                                                                       {}
+      | access                                                                                     {}
 ; 
 
 func_call: ID '(' args ')'                                                                         {/*printf("FUNC CALL\n");*/}
