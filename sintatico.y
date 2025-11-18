@@ -22,7 +22,13 @@ extern char * yytext;
 /* %token <iValue>  */
 %token INTEGER LIST STRUCT CONTINUE WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT ADD REMOVE
 
-%type <rec> func_declaration_list general_stmt_list func_declaration stmt_list stmt general_stmt access_assign var_assign list_assign if return while do_while for expression write switch list_push list_remove type params_list var_declaration list_initialization struct_declaration var_initialization var_declaration_list primitive_type list_declaration unary
+%type <rec> func_declaration_list general_stmt_list func_declaration stmt_list stmt general_stmt access_assign 
+%type <rec> var_assign list_assign if return while do_while for expression write switch list_push list_remove 
+%type <rec> type params_list var_declaration list_initialization struct_declaration var_initialization 
+%type <rec> var_declaration_list primitive_type list_declaration unary access_suffix_list access access_suffix
+%type <rec> int_literal float_literal list_types composite_assign_operator comparison_expression 
+%type <rec> relation_expression arithmatic_expression factor func_call read args if_complement else_if cases
+%type <rec> for_initialization for_step input_args
 
 %start prog
  
@@ -61,8 +67,12 @@ stmt : general_stmt ';'
 ;
 
 
-return : RETURN 
-       | RETURN expression                                                                        {/*printf("RETURN\n");*/}
+return : RETURN                                                                                     {$$ = createRecord("return ", "");}
+       | RETURN expression                                                                          {char * s = cat("return ", $2->code, ";", "", "");
+                                                                                                         freeRecord($2);
+                                                                                                         $$ = createRecord(s, "");
+                                                                                                         free(s);
+                                                                                                    }                                                                     
 ;
 
 
@@ -80,8 +90,8 @@ general_stmt_list : general_stmt ';'
 ;
 
 /* ANALISAR A POSSIBILIDADE DE UTILIZAR UMA LISTA LIGADA PARA LISTA DE PARÂMETROS OU LISTA DE STATEMENTS */
-params_list : 
-            | var_declaration_list                                                                {/*printf("PARAM LISTA\n");*/}
+params_list :                                                    {$$ = createRecord("","")}
+            | var_declaration_list                                                                
 ;
 
 var_initialization : primitive_type ID '=' expression                                             {/*printf("VAR INITIALIZATION - %s\n", $2);*/}
@@ -125,38 +135,57 @@ list_remove: ID access_suffix_list '.' REMOVE '(' ')'                           
            | ID '.' REMOVE '(' ')'                                                                {}
 ;
 
-access_assign : access '=' expression                                                             {/*  printf("ACCESS ASSIGN\n");  */}
+access_assign : access '=' expression                                      {
+                                                                                char * s = cat($1, '=', $3, "");
+                                                                                               freeRecord($1);
+                                                                                               freeRecord($3);
+                                                                                               $$ = createRecord(s, "");
+                                                                                               free(s);
+                                                                           }
 ;
 
-access : ID access_suffix_list                                                                    { /* printf("ACCESS TO LIST POSITION\n"); */ }
+access : ID access_suffix_list                                                                    {$$ = $1;}
 ;
 
 access_suffix_list : access_suffix
                    | access_suffix_list access_suffix
 ;
 
-access_suffix : '[' expression ']'
-              | '.' ID
+// TODO: Verficação do tipo
+access_suffix : '[' expression ']'                                                                
+               { 
+                    char * s = cat("[", $2->code, "]", "");
+                    freeRecord($2);
+                    $$ = createRecord(s, "");
+                    free(s);
+               }
+              | '.' ID                                                                            
+              { 
+                    char * s = cat(".", $2->code, "", "");
+                    freeRecord($2);
+                    $$ = createRecord(s, "");
+                    free(s);
+               }
 ;
 
-int_literal : INT_LITERAL
-            | '-' INT_LITERAL
+int_literal : INT_LITERAL                  {$$ = createRecord("","")}
+            | '-' INT_LITERAL             {$$ = createRecord("","")}
 ;
 
-float_literal : FLOAT_LITERAL
-              | '-'FLOAT_LITERAL
+float_literal : FLOAT_LITERAL                {$$ = createRecord("","")}
+              | '-'FLOAT_LITERAL             {$$ = createRecord("","")}
 ;
 
-type : primitive_type
-     | LIST '<' list_types '>'
-     | STRUCT
+type : primitive_type                      {$$ = createRecord("","")}
+     | LIST '<' list_types '>'               {$$ = createRecord("","")}
+     | STRUCT                                {$$ = createRecord("","")}
 ;
 
-primitive_type : INTEGER
-     | FLOAT
-     | STRING
-     | VOID
-     | BOOLEAN
+primitive_type : INTEGER                    {$$ = createRecord("","")}
+     | FLOAT                                 {$$ = createRecord("","")}
+     | STRING                                {$$ = createRecord("","")}
+     | VOID                                  {$$ = createRecord("","")}
+     | BOOLEAN                               {$$ = createRecord("","")}
 ;
 
 struct_declaration: STRUCT ID '=' '{' var_declaration_list '}'                                     {/*printf("INICIALIZAÇÃO DE REGISTRO\n");*/}
@@ -200,9 +229,12 @@ factor : factor '*' unary                                                       
        | unary                                                                                     {/* printf("FACTOR - UNARY\n");*/} 
 ;
  
-unary : ID UNARY_SUM                                                                               {;}
+unary : ID UNARY_SUM                                                                               {$$ = $1;}
       | ID UNARY_SUBTRACTION                                                                       {$$ = $1;}
-      | '(' expression ')'                                                                         {$$ = $1;}
+      | '(' expression ')'                                                                         { char * s = cat("(", $2->code, ")", "", "");
+                                                                                                    freeRecord($2);
+                                                                                                    $$ = createRecord(s, "");
+                                                                                                    free(s); }
       | ID                                                                                         {$$ = $1;}
       | int_literal                                                                                {$$ = createRecord($1, INTEGER); free($1);}
       | float_literal                                                                              {$$ = createRecord($1, FLOAT); free($1);}
@@ -213,12 +245,12 @@ unary : ID UNARY_SUM                                                            
       | access                                                                                     {}
 ; 
 
-func_call: ID '(' args ')'                                                                         {/*printf("FUNC CALL\n");*/}
+func_call: ID '(' args ')'                                                                         {$$ = createRecord("","")}
 ;
 
 args : args ',' expression
      | expression
-     |
+     |{$$ = createRecord("","")}
 ;
 
 if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          {/*printf("IF \n");*/} 
@@ -227,17 +259,17 @@ if : IF '(' expression ')' '{' stmt_list '}' if_complement                      
 if_complement : ELSE '{' stmt_list '}'                                                              {/*printf("ELSE \n");*/} 
               | else_if                                                                             {/*printf("ELSE IF \n")*/;}
               | else_if ELSE '{' stmt_list '}'                                                      {/*printf("ELSE IF COM ELSE \n")*/;}
-              |
+              |                                                                                     {$$ = createRecord("","")}
 
-else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
-        | ELSE_IF '(' expression ')' '{' stmt_list '}'
+else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'                                      {$$ = createRecord("","")}
+        | ELSE_IF '(' expression ')' '{' stmt_list '}'                                              {$$ = createRecord("","")}
 
 switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'                                      {/*printf("SWITCH COM DEFAULT \n");*/}
        | SWITCH '(' ID ')' '{' cases '}'                                                            {/*printf("SWITCH SEM DEFAULT \n");*/}
 ;
 
 cases : cases case                                                                        
-      | case
+      | case                                                                                         {$$ = createRecord("","")}
 ;
 
 case : CASE expression ':' stmt_list                                                                {/*printf("CASE \n");*/}
@@ -256,16 +288,31 @@ for_step : var_assign
          | expression
          ;
 
-for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'                  {/*printf("FOR\n");*/}
+for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'                  
+     {
+          char * s = cat()
+     }
 
-read : INPUT '(' input_args ')'                                                                     {/*printf("INPUT\n");*/}
+read : INPUT '(' input_args ')'
+          {
+               char * s = cat("scanf", "(", $3->code, ")", "");
+               freeRecord($3);
+               $$ = createRecord(s, "");
+               free(s);
+          }
 ;
 
-write : OUTPUT '(' expression ')'                                                                   {/*printf("OUTPUT\n");*/}
+write : OUTPUT '(' expression ')'                                                                   
+          {
+               char * s = cat("printf", "(", $3->code, ")", "");
+               freeRecord($3);
+               $$ = createRecord(s, "");
+               free(s);
+          }
 ;
 
-input_args :                                                                                        {/*printf("\n")*/}
-           | STRING_LITERAL                                                                         {/*printf("\n")*/}
+input_args :                                                                                        {$$ = createRecord("","")}
+           | STRING_LITERAL                                                                         {$$ = createRecord($1,STRING)}
 ;
 
 /* type_declaration : STRUCT ID '{' var_declaration_list '}' */

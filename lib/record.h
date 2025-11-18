@@ -12,7 +12,7 @@ void freeRecord(record *);
 record * createRecord(char *, char *);
 
 enum type { 
-	INTEGER, FLOAT, STRING, BOOL
+	INTEGER, FLOAT, STRING, BOOL, VOID
 };
 
 #endif
