@@ -6,16 +6,13 @@
 void freeRecord(record * r){
   if (r) {
     if (r->code != NULL) free(r->code);
-	  if (r->opt1 != NULL) free(r->opt1);
+	  if (r->type != NULL) free(r->type);
     free(r);
   }
 }
 
-
-record * createRecord(char * c1, enum type c2){
+record * createRecord(char * c1, type c2){
   record * r = (record *) malloc(sizeof(record));
-
-  
 
   if (!r) {
     printf("Allocation problem. Closing application...\n");

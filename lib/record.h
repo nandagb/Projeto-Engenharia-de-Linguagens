@@ -1,18 +1,19 @@
 #ifndef RECORD
 #define RECORD
 
+typedef enum { 
+	EINTEGER, EFLOAT, ESTRING, EBOOL, EVOID, EUNTYPED
+} type;
+
 struct record {
 	   char * code; /* field for storing the output code */
-	   char * opt1; /* field for another purpose */
+	   type type; /* field for another purpose */
 };
 
 typedef struct record record;
  
 void freeRecord(record *);
-record * createRecord(char *, char *);
-
-enum type { 
-	INTEGER, FLOAT, STRING, BOOL, VOID
-};
+record * createRecord(char *, type);
+record * setRecord(char* str_list[], int list_size);
 
 #endif
