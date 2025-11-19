@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include "./lib/record.h"
+#include "./lib/cat.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -67,12 +68,25 @@ stmt : general_stmt ';'
 ;
 
 
-return : RETURN                                                                                     {$$ = createRecord("return ", "");}
-       | RETURN expression                                                                          {char * s = cat("return ", $2->code, ";", "", "");
-                                                                                                         freeRecord($2);
-                                                                                                         $$ = createRecord(s, "");
-                                                                                                         free(s);
-                                                                                                    }                                                                     
+return : RETURN
+       {
+          $$ = createRecord("return ", EUNTYPED);
+       }
+       | RETURN expression
+       {
+          char * str_list[] = {"return ", $2->code, ";"};
+          int list_size = 3;
+          char * s = cat(str_list, list_size);
+          
+          for(int i = 0; i < list_size; i++){
+               free(str_list[i]);
+          }
+          free(str_list);
+          freeRecord($2);
+          
+          $$ = createRecord(s, EUNTYPED);
+          free(s);
+       }                                                                     
 ;
 
 
@@ -90,8 +104,11 @@ general_stmt_list : general_stmt ';'
 ;
 
 /* ANALISAR A POSSIBILIDADE DE UTILIZAR UMA LISTA LIGADA PARA LISTA DE PARÂMETROS OU LISTA DE STATEMENTS */
-params_list :                                                    {$$ = createRecord("","")}
-            | var_declaration_list                                                                
+params_list :
+            {
+               $$ = createRecord("",EUNTYPED);
+            }
+            | var_declaration_list
 ;
 
 var_initialization : primitive_type ID '=' expression                                             {/*printf("VAR INITIALIZATION - %s\n", $2);*/}
@@ -102,12 +119,22 @@ var_declaration : primitive_type ID                                             
 ;
 
 var_declaration_list : var_declaration                                                            {/*printf("VAR DECLARATION LIST\n");*/}
-                     | var_declaration_list ',' var_declaration                                   { char * s = cat($1->code, ", ", $3->code, "", "");
-                                                                                                    freeRecord($1);
-                                                                                                    freeRecord($3);
-                                                                                                    $$ = createRecord(s, "");
-                                                                                                    free(s);                      
-                                                                                                  }
+                     | var_declaration_list ',' var_declaration
+                     { 
+                         char * str_list[] = {$1->code, ", ", $3->code};
+                         int list_size = 3;
+                         char * s = cat(str_list, list_size);
+                         
+                         for(int i = 0; i < list_size; i++){
+                              free(str_list[i]);
+                         }
+                         free(str_list);
+                         freeRecord($1);
+                         freeRecord($3);
+
+                         $$ = createRecord(s, EUNTYPED);
+                         free(s);
+                     }
 ;
 
 
@@ -135,16 +162,40 @@ list_remove: ID access_suffix_list '.' REMOVE '(' ')'                           
            | ID '.' REMOVE '(' ')'                                                                {}
 ;
 
-access_assign : access '=' expression                                      {
-                                                                                char * s = cat($1, '=', $3, "");
-                                                                                               freeRecord($1);
-                                                                                               freeRecord($3);
-                                                                                               $$ = createRecord(s, "");
-                                                                                               free(s);
-                                                                           }
+access_assign : access '=' expression
+              {
+                    char * str_list[] = {$1->code, "=", $3->code};
+                    int list_size = 3;
+                    char * s = cat(str_list, list_size);
+
+                    for(int i = 0; i < list_size; i++){
+                         free(str_list[i]);
+                    }
+                    free(str_list);
+                    freeRecord($1);
+                    freeRecord($3);
+
+                    $$ = createRecord(s, EUNTYPED);
+                    free(s);
+              }
 ;
 
-access : ID access_suffix_list                                                                    {$$ = $1;}
+access : ID access_suffix_list
+       {
+          char * str_list[] = {$1, $2->code};
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+
+          for(int i = 0; i < list_size; i++){
+               free(str_list[i]);
+          }
+          free(str_list);
+          free($1);
+          freeRecord($2);
+
+          $$ = createRecord(s, EUNTYPED);
+          free(s);
+       }
 ;
 
 access_suffix_list : access_suffix
@@ -152,40 +203,127 @@ access_suffix_list : access_suffix
 ;
 
 // TODO: Verficação do tipo
-access_suffix : '[' expression ']'                                                                
+access_suffix : '[' expression ']'
                { 
-                    char * s = cat("[", $2->code, "]", "");
+                    char * str_list[] = {"[", $2->code, "]"};
+                    int list_size = 3;
+                    char * s = cat(str_list, list_size);
+                    // char * s = cat((char* []){"[", $2->code, "]"}, list_size);
+
+                    for(int i = 0; i < list_size; i++){
+                         free(str_list[i]);
+                    }
+                    free(str_list);
                     freeRecord($2);
-                    $$ = createRecord(s, "");
+                    
+                    $$ = createRecord(s, EUNTYPED);
                     free(s);
                }
               | '.' ID                                                                            
               { 
-                    char * s = cat(".", $2->code, "", "");
-                    freeRecord($2);
-                    $$ = createRecord(s, "");
+                    char * str_list[] = {".", $2, "]"};
+                    int list_size = 2;
+                    char * s = cat(str_list, list_size);
+
+                    for(int i = 0; i < list_size; i++){
+                         free(str_list[i]);
+                    }
+                    free($2);
+
+                    $$ = createRecord(s, EUNTYPED);
                     free(s);
                }
 ;
 
-int_literal : INT_LITERAL                  {$$ = createRecord("","")}
-            | '-' INT_LITERAL             {$$ = createRecord("","")}
+int_literal : INT_LITERAL
+            {
+               $$ = createRecord($1, EINTEGER);
+               free($1);
+            }
+            | '-' INT_LITERAL             
+            {
+               char * str_list[] = {"-", $2};
+               int list_size = 2;
+               char * s = cat(str_list, list_size);
+
+               for(int i = 0; i < list_size; i++){
+                    free(str_list[i]);
+               }
+               free($2);
+
+               $$ = createRecord(s,EINTEGER);
+               free(s);
+            }
 ;
 
-float_literal : FLOAT_LITERAL                {$$ = createRecord("","")}
-              | '-'FLOAT_LITERAL             {$$ = createRecord("","")}
+float_literal : FLOAT_LITERAL
+              {
+                    $$ = createRecord($1, EFLOAT);
+                    free($1);
+              }
+              | '-' FLOAT_LITERAL
+              {
+                    char * str_list[] = {"-", $2};
+                    int list_size = 2;
+                    char * s = cat(str_list, list_size);
+
+                    for(int i = 0; i < list_size; i++){
+                         free(str_list[i]);
+                    }
+                    free($2);
+
+                    $$ = createRecord(s,EFLOAT);
+                    free(s);
+              }
 ;
 
-type : primitive_type                      {$$ = createRecord("","")}
-     | LIST '<' list_types '>'               {$$ = createRecord("","")}
-     | STRUCT                                {$$ = createRecord("","")}
+type : primitive_type
+     {
+          $$ = createRecord($1->code,$1->type);
+          free($1);
+     }
+     | LIST '<' list_types '>'
+     {
+          // ESTA DECLARAÇÃO NÃO VAI FUNCIONAR
+          // TODO: Verficar como faz lista em C
+          char * str_list[] = {"list","<", $3->code, ">"};
+          int list_size = 4;
+          char * s = cat(str_list, list_size);
+
+          for(int i = 0; i < list_size; i++){
+               free(str_list[i]);
+          }
+          free($3);
+
+          $$ = createRecord(s,EUNTYPED);
+          free(s);
+     }
+     | STRUCT                                
+     {
+          $$ = createRecord("struct ",EUNTYPED);
+     }
 ;
 
-primitive_type : INTEGER                    {$$ = createRecord("","")}
-     | FLOAT                                 {$$ = createRecord("","")}
-     | STRING                                {$$ = createRecord("","")}
-     | VOID                                  {$$ = createRecord("","")}
-     | BOOLEAN                               {$$ = createRecord("","")}
+primitive_type : INTEGER
+               {
+                    $$ = createRecord("int ",EINTEGER);
+               }
+               | FLOAT
+               {
+                    $$ = createRecord("float ",EFLOAT);
+               }
+               | STRING
+               {
+                    $$ = createRecord("char * ",ESTRING);
+               }
+               | VOID
+               {
+                    $$ = createRecord("void ",EVOID);
+               }
+               | BOOLEAN
+               {
+                    $$ = createRecord("bool ",EBOOL);
+               }
 ;
 
 struct_declaration: STRUCT ID '=' '{' var_declaration_list '}'                                     {/*printf("INICIALIZAÇÃO DE REGISTRO\n");*/}
@@ -229,28 +367,107 @@ factor : factor '*' unary                                                       
        | unary                                                                                     {/* printf("FACTOR - UNARY\n");*/} 
 ;
  
-unary : ID UNARY_SUM                                                                               {$$ = $1;}
-      | ID UNARY_SUBTRACTION                                                                       {$$ = $1;}
-      | '(' expression ')'                                                                         { char * s = cat("(", $2->code, ")", "", "");
-                                                                                                    freeRecord($2);
-                                                                                                    $$ = createRecord(s, "");
-                                                                                                    free(s); }
-      | ID                                                                                         {$$ = $1;}
-      | int_literal                                                                                {$$ = createRecord($1, INTEGER); free($1);}
-      | float_literal                                                                              {$$ = createRecord($1, FLOAT); free($1);}
-      | BOOL_LITERAL                                                                               {$$ = createRecord($1, BOOL); free($1);}
-      | STRING_LITERAL                                                                             {$$ = createRecord($1, STRING); free($1);}
-      | func_call                                                                                  {$$ = $1;}
-      | read                                                                                       {}
-      | access                                                                                     {}
+unary : ID UNARY_SUM
+      {
+          char * str_list[] = {$1,"++"};
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+
+          for(int i = 0; i < list_size; i++){
+               free(str_list[i]);
+          }
+          free($1);
+
+          $$ = createRecord(s,EUNTYPED);
+          free(s);
+      }
+      | ID UNARY_SUBTRACTION
+      {
+          char * str_list[] = {$1,"--"};
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+
+          for(int i = 0; i < list_size; i++){
+               free(str_list[i]);
+          }
+          free($1);
+
+          $$ = createRecord(s,EUNTYPED);
+          free(s);
+      }
+      | '(' expression ')'
+      {
+          char * str_list[] = {"(", $2->code, ")"};
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+          
+          //TODO: Colocar freeRecord em todos os records
+          for(int i = 0; i < list_size; i++){
+               free(str_list[i]);
+          }
+          freeRecord($2);
+          
+          $$ = createRecord(s, EUNTYPED);
+          free(s); 
+      }
+      | ID
+      {
+          $$ = createRecord($1, EUNTYPED);free($1);
+      }
+      | int_literal
+      {
+          $$ = createRecord($1->code, EINTEGER); freeRecord($1);
+      }
+      | float_literal
+      {
+          $$ = createRecord($1->code, EFLOAT); freeRecord($1);
+      }
+      | BOOL_LITERAL
+      {
+          $$ = createRecord($1, EBOOL); free($1);
+      }
+      | STRING_LITERAL
+      {
+          $$ = createRecord($1, ESTRING); free($1);
+      }
+      | func_call
+      {
+          $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
+      }
+      | read
+      {
+         $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
+      }
+      | access
+      {
+         $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
+      }
 ; 
 
-func_call: ID '(' args ')'                                                                         {$$ = createRecord("","")}
+func_call : ID '(' args ')'
+          {
+               char * str_list[] = {$1, "(", $3->code, ")"};
+               int list_size = 4;
+               char * s = cat(str_list, list_size);
+               
+               //TODO: Colocar freeRecord em todos os records
+               for(int i = 0; i < list_size; i++){
+                    free(str_list[i]);
+               }
+               free($1);
+               freeRecord($3);
+               
+               $$ = createRecord(s, EUNTYPED);
+               free(s);
+          }
 ;
 
 args : args ',' expression
      | expression
-     |{$$ = createRecord("","")}
+     |
+     {
+          $$ = createRecord("", EUNTYPED);
+     }
 ;
 
 if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          {/*printf("IF \n");*/} 
@@ -259,17 +476,58 @@ if : IF '(' expression ')' '{' stmt_list '}' if_complement                      
 if_complement : ELSE '{' stmt_list '}'                                                              {/*printf("ELSE \n");*/} 
               | else_if                                                                             {/*printf("ELSE IF \n")*/;}
               | else_if ELSE '{' stmt_list '}'                                                      {/*printf("ELSE IF COM ELSE \n")*/;}
-              |                                                                                     {$$ = createRecord("","")}
+              |
+              {
+                    $$ = createRecord("",EUNTYPED);
+              }
 
-else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'                                      {$$ = createRecord("","")}
-        | ELSE_IF '(' expression ')' '{' stmt_list '}'                                              {$$ = createRecord("","")}
+else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
+        {
+          // NÃO É PERMITIDO USAR ELSE
+          // Verificar como fazer o else usando goto | Confirmar no documento da atividade
+          char * str_list[] = {$1->code, "else if" "(", $4->code, ")", "{", $7->code, "}"};
+          int list_size = 7;
+          char * s = cat(str_list, list_size);
+          
+          //TODO: Colocar freeRecord em todos os records
+          for(int i = 0; i < list_size; i++){
+               free(str_list[i]);
+          }
+          freeRecord($1);
+          freeRecord($4);
+          freeRecord($7);
+          
+          $$ = createRecord(s, EUNTYPED);
+          free(s);
+        }
+        | ELSE_IF '(' expression ')' '{' stmt_list '}'
+        {
+          // NÃO É PERMITIDO USAR ELSE
+          // Verificar como fazer o else usando goto | Confirmar no documento da atividade
+          char * str_list[] = {"else if" "(", $3->code, ")", "{", $6->code, "}"};
+          int list_size = 6;
+          char * s = cat(str_list, list_size);
+          
+          //TODO: Colocar freeRecord em todos os records
+          for(int i = 0; i < list_size; i++){
+               free(str_list[i]);
+          }
+          freeRecord($3);
+          freeRecord($6);
+          
+          $$ = createRecord(s, EUNTYPED);
+          free(s);
+        }
 
 switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'                                      {/*printf("SWITCH COM DEFAULT \n");*/}
        | SWITCH '(' ID ')' '{' cases '}'                                                            {/*printf("SWITCH SEM DEFAULT \n");*/}
 ;
 
 cases : cases case                                                                        
-      | case                                                                                         {$$ = createRecord("","")}
+      | case                                                                                         
+      {
+          $$ = createRecord("case",EUNTYPED);
+      }
 ;
 
 case : CASE expression ':' stmt_list                                                                {/*printf("CASE \n");*/}
@@ -290,29 +548,66 @@ for_step : var_assign
 
 for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'                  
      {
-          char * s = cat()
+          //VERIFICAR SE É PERTMITIDO USAR O FOR DO C
+          //SE NÃO FOR, ENCONTRAR OUTRA MANEIRA
+          char * str_list[] = {"for" "(", $3->code, ",", $5->code, ",", $7->code, ")", "{", $10->code , "}"};
+          int list_size = 11;
+          char * s = cat(str_list, list_size);
+          
+          //TODO: Colocar freeRecord em todos os records
+          for(int i = 0; i < list_size; i++){
+               free(str_list[i]);
+          }
+          freeRecord($3);
+          freeRecord($5);
+          freeRecord($7);
+          freeRecord($10);
+          
+          $$ = createRecord(s, EUNTYPED);
+          free(s);
      }
 
 read : INPUT '(' input_args ')'
           {
-               char * s = cat("scanf", "(", $3->code, ")", "");
+               char * str_list[] = {"scanf", "(", $3->code, ")"};
+               int list_size = 4;
+               char * s = cat(str_list, list_size);
+               
+               for(int i = 0; i < list_size; i++){
+                    free(str_list[i]);
+               }
                freeRecord($3);
-               $$ = createRecord(s, "");
+
+               $$ = createRecord(s, EUNTYPED);
                free(s);
           }
 ;
 
 write : OUTPUT '(' expression ')'                                                                   
           {
-               char * s = cat("printf", "(", $3->code, ")", "");
+               char * str_list[] = {"printf", "(", $3->code, ")"};
+               int list_size = 4;
+               char * s = cat(str_list, list_size);
+               
+               for(int i = 0; i < list_size; i++){
+                    free(str_list[i]);
+               }
                freeRecord($3);
-               $$ = createRecord(s, "");
+               
+               $$ = createRecord(s, EUNTYPED);
                free(s);
           }
 ;
 
-input_args :                                                                                        {$$ = createRecord("","")}
-           | STRING_LITERAL                                                                         {$$ = createRecord($1,STRING)}
+input_args :
+           {
+               $$ = createRecord("",EUNTYPED);
+           }
+           | STRING_LITERAL
+           {
+               $$ = createRecord($1,STRING);
+               free($1);
+           }
 ;
 
 /* type_declaration : STRUCT ID '{' var_declaration_list '}' */
@@ -326,26 +621,4 @@ int main (void) {
 int yyerror (char *msg) {
 	fprintf (stderr, "%d: %s at '%s'\n", yylineno, msg, yytext);
 	return 0;
-}
-
-char * cat(char ** char_list, int list_size){
-  int tam = 1;
-  char * output;
-
-  for (int i=0; i < list_size; i++){
-     tam = tam + strlen(char_list[i]);
-  }
-
-  output = (char *) malloc(sizeof(char) * tam);
-
-  if (!output){
-    printf("Allocation problem. Closing application...\n");
-    exit(0);
-  }
-
-  for (int i=0; i < list_size; i++){
-     sprintf(output, "%s", char_list[i]);
-  }
-
-  return output;
 }
