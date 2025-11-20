@@ -1,13 +1,13 @@
 all: compilador
 
-compilador: lex.yy.c y.tab.c 
-	gcc lex.yy.c y.tab.c ./lib/record.c -o compiler
+compilador: lex.yy.c sintatico.tab.c 
+	gcc lex.yy.c sintatico.tab.c ./lib/*.c -o parser
 
-lex.yy.c: scanner.l
-	flex scanner.l
+lex.yy.c: lexico.l
+	flex lexico.l
 
-y.tab.c: parser.y  
-	bison parser.y -d -v -o y.tab.c
+sintatico.tab.c: sintatico.y  
+	bison -d -v sintatico.y
 
 clean:
-	rm -rf lex.yy.c y.tab.* compiler output.txt y.output
+	rm -rf lex.yy.c sintatico.tab.* parser output.txt sintatico.output
