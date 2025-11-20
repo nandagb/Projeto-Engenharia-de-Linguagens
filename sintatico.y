@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "./lib/record.h"
 #include "./lib/cat.h"
+#include "./lib/file_gen.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -9,7 +10,6 @@ extern int yylineno;
 extern char * yytext;
 
 %}
-
 %union {
      int    iValue; 	/* integer value */
      char   cValue; 	/* char value */
@@ -23,31 +23,131 @@ extern char * yytext;
 /* %token <iValue>  */
 %token INTEGER LIST STRUCT CONTINUE WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT ADD REMOVE
 
-%type <rec> func_declaration_list general_stmt_list func_declaration stmt_list stmt general_stmt access_assign 
+/* %type <rec> func_declaration_list general_stmt_list func_declaration stmt_list stmt general_stmt access_assign 
 %type <rec> var_assign list_assign if return while do_while for expression write switch list_push list_remove 
 %type <rec> type params_list var_declaration list_initialization struct_declaration var_initialization 
 %type <rec> var_declaration_list primitive_type list_declaration unary access_suffix_list access access_suffix
 %type <rec> int_literal float_literal list_types composite_assign_operator comparison_expression 
 %type <rec> relation_expression arithmatic_expression factor func_call read args if_complement else_if cases
-%type <rec> for_initialization for_step input_args
+%type <rec> for_initialization for_step input_args */
+
+%type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list 
+%type <rec> func_declaration func_declaration_list general_stmt_list type
 
 %start prog
  
 %%
 prog : func_declaration_list
-     | general_stmt_list func_declaration_list                                                         {/*printf("PROGRAMA\n");*/}
+     {
+          gen_file($1->code, "output.c");
+          free($1);
+     }
+     | general_stmt_list func_declaration_list
+     {
+          char * str_list[] = {$1->code, $2->code};
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+          
+          freeRecord($1);
+          freeRecord($2);
+          
+          printf("%s", s);
+          free(s);
+     }
 ;
 
-func_declaration_list : func_declaration
-                     | func_declaration_list func_declaration
+general_stmt   : var_declaration
+               {
+                    $$ = createRecord($1->code, EUNTYPED);
+                    free($1);
+               }
+               | list_initialization                                                                 {/*printf("STATEMENT GERAL - list initialization\n");*/}
+               | struct_declaration
+               | var_initialization
 ;
 
-stmt_list : stmt                                                                                   
-            | stmt_list stmt                                                                      {/*printf("STATEMENT\n");*/}   
+general_stmt_list : general_stmt ';'
+                  | general_stmt_list general_stmt ';'                                            {/*printf("STATEMENT GERAL LISTA\n");*/}
 ;
 
-stmt : general_stmt ';'  
-     | access_assign ';'                                                                          {/*printf("STATEMENT\n");*/}
+func_declaration_list    : func_declaration
+                         {
+                              $$ = createRecord($1->code, EUNTYPED);
+                              free($1);
+                         }
+                         | func_declaration_list func_declaration
+                         {
+                              char * str_list[] = {$1->code, $2->code};
+                              int list_size = 2;
+                              char * s = cat(str_list, list_size);
+                              
+                              freeRecord($1);
+                              freeRecord($2);
+                              
+                              $$ = createRecord(s, EUNTYPED);
+                              free(s);
+                         }
+;
+
+func_declaration    : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'
+                    {
+                         char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{", $8->code, "}"};
+                         int list_size = 8;
+                         char * s = cat(str_list, list_size);
+                         
+                         freeRecord($1);
+                         freeRecord($5);
+                         freeRecord($8);
+                         
+                         $$ = createRecord(s, EUNTYPED);
+                         free(s);
+                    }
+;
+
+stmt_list : stmt
+          {
+               printf("A1: %s\n", $1->code);
+               $$ = createRecord($1->code, EUNTYPED);
+               free($1);
+          }
+          | stmt_list stmt
+          {
+               char * str_list[] = {$1->code, $2->code};
+               int list_size = 2;
+               char * s = cat(str_list, list_size);
+               
+               freeRecord($1);
+               freeRecord($2);
+               
+               $$ = createRecord(s, EUNTYPED);
+               free(s);
+          }
+;
+
+stmt : general_stmt ';'
+     {
+          printf("A2: %s\n", $1->code);
+          char * str_list[] = {$1->code, ";"};
+          
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+          printf("A3: %s\n", s);
+          freeRecord($1);
+          
+          $$ = createRecord(s, EUNTYPED);
+          free(s);
+     }
+     | access_assign ';'
+     /* {
+          char * str_list[] = {$1->code, ";"};
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+          
+          freeRecord($1);
+          
+          $$ = createRecord(s, EUNTYPED);
+          free(s);
+     } */
      | var_assign ';'                                                                     
      | list_assign ';'                                                                            {/*printf("ID\n");*/}
      | func_declaration
@@ -69,38 +169,25 @@ stmt : general_stmt ';'
 
 
 return : RETURN
-       {
+       /* {
           $$ = createRecord("return ", EUNTYPED);
-       }
+       } */
        | RETURN expression
-       {
-          char * str_list[] = {"return ", $2->code, ";"};
-          int list_size = 3;
+       /* {
+          char * str_list[] = {"return ", $2->code};
+          int list_size = 2;
           char * s = cat(str_list, list_size);
           
-          for(int i = 0; i < list_size; i++){
-               free(str_list[i]);
-          }
-          free(str_list);
+          // Free só é necessário quando se é utilizado malloc(), calloc() e realloc(), ou seja, memória alocada dinamicamente.
+          // for(int i = 0; i < list_size; i++){
+          //      free(str_list[i]);
+          // }
+          // free(str_list);
           freeRecord($2);
           
           $$ = createRecord(s, EUNTYPED);
           free(s);
-       }                                                                     
-;
-
-
-func_declaration : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'                         {/*printf("FUNÇÃO\n");*/}
-;
-
-general_stmt : var_declaration                                                                    {/*printf("STATEMENT GERAL - var declaration\n");*/}
-             | list_initialization                                                                {/*printf("STATEMENT GERAL - list initialization\n");*/}
-             | struct_declaration
-             | var_initialization
-;
-
-general_stmt_list : general_stmt ';'
-                  | general_stmt_list general_stmt ';'                                            {/*printf("STATEMENT GERAL LISTA\n");*/}
+       }                                                                      */
 ;
 
 /* ANALISAR A POSSIBILIDADE DE UTILIZAR UMA LISTA LIGADA PARA LISTA DE PARÂMETROS OU LISTA DE STATEMENTS */
@@ -113,28 +200,39 @@ params_list :
 
 var_initialization : primitive_type ID '=' expression                                             {/*printf("VAR INITIALIZATION - %s\n", $2);*/}
 
-var_declaration : primitive_type ID                                                               {/*printf("VAR DECLARATION - %s\n", $2);*/}
-                | list_declaration                                                                {/*printf("LIST DECLARATION\n");*/}
-                | ID ID                                                                           {/*printf("VAR DECLARATION - ID ID\n");*/}
+var_declaration     : primitive_type ID
+                    {
+                         char * str_list[] = {$1->code, $2};
+                         int list_size = 2;
+                         char * s = cat(str_list, list_size);
+                         
+                         freeRecord($1);
+                         free($2);
+                         
+                         $$ = createRecord(s, EUNTYPED);
+                         free(s);
+                         
+                    }
+                    | list_declaration                                                                {/*printf("LIST DECLARATION\n");*/}
+                    | ID ID
+                    {
+                         // printf("A9");
+                    }
 ;
 
 var_declaration_list : var_declaration                                                            {/*printf("VAR DECLARATION LIST\n");*/}
                      | var_declaration_list ',' var_declaration
-                     { 
+                     /* { 
                          char * str_list[] = {$1->code, ", ", $3->code};
                          int list_size = 3;
                          char * s = cat(str_list, list_size);
                          
-                         for(int i = 0; i < list_size; i++){
-                              free(str_list[i]);
-                         }
-                         free(str_list);
                          freeRecord($1);
                          freeRecord($3);
 
                          $$ = createRecord(s, EUNTYPED);
                          free(s);
-                     }
+                     } */
 ;
 
 
@@ -163,39 +261,31 @@ list_remove: ID access_suffix_list '.' REMOVE '(' ')'                           
 ;
 
 access_assign : access '=' expression
-              {
+              /* {
                     char * str_list[] = {$1->code, "=", $3->code};
                     int list_size = 3;
                     char * s = cat(str_list, list_size);
 
-                    for(int i = 0; i < list_size; i++){
-                         free(str_list[i]);
-                    }
-                    free(str_list);
                     freeRecord($1);
                     freeRecord($3);
 
                     $$ = createRecord(s, EUNTYPED);
                     free(s);
-              }
+              } */
 ;
 
 access : ID access_suffix_list
-       {
+       /* {
           char * str_list[] = {$1, $2->code};
           int list_size = 2;
           char * s = cat(str_list, list_size);
 
-          for(int i = 0; i < list_size; i++){
-               free(str_list[i]);
-          }
-          free(str_list);
           free($1);
           freeRecord($2);
 
           $$ = createRecord(s, EUNTYPED);
           free(s);
-       }
+       } */
 ;
 
 access_suffix_list : access_suffix
@@ -204,23 +294,18 @@ access_suffix_list : access_suffix
 
 // TODO: Verficação do tipo
 access_suffix : '[' expression ']'
-               { 
+               /* { 
                     char * str_list[] = {"[", $2->code, "]"};
                     int list_size = 3;
                     char * s = cat(str_list, list_size);
-                    // char * s = cat((char* []){"[", $2->code, "]"}, list_size);
 
-                    for(int i = 0; i < list_size; i++){
-                         free(str_list[i]);
-                    }
-                    free(str_list);
                     freeRecord($2);
                     
                     $$ = createRecord(s, EUNTYPED);
                     free(s);
-               }
+               } */
               | '.' ID                                                                            
-              { 
+              /* { 
                     char * str_list[] = {".", $2, "]"};
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
@@ -232,16 +317,16 @@ access_suffix : '[' expression ']'
 
                     $$ = createRecord(s, EUNTYPED);
                     free(s);
-               }
+               } */
 ;
 
 int_literal : INT_LITERAL
-            {
+            /* {
                $$ = createRecord($1, EINTEGER);
                free($1);
-            }
+            } */
             | '-' INT_LITERAL             
-            {
+            /* {
                char * str_list[] = {"-", $2};
                int list_size = 2;
                char * s = cat(str_list, list_size);
@@ -253,16 +338,16 @@ int_literal : INT_LITERAL
 
                $$ = createRecord(s,EINTEGER);
                free(s);
-            }
+            } */
 ;
 
 float_literal : FLOAT_LITERAL
-              {
+              /* {
                     $$ = createRecord($1, EFLOAT);
                     free($1);
-              }
+              } */
               | '-' FLOAT_LITERAL
-              {
+              /* {
                     char * str_list[] = {"-", $2};
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
@@ -274,18 +359,19 @@ float_literal : FLOAT_LITERAL
 
                     $$ = createRecord(s,EFLOAT);
                     free(s);
-              }
+              } */
 ;
 
 type : primitive_type
-     {
+     /* {
+          printf("A10");
           $$ = createRecord($1->code,$1->type);
           free($1);
-     }
+     } */
      | LIST '<' list_types '>'
-     {
-          // ESTA DECLARAÇÃO NÃO VAI FUNCIONAR
-          // TODO: Verficar como faz lista em C
+     /* {
+          ESTA DECLARAÇÃO NÃO VAI FUNCIONAR
+          TODO: Verficar como faz lista em C
           char * str_list[] = {"list","<", $3->code, ">"};
           int list_size = 4;
           char * s = cat(str_list, list_size);
@@ -297,15 +383,16 @@ type : primitive_type
 
           $$ = createRecord(s,EUNTYPED);
           free(s);
-     }
+     } */
      | STRUCT                                
-     {
+     /* {
           $$ = createRecord("struct ",EUNTYPED);
-     }
+     } */
 ;
 
 primitive_type : INTEGER
                {
+                    // printf("A4");
                     $$ = createRecord("int ",EINTEGER);
                }
                | FLOAT
@@ -368,7 +455,7 @@ factor : factor '*' unary                                                       
 ;
  
 unary : ID UNARY_SUM
-      {
+      /* {
           char * str_list[] = {$1,"++"};
           int list_size = 2;
           char * s = cat(str_list, list_size);
@@ -380,9 +467,9 @@ unary : ID UNARY_SUM
 
           $$ = createRecord(s,EUNTYPED);
           free(s);
-      }
+      } */
       | ID UNARY_SUBTRACTION
-      {
+      /* {
           char * str_list[] = {$1,"--"};
           int list_size = 2;
           char * s = cat(str_list, list_size);
@@ -394,9 +481,9 @@ unary : ID UNARY_SUM
 
           $$ = createRecord(s,EUNTYPED);
           free(s);
-      }
+      } */
       | '(' expression ')'
-      {
+      /* {
           char * str_list[] = {"(", $2->code, ")"};
           int list_size = 2;
           char * s = cat(str_list, list_size);
@@ -409,43 +496,43 @@ unary : ID UNARY_SUM
           
           $$ = createRecord(s, EUNTYPED);
           free(s); 
-      }
+      } */
       | ID
-      {
+      /* {
           $$ = createRecord($1, EUNTYPED);free($1);
-      }
+      } */
       | int_literal
-      {
+      /* {
           $$ = createRecord($1->code, EINTEGER); freeRecord($1);
-      }
+      } */
       | float_literal
-      {
+      /* {
           $$ = createRecord($1->code, EFLOAT); freeRecord($1);
-      }
+      } */
       | BOOL_LITERAL
-      {
+      /* {
           $$ = createRecord($1, EBOOL); free($1);
-      }
+      } */
       | STRING_LITERAL
-      {
+      /* {
           $$ = createRecord($1, ESTRING); free($1);
-      }
+      } */
       | func_call
-      {
+      /* {
           $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
-      }
+      } */
       | read
-      {
+      /* {
          $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
-      }
+      } */
       | access
-      {
+      /* {
          $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
-      }
+      } */
 ; 
 
 func_call : ID '(' args ')'
-          {
+          /* {
                char * str_list[] = {$1, "(", $3->code, ")"};
                int list_size = 4;
                char * s = cat(str_list, list_size);
@@ -459,15 +546,15 @@ func_call : ID '(' args ')'
                
                $$ = createRecord(s, EUNTYPED);
                free(s);
-          }
+          } */
 ;
 
 args : args ',' expression
      | expression
      |
-     {
+     /* {
           $$ = createRecord("", EUNTYPED);
-     }
+     } */
 ;
 
 if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          {/*printf("IF \n");*/} 
@@ -477,12 +564,12 @@ if_complement : ELSE '{' stmt_list '}'                                          
               | else_if                                                                             {/*printf("ELSE IF \n")*/;}
               | else_if ELSE '{' stmt_list '}'                                                      {/*printf("ELSE IF COM ELSE \n")*/;}
               |
-              {
+              /* {
                     $$ = createRecord("",EUNTYPED);
-              }
+              } */
 
 else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
-        {
+        /* {
           // NÃO É PERMITIDO USAR ELSE
           // Verificar como fazer o else usando goto | Confirmar no documento da atividade
           char * str_list[] = {$1->code, "else if" "(", $4->code, ")", "{", $7->code, "}"};
@@ -499,9 +586,9 @@ else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
           
           $$ = createRecord(s, EUNTYPED);
           free(s);
-        }
+        } */
         | ELSE_IF '(' expression ')' '{' stmt_list '}'
-        {
+        /* {
           // NÃO É PERMITIDO USAR ELSE
           // Verificar como fazer o else usando goto | Confirmar no documento da atividade
           char * str_list[] = {"else if" "(", $3->code, ")", "{", $6->code, "}"};
@@ -517,7 +604,7 @@ else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
           
           $$ = createRecord(s, EUNTYPED);
           free(s);
-        }
+        } */
 
 switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'                                      {/*printf("SWITCH COM DEFAULT \n");*/}
        | SWITCH '(' ID ')' '{' cases '}'                                                            {/*printf("SWITCH SEM DEFAULT \n");*/}
@@ -525,9 +612,9 @@ switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'                  
 
 cases : cases case                                                                        
       | case                                                                                         
-      {
+      /* {
           $$ = createRecord("case",EUNTYPED);
-      }
+      } */
 ;
 
 case : CASE expression ':' stmt_list                                                                {/*printf("CASE \n");*/}
@@ -547,7 +634,7 @@ for_step : var_assign
          ;
 
 for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'                  
-     {
+     /* {
           //VERIFICAR SE É PERTMITIDO USAR O FOR DO C
           //SE NÃO FOR, ENCONTRAR OUTRA MANEIRA
           char * str_list[] = {"for" "(", $3->code, ",", $5->code, ",", $7->code, ")", "{", $10->code , "}"};
@@ -565,10 +652,10 @@ for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '
           
           $$ = createRecord(s, EUNTYPED);
           free(s);
-     }
+     } */
 
 read : INPUT '(' input_args ')'
-          {
+          /* {
                char * str_list[] = {"scanf", "(", $3->code, ")"};
                int list_size = 4;
                char * s = cat(str_list, list_size);
@@ -580,11 +667,11 @@ read : INPUT '(' input_args ')'
 
                $$ = createRecord(s, EUNTYPED);
                free(s);
-          }
+          } */
 ;
 
 write : OUTPUT '(' expression ')'                                                                   
-          {
+          /* {
                char * str_list[] = {"printf", "(", $3->code, ")"};
                int list_size = 4;
                char * s = cat(str_list, list_size);
@@ -596,18 +683,18 @@ write : OUTPUT '(' expression ')'
                
                $$ = createRecord(s, EUNTYPED);
                free(s);
-          }
+          } */
 ;
 
 input_args :
-           {
+           /* {
                $$ = createRecord("",EUNTYPED);
-           }
+           } */
            | STRING_LITERAL
-           {
+           /* {
                $$ = createRecord($1,STRING);
                free($1);
-           }
+           } */
 ;
 
 /* type_declaration : STRUCT ID '{' var_declaration_list '}' */
