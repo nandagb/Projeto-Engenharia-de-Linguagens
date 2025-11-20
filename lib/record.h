@@ -7,7 +7,7 @@ typedef enum {
 
 struct record {
 	   char * code; /* field for storing the output code */
-	   type type; /* field for another purpose */
+	   type type; /* field for storing the variable type, if any */
 };
 
 typedef struct record record;

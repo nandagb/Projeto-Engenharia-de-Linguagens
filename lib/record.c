@@ -6,7 +6,6 @@
 void freeRecord(record * r){
   if (r) {
     if (r->code != NULL) free(r->code);
-	  if (r->type != NULL) free(r->type);
     free(r);
   }
 }
