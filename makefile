@@ -1,16 +1,16 @@
 all: compilador
 
 compilador: lex.yy.c sintatico.tab.c 
-	gcc lex.yy.c sintatico.tab.c ./lib/*.c -o parser
+	gcc ./output/lex.yy.c ./output/sintatico.tab.c ./lib/*.c -o ./output/parser
 
 lex.yy.c: lexico.l
-	flex lexico.l
+	flex -o ./output/lex.yy.c lexico.l
 
 sintatico.tab.c: sintatico.y  
-	bison -d -v --debug sintatico.y
+	bison -d -v --debug -b ./output/sintatico sintatico.y
 
 clean:
-	rm -rf lex.yy.c sintatico.tab.* parser output.txt sintatico.output output.c
+	rm -rf ./output/lex.yy.c ./output/sintatico.tab.* ./output/parser output.txt ./output/sintatico.output ./output/output.c
 
 parse: all
-	./parser < ./input/teste.txt
+	./output/parser < ./input/teste.txt
