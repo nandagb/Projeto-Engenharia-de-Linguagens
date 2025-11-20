@@ -1,0 +1,3 @@
+vazio func main(){
+   int teste;
+}
