@@ -7,7 +7,10 @@ lex.yy.c: lexico.l
 	flex lexico.l
 
 sintatico.tab.c: sintatico.y  
-	bison -d -v sintatico.y
+	bison -d -v --debug sintatico.y
 
 clean:
-	rm -rf lex.yy.c sintatico.tab.* parser output.txt sintatico.output
+	rm -rf lex.yy.c sintatico.tab.* parser output.txt sintatico.output output.c
+
+parse: all
+	./parser < ./teste.txt

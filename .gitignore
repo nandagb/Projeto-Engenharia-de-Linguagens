@@ -1,1 +1,6 @@
 humberto
+/*.c
+/*.h
+parser
+*.output
+gen_test.c
