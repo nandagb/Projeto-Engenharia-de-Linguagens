@@ -32,7 +32,10 @@ extern char * yytext;
 %type <rec> for_initialization for_step input_args */
 
 %type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list 
-%type <rec> func_declaration func_declaration_list general_stmt_list type
+%type <rec> func_declaration func_declaration_list general_stmt_list type list_types
+%type <rec> list_declaration list_initialization struct_declaration var_declaration_list
+%type <rec> var_initialization expression comparison_expression relation_expression
+%type <rec> arithmatic_expression factor unary int_literal
 
 %start prog
  
@@ -44,6 +47,7 @@ prog : func_declaration_list
      }
      | general_stmt_list func_declaration_list
      {
+          printf("A0: \n%s%s\n", $1->code, $2->code);
           char * str_list[] = {$1->code, $2->code};
           int list_size = 2;
           char * s = cat(str_list, list_size);
@@ -51,7 +55,7 @@ prog : func_declaration_list
           freeRecord($1);
           freeRecord($2);
           
-          printf("%s", s);
+          gen_file(s, "./output/output.c");
           free(s);
      }
 ;
@@ -61,13 +65,50 @@ general_stmt   : var_declaration
                     $$ = createRecord($1->code, EUNTYPED);
                     free($1);
                }
-               | list_initialization                                                                 {/*printf("STATEMENT GERAL - list initialization\n");*/}
+               | list_initialization
+               {
+                    $$ = createRecord($1->code, EUNTYPED);
+                    free($1);
+               }
                | struct_declaration
+               {
+                    $$ = createRecord($1->code, EUNTYPED);
+                    free($1);
+               }
                | var_initialization
+               {
+                    $$ = createRecord($1->code, EUNTYPED);
+                    free($1);
+               }
 ;
 
-general_stmt_list : general_stmt ';'
-                  | general_stmt_list general_stmt ';'                                            {/*printf("STATEMENT GERAL LISTA\n");*/}
+general_stmt_list   : general_stmt ';'
+                    {
+                         printf("A1: %s\n", $1->code);
+                         
+                         char * str_list[] = {$1->code, ";\n"};
+                         int list_size = 2;
+                         char * s = cat(str_list, list_size);
+                         
+                         freeRecord($1);
+                         
+                         $$ = createRecord(s, EUNTYPED);
+                         free(s);
+                    }
+                    | general_stmt_list general_stmt ';'
+                    {
+                         printf("A2: %s\n", $1->code);
+                         
+                         char * str_list[] = {$1->code, $2->code, ";\n"};
+                         int list_size = 3;
+                         char * s = cat(str_list, list_size);
+                         
+                         freeRecord($1);
+                         freeRecord($2);
+                         
+                         $$ = createRecord(s, EUNTYPED);
+                         free(s);
+                    }
 ;
 
 func_declaration_list    : func_declaration
@@ -91,7 +132,7 @@ func_declaration_list    : func_declaration
 
 func_declaration    : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'
                     {
-                         char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{", $8->code, "}"};
+                         char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $8->code, "}"};
                          int list_size = 8;
                          char * s = cat(str_list, list_size);
                          
@@ -106,7 +147,6 @@ func_declaration    : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'
 
 stmt_list : stmt
           {
-               printf("A1: %s\n", $1->code);
                $$ = createRecord($1->code, EUNTYPED);
                free($1);
           }
@@ -126,12 +166,10 @@ stmt_list : stmt
 
 stmt : general_stmt ';'
      {
-          printf("A2: %s\n", $1->code);
-          char * str_list[] = {$1->code, ";"};
+          char * str_list[] = {$1->code, ";\n"};
           
           int list_size = 2;
           char * s = cat(str_list, list_size);
-          printf("A3: %s\n", s);
           freeRecord($1);
           
           $$ = createRecord(s, EUNTYPED);
@@ -198,10 +236,31 @@ params_list :
             | var_declaration_list
 ;
 
-var_initialization : primitive_type ID '=' expression                                             {/*printf("VAR INITIALIZATION - %s\n", $2);*/}
+var_initialization  : primitive_type ID '=' expression
+                    {
+                         printf("A3: %s %s = %s\n", $1->code, $2, $4->code);
+                         printf("A3: %s\n", $2);
+                         printf("A3: %s\n", $4->code);
+                         //primitive_type ID = expression;
+                         //int exemplo = 2;
+                         //int exemplo = 2;
+                         char * str_list[] = {$1->code, $2, "=", $4->code};
+                         int list_size = 4;
+                         char * s = cat(str_list, list_size);
+                         
+                         freeRecord($1);
+                         free($2);
+                         freeRecord($4);
+                         
+                         $$ = createRecord(s, EUNTYPED);
+                         free(s);
+                    }
 
+// TODO
 var_declaration     : primitive_type ID
                     {
+                         //int exemplo
+                         //int exemplo
                          char * str_list[] = {$1->code, $2};
                          int list_size = 2;
                          char * s = cat(str_list, list_size);
@@ -211,7 +270,6 @@ var_declaration     : primitive_type ID
                          
                          $$ = createRecord(s, EUNTYPED);
                          free(s);
-                         
                     }
                     | list_declaration                                                                {/*printf("LIST DECLARATION\n");*/}
                     | ID ID
@@ -220,31 +278,75 @@ var_declaration     : primitive_type ID
                     }
 ;
 
-var_declaration_list : var_declaration                                                            {/*printf("VAR DECLARATION LIST\n");*/}
-                     | var_declaration_list ',' var_declaration
-                     /* { 
-                         char * str_list[] = {$1->code, ", ", $3->code};
+var_declaration_list     : var_declaration
+                         {
+                              char * str_list[] = {$1->code, ";"};
+                              int list_size = 2;
+                              
+                              char * s = cat(str_list, list_size);
+                              freeRecord($1);
+
+                              $$ = createRecord(s, EUNTYPED);
+                              free(s);
+                         }
+                         | var_declaration_list ',' var_declaration
+                         { 
+                              char * str_list[] = {$1->code, "\n\t",$3->code, ";"};
+                              int list_size = 4;
+                              char * s = cat(str_list, list_size);
+                              
+                              freeRecord($1);
+                              freeRecord($3);
+
+                              $$ = createRecord(s, EUNTYPED);
+                              free(s);
+                         }
+;
+
+
+list_declaration    : LIST '<' list_types '>' ID 
+                    {
+                         //list_types ID[]
+                         //int exemplo[]
+                         char * str_list[] = {$3->code, $5, "[]"};
                          int list_size = 3;
                          char * s = cat(str_list, list_size);
                          
-                         freeRecord($1);
+                         // $1 has no type declared, does it need one?
+                         // free($1);
                          freeRecord($3);
-
+                         free($5);
+                         
                          $$ = createRecord(s, EUNTYPED);
                          free(s);
-                     } */
+                    }
 ;
 
-
-list_declaration : LIST '<' list_types '>' ID                                                     {}
+list_types     : primitive_type
+               {
+                    $$ = createRecord($1->code, EINTEGER);
+                    free($1);
+               }
+               | ID                                                                                   {}
+               | LIST '<' list_types '>'                                                              {}
 ;
 
-list_types : primitive_type                                                                       {}
-           | ID                                                                                   {}
-           | LIST '<' list_types '>'                                                              {}
-;
-
-list_initialization : list_declaration '=' NEW LIST '<' '>' '(' ')'                               { /* printf("LIST INITIALIZATION\n"); */ }
+//TODO
+list_initialization : list_declaration '=' NEW LIST '<' '>' '(' ')'
+                    {
+                         //list_types ID[] = novo Lista<>()
+                         //int exemplo[] = {}
+                         char * str_list[] = {$1->code, "=", "{}"};
+                         int list_size = 3;
+                         char * s = cat(str_list, list_size);
+                         
+                         free($1);
+                         // free($3);
+                         // free($4);
+                         
+                         $$ = createRecord(s, EUNTYPED);
+                         free(s);
+                    }
                     | list_declaration '=' NEW LIST '<' '>' '(' ID ')'                            { /* printf("LIST INITIALIZATION FROM ANOTHER LIST (NEW COPY)\n"); */ }
 ;
 
@@ -321,10 +423,19 @@ access_suffix : '[' expression ']'
 ;
 
 int_literal : INT_LITERAL
-            /* {
-               $$ = createRecord($1, EINTEGER);
-               free($1);
-            } */
+            {
+               printf("A5: %s\n", $1);
+               
+               char * str_list[] = {$1};
+               int list_size = 1;
+               char * s = cat(str_list, list_size);
+               
+               // ASK: WHY RELEASING $1 gives segmentation fault later on the code?
+               // free($1);
+
+               $$ = createRecord(s, EINTEGER);
+               free(s);
+            }
             | '-' INT_LITERAL             
             /* {
                char * str_list[] = {"-", $2};
@@ -392,7 +503,6 @@ type : primitive_type
 
 primitive_type : INTEGER
                {
-                    // printf("A4");
                     $$ = createRecord("int ",EINTEGER);
                }
                | FLOAT
@@ -413,7 +523,22 @@ primitive_type : INTEGER
                }
 ;
 
-struct_declaration: STRUCT ID '=' '{' var_declaration_list '}'                                     {/*printf("INICIALIZAÇÃO DE REGISTRO\n");*/}
+struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
+                    {
+                         //Registro ID = { var_declaration_list }
+                         //Registro ID = { int exemplo, int exemplo2 }
+                         //struct exemplo{int exemplo; int exemplo2;}
+                         char * str_list[] = {"struct ", $2, "{\n\t", $5->code, "\n}"};
+                         int list_size = 5;
+                         char * s = cat(str_list, list_size);
+                         
+                         // free($1);
+                         free($2);
+                         free($5);
+                         
+                         $$ = createRecord(s, EUNTYPED);
+                         free(s);
+                    }
 ;	
 
 var_assign : ID '=' expression                                                                     {/*printf("VAR_ASSIGN\n");*/}
@@ -426,32 +551,52 @@ composite_assign_operator : SUM_ASSIGN                                          
                 | DIVISION_ASSIGN                                                                  {/*printf("DIVISION_ASSIGN\n");*/}
 ;
 
-expression : expression AND comparison_expression                                                  {/*printf("EXPRESSION - AND\n");*/} 
-           | expression OR comparison_expression                                                   {/*printf("EXPRESSION - OR\n");*/} 
-           | comparison_expression                                                                 {/*printf("EXPRESSION - COMPOSITE\n");*/}
+expression     : expression AND comparison_expression                                                  {/*printf("EXPRESSION - AND\n");*/} 
+               | expression OR comparison_expression                                                   {/*printf("EXPRESSION - OR\n");*/} 
+               | comparison_expression
+               {
+                    $$ = createRecord($1->code, $1->type);
+                    freeRecord($1);
+               }
 ;
 
 comparison_expression : comparison_expression EQUALS relation_expression                           {/*printf("COMPARISON_EXPRESSION - EQUALS\n");*/}
                       | comparison_expression DIFF relation_expression                             {/*printf("COMPARISON_EXPRESSION - DIFF\n");*/}
-                      | relation_expression                                                        {/*printf("COMPARISON_EXPRESSION - RELATION\n");*/}
+                      | relation_expression
+                      {
+                         $$ = createRecord($1->code, $1->type);
+                         freeRecord($1);
+                      }
 ;
 
 relation_expression : relation_expression '>' arithmatic_expression                                {/*printf("RELATION_EXPRESSION - GREATER\n");*/}
                     | relation_expression '<' arithmatic_expression                                {/*printf("RELATION_EXPRESSION - LESSER\n");*/}
                     | relation_expression GTE arithmatic_expression                                {/*printf("RELATION_EXPRESSION - GREATER EQUAL\n");*/}
                     | relation_expression LTE arithmatic_expression                                {/*printf("RELATION_EXPRESSION - LESSER EQUAL\n");*/}
-                    | arithmatic_expression                                                        {/*printf("RELATION_EXPRESSION - ARITHMATIC\n");*/}
+                    | arithmatic_expression
+                    {
+                         $$ = createRecord($1->code, $1->type);
+                         freeRecord($1);
+                    }
 ;
 
 arithmatic_expression : arithmatic_expression '+' factor                                           {/* printf("ARITHMATIC - SUM\n");*/ }
                       | arithmatic_expression '-' factor                                           {/* printf("ARITHMATIC - MINUS\n");*/ }
-                      | factor                                                                     {/* printf("ARITHMATIC - FACTOR\n");*/ }
+                      | factor
+                      {
+                         $$ = createRecord($1->code, $1->type);
+                         freeRecord($1);
+                      }
 ;
 
 factor : factor '*' unary                                                                          {/* printf("FACTOR - TIMES\n");*/} 
        | factor '/' unary                                                                          {/* printf("FACTOR - DIVISION\n");*/} 
        | factor INT_DIVISION unary                                                                 {/* printf("FACTOR - INT DIVISION\n");*/} 
-       | unary                                                                                     {/* printf("FACTOR - UNARY\n");*/} 
+       | unary
+       {
+          $$ = createRecord($1->code, $1->type);
+          freeRecord($1);
+       }
 ;
  
 unary : ID UNARY_SUM
@@ -502,9 +647,11 @@ unary : ID UNARY_SUM
           $$ = createRecord($1, EUNTYPED);free($1);
       } */
       | int_literal
-      /* {
-          $$ = createRecord($1->code, EINTEGER); freeRecord($1);
-      } */
+      {
+          printf("A4: %s\n", $1->code);
+          $$ = createRecord($1->code, $1->type);
+          freeRecord($1);
+      }
       | float_literal
       /* {
           $$ = createRecord($1->code, EFLOAT); freeRecord($1);

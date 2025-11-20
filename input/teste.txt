@@ -1,3 +1,11 @@
+int teste;
+Lista<int> teste = novo Lista<>();
+Registro teste = {
+   int teste,
+   int teste2,
+   int teste3
+};
+int teste = 2;
 vazio func main(){
    int teste;
 }
