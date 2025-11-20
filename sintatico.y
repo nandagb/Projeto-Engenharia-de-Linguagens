@@ -1,8 +1,8 @@
 %{
 #include <stdio.h>
-#include "./lib/record.h"
-#include "./lib/cat.h"
-#include "./lib/file_gen.h"
+#include "./../lib/record.h"
+#include "./../lib/cat.h"
+#include "./../lib/file_gen.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -39,7 +39,7 @@ extern char * yytext;
 %%
 prog : func_declaration_list
      {
-          gen_file($1->code, "output.c");
+          gen_file($1->code, "./output/output.c");
           free($1);
      }
      | general_stmt_list func_declaration_list
