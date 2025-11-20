@@ -13,4 +13,4 @@ clean:
 	rm -rf lex.yy.c sintatico.tab.* parser output.txt sintatico.output output.c
 
 parse: all
-	./parser < ./teste.txt
+	./parser < ./input/teste.txt
