@@ -6,6 +6,7 @@ Registro teste = {
    int teste3
 };
 int teste = 2;
+int teste = -2;
 vazio func main(){
-   int teste;
+   int testes;
 }
