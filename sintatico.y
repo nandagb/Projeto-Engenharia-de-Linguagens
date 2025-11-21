@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <string.h>
 #include "./../lib/record.h"
 #include "./../lib/cat.h"
 #include "./../lib/file_gen.h"
@@ -41,21 +42,31 @@ extern char * yytext;
 %%
 prog : func_declaration_list
      {
-          gen_file($1->code, "./output/output.c");
+          char * include_list[] = {"#include <stdbool.h>", "\n"};
+          char * include_str = cat(include_list, 2);
+
+          char * str_list[] = {include_str, $1->code};
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+
+          gen_file(s, "./output/output.c");
           free($1);
      }
      | general_stmt_list func_declaration_list
      {
           printf("A0: \n%s%s\n", $1->code, $2->code);
-          char * str_list[] = {$1->code, $2->code};
-          int list_size = 2;
-          char * s = cat(str_list, list_size);
+          char * include_list[] = {"#include <stdbool.h>", "\n"};
+          char * include_str = cat(include_list, 2);
           
-          freeRecord($1);
-          freeRecord($2);
+          char * str_list[] = {include_str, $1->code, $2->code};
+          int list_size = 3;
+          char * s = cat(str_list, list_size);
           
           gen_file(s, "./output/output.c");
           free(s);
+
+          freeRecord($1);
+          freeRecord($2);
      }
 ;
 
@@ -83,7 +94,7 @@ general_stmt   : var_declaration
 
 general_stmt_list   : general_stmt ';'
                     {
-                         printf("A1: %s\n", $1->code);
+                         // printf("A1: %s\n", $1->code);
                          
                          char * str_list[] = {$1->code, ";\n"};
                          int list_size = 2;
@@ -96,7 +107,7 @@ general_stmt_list   : general_stmt ';'
                     }
                     | general_stmt_list general_stmt ';'
                     {
-                         printf("A2: %s\n", $1->code);
+                         // printf("A2: %s\n", $1->code);
                          
                          char * str_list[] = {$1->code, $2->code, ";\n"};
                          int list_size = 3;
@@ -551,8 +562,30 @@ composite_assign_operator : SUM_ASSIGN                                          
 ;
 
 //TODO: EXPRESSIONS
-expression     : expression AND comparison_expression                                                  {/*printf("EXPRESSION - AND\n");*/} 
-               | expression OR comparison_expression                                                   {/*printf("EXPRESSION - OR\n");*/} 
+expression     : expression AND comparison_expression
+               {
+                    char * str_list[] = {$1->code," && ", $3->code};
+                    int list_size = 3;
+                    char * s = cat(str_list, list_size);
+
+                    $$ = createRecord(s,EBOOL);
+                    
+                    free($1);
+                    free($3);
+                    free(s);
+               }
+               | expression OR comparison_expression
+               {
+                    char * str_list[] = {$1->code," || ", $3->code};
+                    int list_size = 3;
+                    char * s = cat(str_list, list_size);
+
+                    $$ = createRecord(s,EBOOL);
+                    
+                    free($1);
+                    free($3);
+                    free(s);
+               }
                | comparison_expression
                {
                     $$ = createRecord($1->code, $1->type);
@@ -560,19 +593,85 @@ expression     : expression AND comparison_expression                           
                }
 ;
 
-comparison_expression : comparison_expression EQUALS relation_expression                           {/*printf("COMPARISON_EXPRESSION - EQUALS\n");*/}
-                      | comparison_expression DIFF relation_expression                             {/*printf("COMPARISON_EXPRESSION - DIFF\n");*/}
-                      | relation_expression
-                      {
-                         $$ = createRecord($1->code, $1->type);
-                         freeRecord($1);
-                      }
+comparison_expression    : comparison_expression EQUALS relation_expression
+                         {
+                              char * str_list[] = {$1->code," == ", $3->code};
+                              int list_size = 3;
+                              char * s = cat(str_list, list_size);
+
+                              $$ = createRecord(s,EBOOL);
+                              
+                              free($1);
+                              free($3);
+                              free(s);
+                         }
+                         | comparison_expression DIFF relation_expression
+                         {
+                              char * str_list[] = {$1->code," != ", $3->code};
+                              int list_size = 3;
+                              char * s = cat(str_list, list_size);
+
+                              $$ = createRecord(s,EBOOL);
+                              
+                              free($1);
+                              free($3);
+                              free(s);
+                         }
+                         | relation_expression
+                         {
+                              $$ = createRecord($1->code, $1->type);
+                              freeRecord($1);
+                         }
 ;
 
-relation_expression : relation_expression '>' arithmatic_expression                                {/*printf("RELATION_EXPRESSION - GREATER\n");*/}
-                    | relation_expression '<' arithmatic_expression                                {/*printf("RELATION_EXPRESSION - LESSER\n");*/}
-                    | relation_expression GTE arithmatic_expression                                {/*printf("RELATION_EXPRESSION - GREATER EQUAL\n");*/}
-                    | relation_expression LTE arithmatic_expression                                {/*printf("RELATION_EXPRESSION - LESSER EQUAL\n");*/}
+relation_expression : relation_expression '>' arithmatic_expression
+                    {
+                         char * str_list[] = {$1->code," > ", $3->code};
+                         int list_size = 3;
+                         char * s = cat(str_list, list_size);
+
+                         $$ = createRecord(s,EBOOL);
+                         
+                         free($1);
+                         free($3);
+                         free(s);
+                    }
+                    | relation_expression '<' arithmatic_expression
+                    {
+                         char * str_list[] = {$1->code," < ", $3->code};
+                         int list_size = 3;
+                         char * s = cat(str_list, list_size);
+
+                         $$ = createRecord(s,EBOOL);
+                         
+                         free($1);
+                         free($3);
+                         free(s);
+                    }
+                    | relation_expression GTE arithmatic_expression
+                    {
+                         char * str_list[] = {$1->code," >= ", $3->code};
+                         int list_size = 3;
+                         char * s = cat(str_list, list_size);
+
+                         $$ = createRecord(s,EBOOL);
+                         
+                         free($1);
+                         free($3);
+                         free(s);
+                    }
+                    | relation_expression LTE arithmatic_expression
+                    {
+                         char * str_list[] = {$1->code," <= ", $3->code};
+                         int list_size = 3;
+                         char * s = cat(str_list, list_size);
+
+                         $$ = createRecord(s,EBOOL);
+                         
+                         free($1);
+                         free($3);
+                         free(s);
+                    }
                     | arithmatic_expression
                     {
                          $$ = createRecord($1->code, $1->type);
@@ -590,6 +689,7 @@ arithmatic_expression    : arithmatic_expression '+' factor
                               $$ = createRecord(s,EUNTYPED);
                               
                               free($1);
+                              free($3);
                               free(s);
                          }
                          | arithmatic_expression '-' factor
@@ -602,6 +702,7 @@ arithmatic_expression    : arithmatic_expression '+' factor
                               $$ = createRecord(s,EUNTYPED);
                               
                               free($1);
+                              free($3);
                               free(s);
                          }
                          | factor
@@ -613,6 +714,9 @@ arithmatic_expression    : arithmatic_expression '+' factor
 
 factor    : factor '*' unary
           {
+               // TODO: SOLVE THIS ERROR BELLOW
+               // int teste = 2.1 / (4 +1)  *5; is parsing to int teste = 2.1 / (4 + 1) + 5;
+
                char * str_list[] = {$1->code," + ", $3->code};
                int list_size = 3;
                char * s = cat(str_list, list_size);
@@ -621,10 +725,35 @@ factor    : factor '*' unary
                $$ = createRecord(s,EUNTYPED);
                
                free($1);
+               free($3);
                free(s);
           }
-          | factor '/' unary                                                                          {/* printf("FACTOR - DIVISION\n");*/} 
-          | factor INT_DIVISION unary                                                                 {/* printf("FACTOR - INT DIVISION\n");*/} 
+          | factor '/' unary
+          {
+               char * str_list[] = {$1->code," / ", $3->code};
+               int list_size = 3;
+               char * s = cat(str_list, list_size);
+
+               //TODO: FAZER ALTERAÇÃO DO TIPO COM BASE NO VALORES INSERIDOS
+               $$ = createRecord(s,EUNTYPED);
+               
+               free($1);
+               free($3);
+               free(s);
+          }
+          | factor INT_DIVISION unary
+          {
+               char * str_list[] = {$1->code," / ", $3->code};
+               int list_size = 3;
+               char * s = cat(str_list, list_size);
+
+               //TODO: FAZER ALTERAÇÃO DO TIPO COM BASE NO VALORES INSERIDOS
+               $$ = createRecord(s,EINTEGER);
+               
+               free($1);
+               free($3);
+               free(s);
+          }
           | unary
           {
                $$ = createRecord($1->code, $1->type);
@@ -658,7 +787,10 @@ unary : ID UNARY_SUM
       }
       | '(' expression ')'
       {
-          printf("M-A1: %s\n", $2->code);
+          // TODO: SOLVE THIS ERROR BELLOW
+          // int teste = 2.1 / (4 +1)  *5; is parsing to int teste = 2.1 / (4 + 1) + 5;
+          
+          // printf("M-A1: %s\n", $2->code);
           char * str_list[] = {"(", $2->code, ")"};
           int list_size = 3;
           char * s = cat(str_list, list_size);
@@ -670,24 +802,24 @@ unary : ID UNARY_SUM
       }
       | ID
       {
+          //TODO: Como saber o tipo do ID, se ID não tem tipo?
+          // Talvez seja necessário verificar na tabela de símbolos;
           $$ = createRecord($1, EUNTYPED);
           free($1);
       }
       | int_literal
       {
-          // printf("A4: %s\n", $1->code);
           $$ = createRecord($1->code, $1->type);
           freeRecord($1);
       }
       | float_literal
       {
-          printf("A4: %s\n", $1->code);
           $$ = createRecord($1->code, $1->type);
           freeRecord($1);
       }
       | BOOL_LITERAL
       {
-          $$ = createRecord($1, EBOOL);
+          $$ = createRecord((strcmp($1,"verdadeiro") == 0 ? "true" : "false"), EBOOL);
           free($1);
       }
       | STRING_LITERAL
