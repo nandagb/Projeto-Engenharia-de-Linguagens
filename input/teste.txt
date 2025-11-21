@@ -1,5 +1,12 @@
 int teste;
 Lista<int> teste = novo Lista<>();
+
+Lista<Lista<Lista<int>>>
+
+
+Lista<int> teste; int teste[]
+Lista<Lista<int>> teste; int teste[][]
+
 Registro teste = {
    int teste,
    int teste2,
@@ -7,6 +14,15 @@ Registro teste = {
 };
 int teste = 2;
 int teste = -2;
+int teste = 2.1;
+int teste = -2.1;
+int teste = (2.1 + 4);
+int teste = (2.1 - 4);
+int teste = (2.1 * 4);
 vazio func main(){
+   int teste5 = teste++;
+   int teste6 = teste--;
+   int teste7 = teste;
+   int teste8 = 2.1;
    int testes;
 }
