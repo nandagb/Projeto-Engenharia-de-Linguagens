@@ -236,15 +236,14 @@ params_list :
             | var_declaration_list
 ;
 
+//TODO: EXPRESSIONS
 var_initialization  : primitive_type ID '=' expression
                     {
                          printf("A3: %s %s = %s\n", $1->code, $2, $4->code);
-                         printf("A3: %s\n", $2);
-                         printf("A3: %s\n", $4->code);
                          //primitive_type ID = expression;
                          //int exemplo = 2;
                          //int exemplo = 2;
-                         char * str_list[] = {$1->code, $2, "=", $4->code};
+                         char * str_list[] = {$1->code, $2, " = ", $4->code};
                          int list_size = 4;
                          char * s = cat(str_list, list_size);
                          
@@ -424,32 +423,20 @@ access_suffix : '[' expression ']'
 
 int_literal : INT_LITERAL
             {
-               printf("A5: %s\n", $1);
-               
-               char * str_list[] = {$1};
-               int list_size = 1;
+               $$ = createRecord($1, EINTEGER);
+               free($1);
+            }
+            | '-' INT_LITERAL             
+            {
+               char * str_list[] = {"-", $2};
+               int list_size = 2;
                char * s = cat(str_list, list_size);
                
-               // ASK: WHY RELEASING $1 gives segmentation fault later on the code?
-               // free($1);
+               free($2);
 
                $$ = createRecord(s, EINTEGER);
                free(s);
             }
-            | '-' INT_LITERAL             
-            /* {
-               char * str_list[] = {"-", $2};
-               int list_size = 2;
-               char * s = cat(str_list, list_size);
-
-               for(int i = 0; i < list_size; i++){
-                    free(str_list[i]);
-               }
-               free($2);
-
-               $$ = createRecord(s,EINTEGER);
-               free(s);
-            } */
 ;
 
 float_literal : FLOAT_LITERAL
@@ -551,6 +538,7 @@ composite_assign_operator : SUM_ASSIGN                                          
                 | DIVISION_ASSIGN                                                                  {/*printf("DIVISION_ASSIGN\n");*/}
 ;
 
+//TODO: EXPRESSIONS
 expression     : expression AND comparison_expression                                                  {/*printf("EXPRESSION - AND\n");*/} 
                | expression OR comparison_expression                                                   {/*printf("EXPRESSION - OR\n");*/} 
                | comparison_expression
