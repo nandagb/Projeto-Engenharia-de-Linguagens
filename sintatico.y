@@ -72,12 +72,12 @@ prog : func_declaration_list
 
 general_stmt   : var_declaration
                {
-                    $$ = createRecord($1->code, EUNTYPED);
+                    $$ = createRecord($1->code, $1->type);
                     free($1);
                }
                | list_initialization
                {
-                    $$ = createRecord($1->code, EUNTYPED);
+                    $$ = createRecord($1->code, $1->type);
                     free($1);
                }
                | struct_declaration
@@ -87,7 +87,7 @@ general_stmt   : var_declaration
                }
                | var_initialization
                {
-                    $$ = createRecord($1->code, EUNTYPED);
+                    $$ = createRecord($1->code, $1->type);
                     free($1);
                }
 ;
@@ -100,9 +100,9 @@ general_stmt_list   : general_stmt ';'
                          int list_size = 2;
                          char * s = cat(str_list, list_size);
                          
-                         freeRecord($1);
-                         
                          $$ = createRecord(s, EUNTYPED);
+
+                         freeRecord($1);
                          free(s);
                     }
                     | general_stmt_list general_stmt ';'
@@ -180,9 +180,10 @@ stmt : general_stmt ';'
           
           int list_size = 2;
           char * s = cat(str_list, list_size);
+
+          $$ = createRecord(s, $1->type);
+
           freeRecord($1);
-          
-          $$ = createRecord(s, EUNTYPED);
           free(s);
      }
      | access_assign ';'
@@ -271,7 +272,7 @@ var_initialization  : primitive_type ID '=' expression
                     }
 
 // TODO
-var_declaration   : primitive_type ID
+var_declaration  : primitive_type ID
                     {
                          //int exemplo
                          //int exemplo
@@ -298,9 +299,10 @@ var_declaration_list     : var_declaration
                               int list_size = 2;
                               
                               char * s = cat(str_list, list_size);
-                              freeRecord($1);
 
                               $$ = createRecord(s, EUNTYPED);
+
+                              freeRecord($1);
                               free(s);
                          }
                          | var_declaration_list ',' var_declaration
@@ -308,17 +310,17 @@ var_declaration_list     : var_declaration
                               char * str_list[] = {$1->code, "\n\t",$3->code, ";"};
                               int list_size = 4;
                               char * s = cat(str_list, list_size);
-                              
-                              freeRecord($1);
-                              freeRecord($3);
 
                               $$ = createRecord(s, EUNTYPED);
+
+                              freeRecord($1);
+                              freeRecord($3);
                               free(s);
                          }
 ;
 
 
-list_declaration    : LIST '<' list_types '>' ID 
+list_declaration : LIST '<' list_types '>' ID
                     {
                          //list_types ID[]
                          //int exemplo[]
@@ -328,10 +330,11 @@ list_declaration    : LIST '<' list_types '>' ID
                          
                          // $1 has no type declared, does it need one?
                          // free($1);
+                         
+                         $$ = createRecord(s, $3->type);
+
                          freeRecord($3);
                          free($5);
-                         
-                         $$ = createRecord(s, EUNTYPED);
                          free(s);
                     }
 ;
@@ -349,7 +352,7 @@ list_types     : primitive_type
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
                     
-                    $$ = createRecord(s, EUNTYPED);
+                    $$ = createRecord(s, $3->type);
 
                     free(s);
                     freeRecord($3);
@@ -364,12 +367,13 @@ list_initialization : list_declaration '=' NEW LIST '<' '>' '(' ')'
                          char * str_list[] = {$1->code, "=", "{}"};
                          int list_size = 3;
                          char * s = cat(str_list, list_size);
-                         
-                         free($1);
+
                          // free($3);
                          // free($4);
                          
-                         $$ = createRecord(s, EUNTYPED);
+                         $$ = createRecord(s, $1->type);
+
+                         free($1);
                          free(s);
                     }
                     | list_declaration '=' NEW LIST '<' '>' '(' ID ')'                            { /* printf("LIST INITIALIZATION FROM ANOTHER LIST (NEW COPY)\n"); */ }
@@ -541,12 +545,13 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
                          char * str_list[] = {"struct ", $2, "{\n\t", $5->code, "\n}"};
                          int list_size = 5;
                          char * s = cat(str_list, list_size);
-                         
+
                          // free($1);
+
+                         $$ = createRecord(s, EUNTYPED);
+
                          free($2);
                          free($5);
-                         
-                         $$ = createRecord(s, EUNTYPED);
                          free(s);
                     }
 ;	
