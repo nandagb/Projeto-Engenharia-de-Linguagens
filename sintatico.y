@@ -4,20 +4,23 @@
 #include "./../lib/record.h"
 #include "./../lib/cat.h"
 #include "./../lib/file_gen.h"
+#include "./../lib/symbol_table.h"
 
 int yylex(void);
 int yyerror(char *s);
 extern int yylineno;
 extern char * yytext;
+table* sym_table;
 
 %}
+
 %union {
      int    iValue; 	/* integer value */
      char   cValue; 	/* char value */
      char * sValue;      /* string value */
      /* float type??? */
      struct record * rec;
-	};
+};
 
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
 /* %token <fValue>  */
@@ -40,7 +43,14 @@ extern char * yytext;
 %start prog
  
 %%
-prog : func_declaration_list
+prog : prog_options
+     {
+          /* creates symbol table for the program*/
+          sym_table = table_create();
+     }
+;
+
+prog_options : func_declaration_list
      {
           char * include_list[] = {"#include <stdbool.h>", "\n"};
           char * include_str = cat(include_list, 2);
@@ -1017,7 +1027,9 @@ input_args :
 %%
 
 int main (void) {
-	return yyparse ( );
+	int result = yyparse ( );
+     table_destroy(sym_table);
+     return result;
 }
 
 int yyerror (char *msg) {
