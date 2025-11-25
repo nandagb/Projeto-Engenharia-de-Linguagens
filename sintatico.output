@@ -1,0 +1,4943 @@
+Grammar
+
+    0 $accept: prog $end
+
+    1 prog: func_declaration_list
+    2     | general_stmt_list func_declaration_list
+
+    3 general_stmt: var_declaration
+    4             | list_initialization
+    5             | struct_declaration
+    6             | var_initialization
+
+    7 general_stmt_list: general_stmt ';'
+    8                  | general_stmt_list general_stmt ';'
+
+    9 func_declaration_list: func_declaration
+   10                      | func_declaration_list func_declaration
+
+   11 func_declaration: type FUNCTION ID '(' params_list ')' '{' stmt_list '}'
+
+   12 stmt_list: stmt
+   13          | stmt_list stmt
+
+   14 stmt: general_stmt ';'
+   15     | access_assign ';'
+   16     | var_assign ';'
+   17     | list_assign ';'
+   18     | func_declaration
+   19     | if
+   20     | return ';'
+   21     | BREAK ';'
+   22     | CONTINUE ';'
+   23     | while
+   24     | do_while ';'
+   25     | for
+   26     | expression ';'
+   27     | write ';'
+   28     | switch
+   29     | list_push ';'
+   30     | list_remove ';'
+
+   31 return: RETURN
+   32       | RETURN expression
+
+   33 params_list: ε
+   34            | var_declaration_list
+
+   35 var_initialization: primitive_type ID '=' expression
+
+   36 var_declaration: primitive_type ID
+   37                | list_declaration
+   38                | ID ID
+
+   39 var_declaration_list: var_declaration
+   40                     | var_declaration_list ',' var_declaration
+
+   41 list_declaration: LIST '<' list_types '>' ID
+
+   42 list_types: primitive_type
+   43           | ID
+   44           | LIST '<' list_types '>'
+
+   45 list_initialization: list_declaration '=' NEW LIST '<' '>' '(' ')'
+   46                    | list_declaration '=' NEW LIST '<' '>' '(' ID ')'
+
+   47 list_assign: ID '=' NEW LIST '<' '>' '(' ')'
+   48            | ID '=' NEW LIST '<' '>' '(' ID ')'
+
+   49 list_push: ID access_suffix_list '.' ADD '(' expression ')'
+   50          | ID '.' ADD '(' expression ')'
+
+   51 list_remove: ID access_suffix_list '.' REMOVE '(' ')'
+   52            | ID '.' REMOVE '(' ')'
+
+   53 access_assign: access '=' expression
+
+   54 access: ID access_suffix_list
+
+   55 access_suffix_list: access_suffix
+   56                   | access_suffix_list access_suffix
+
+   57 access_suffix: '[' expression ']'
+   58              | '.' ID
+
+   59 int_literal: INT_LITERAL
+   60            | '-' INT_LITERAL
+
+   61 float_literal: FLOAT_LITERAL
+   62              | '-' FLOAT_LITERAL
+
+   63 type: primitive_type
+   64     | LIST '<' list_types '>'
+   65     | STRUCT
+
+   66 primitive_type: INTEGER
+   67               | FLOAT
+   68               | STRING
+   69               | VOID
+   70               | BOOLEAN
+
+   71 struct_declaration: STRUCT ID '=' '{' var_declaration_list '}'
+
+   72 var_assign: ID '=' expression
+   73           | ID composite_assign_operator expression
+
+   74 composite_assign_operator: SUM_ASSIGN
+   75                          | SUBTRACTION_ASSIGN
+   76                          | TIMES_ASSIGN
+   77                          | DIVISION_ASSIGN
+
+   78 expression: expression AND comparison_expression
+   79           | expression OR comparison_expression
+   80           | comparison_expression
+
+   81 comparison_expression: comparison_expression EQUALS relation_expression
+   82                      | comparison_expression DIFF relation_expression
+   83                      | relation_expression
+
+   84 relation_expression: relation_expression '>' arithmatic_expression
+   85                    | relation_expression '<' arithmatic_expression
+   86                    | relation_expression GTE arithmatic_expression
+   87                    | relation_expression LTE arithmatic_expression
+   88                    | arithmatic_expression
+
+   89 arithmatic_expression: arithmatic_expression '+' factor
+   90                      | arithmatic_expression '-' factor
+   91                      | factor
+
+   92 factor: factor '*' unary
+   93       | factor '/' unary
+   94       | factor INT_DIVISION unary
+   95       | unary
+
+   96 unary: ID UNARY_SUM
+   97      | ID UNARY_SUBTRACTION
+   98      | '(' expression ')'
+   99      | ID
+  100      | int_literal
+  101      | float_literal
+  102      | BOOL_LITERAL
+  103      | STRING_LITERAL
+  104      | func_call
+  105      | read
+  106      | access
+
+  107 func_call: ID '(' args ')'
+
+  108 args: args ',' expression
+  109     | expression
+  110     | ε
+
+  111 if: IF '(' expression ')' '{' stmt_list '}' if_complement
+
+  112 if_complement: ELSE '{' stmt_list '}'
+  113              | else_if
+  114              | else_if ELSE '{' stmt_list '}'
+  115              | ε
+
+  116 else_if: else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
+  117        | ELSE_IF '(' expression ')' '{' stmt_list '}'
+
+  118 switch: SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'
+  119       | SWITCH '(' ID ')' '{' cases '}'
+
+  120 cases: cases case
+  121      | case
+
+  122 case: CASE expression ':' stmt_list
+
+  123 while: WHILE '(' expression ')' '{' stmt_list '}'
+
+  124 do_while: DO '{' stmt_list '}' WHILE '(' expression ')'
+
+  125 for_initialization: var_initialization
+  126                   | var_assign
+
+  127 for_step: var_assign
+  128         | expression
+
+  129 for: FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'
+
+  130 read: INPUT '(' input_args ')'
+
+  131 write: OUTPUT '(' expression ')'
+
+  132 input_args: ε
+  133           | STRING_LITERAL
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    '(' (40) 11 45 46 47 48 49 50 51 52 98 107 111 116 117 118 119 123 124 129 130 131
+    ')' (41) 11 45 46 47 48 49 50 51 52 98 107 111 116 117 118 119 123 124 129 130 131
+    '*' (42) 92
+    '+' (43) 89
+    ',' (44) 40 108 129
+    '-' (45) 60 62 90
+    '.' (46) 49 50 51 52 58
+    '/' (47) 93
+    ':' (58) 118 122
+    ';' (59) 7 8 14 15 16 17 20 21 22 24 26 27 29 30
+    '<' (60) 41 44 45 46 47 48 64 85
+    '=' (61) 35 45 46 47 48 53 71 72
+    '>' (62) 41 44 45 46 47 48 64 84
+    '[' (91) 57
+    ']' (93) 57
+    '{' (123) 11 71 111 112 114 116 117 118 119 123 124 129
+    '}' (125) 11 71 111 112 114 116 117 118 119 123 124 129
+    error (256)
+    ID <sValue> (258) 11 35 36 38 41 43 46 47 48 49 50 51 52 54 58 71 72 73 96 97 99 107 118 119
+    STRING_LITERAL <sValue> (259) 103 133
+    FLOAT_LITERAL <sValue> (260) 61 62
+    INT_LITERAL <sValue> (261) 59 60
+    BOOL_LITERAL <sValue> (262) 102
+    INTEGER (263) 66
+    LIST (264) 41 44 45 46 47 48 64
+    STRUCT (265) 65 71
+    CONTINUE (266) 22
+    WHILE (267) 123 124
+    FLOAT (268) 67
+    STRING (269) 68
+    DO (270) 124
+    BREAK (271) 21
+    RETURN (272) 31 32
+    FOR (273) 129
+    VOID (274) 69
+    BOOLEAN (275) 70
+    FUNCTION (276) 11
+    NEW (277) 45 46 47 48
+    SUM_ASSIGN (278) 74
+    SUBTRACTION_ASSIGN (279) 75
+    TIMES_ASSIGN (280) 76
+    DIVISION_ASSIGN (281) 77
+    AND (282) 78
+    OR (283) 79
+    EQUALS (284) 81
+    DIFF (285) 82
+    GTE (286) 86
+    LTE (287) 87
+    INT_DIVISION (288) 94
+    UNARY_SUM (289) 96
+    UNARY_SUBTRACTION (290) 97
+    IF (291) 111
+    ELSE (292) 112 114
+    ELSE_IF (293) 116 117
+    INPUT (294) 130
+    OUTPUT (295) 131
+    SWITCH (296) 118 119
+    CASE (297) 122
+    DEFAULT (298) 118
+    ADD (299) 49 50
+    REMOVE (300) 51 52
+
+
+Nonterminals, with rules where they appear
+
+    $accept (63)
+        on left: 0
+    prog (64)
+        on left: 1 2
+        on right: 0
+    general_stmt <rec> (65)
+        on left: 3 4 5 6
+        on right: 7 8 14
+    general_stmt_list <rec> (66)
+        on left: 7 8
+        on right: 2 8
+    func_declaration_list <rec> (67)
+        on left: 9 10
+        on right: 1 2 10
+    func_declaration <rec> (68)
+        on left: 11
+        on right: 9 10 18
+    stmt_list <rec> (69)
+        on left: 12 13
+        on right: 11 13 111 112 114 116 117 118 122 123 124 129
+    stmt <rec> (70)
+        on left: 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+        on right: 12 13
+    return (71)
+        on left: 31 32
+        on right: 20
+    params_list <rec> (72)
+        on left: 33 34
+        on right: 11
+    var_initialization <rec> (73)
+        on left: 35
+        on right: 6 125
+    var_declaration <rec> (74)
+        on left: 36 37 38
+        on right: 3 39 40
+    var_declaration_list <rec> (75)
+        on left: 39 40
+        on right: 34 40 71
+    list_declaration <rec> (76)
+        on left: 41
+        on right: 37 45 46
+    list_types <rec> (77)
+        on left: 42 43 44
+        on right: 41 44 64
+    list_initialization <rec> (78)
+        on left: 45 46
+        on right: 4
+    list_assign (79)
+        on left: 47 48
+        on right: 17
+    list_push (80)
+        on left: 49 50
+        on right: 29
+    list_remove (81)
+        on left: 51 52
+        on right: 30
+    access_assign (82)
+        on left: 53
+        on right: 15
+    access (83)
+        on left: 54
+        on right: 53 106
+    access_suffix_list (84)
+        on left: 55 56
+        on right: 49 51 54 56
+    access_suffix (85)
+        on left: 57 58
+        on right: 55 56
+    int_literal <rec> (86)
+        on left: 59 60
+        on right: 100
+    float_literal <rec> (87)
+        on left: 61 62
+        on right: 101
+    type <rec> (88)
+        on left: 63 64 65
+        on right: 11
+    primitive_type <rec> (89)
+        on left: 66 67 68 69 70
+        on right: 35 36 42 63
+    struct_declaration <rec> (90)
+        on left: 71
+        on right: 5
+    var_assign (91)
+        on left: 72 73
+        on right: 16 126 127
+    composite_assign_operator (92)
+        on left: 74 75 76 77
+        on right: 73
+    expression <rec> (93)
+        on left: 78 79 80
+        on right: 26 32 35 49 50 53 57 72 73 78 79 98 108 109 111 116 117 122 123 124 128 129 131
+    comparison_expression <rec> (94)
+        on left: 81 82 83
+        on right: 78 79 80 81 82
+    relation_expression <rec> (95)
+        on left: 84 85 86 87 88
+        on right: 81 82 83 84 85 86 87
+    arithmatic_expression <rec> (96)
+        on left: 89 90 91
+        on right: 84 85 86 87 88 89 90
+    factor <rec> (97)
+        on left: 92 93 94 95
+        on right: 89 90 91 92 93 94
+    unary <rec> (98)
+        on left: 96 97 98 99 100 101 102 103 104 105 106
+        on right: 92 93 94 95
+    func_call (99)
+        on left: 107
+        on right: 104
+    args (100)
+        on left: 108 109 110
+        on right: 107 108
+    if (101)
+        on left: 111
+        on right: 19
+    if_complement (102)
+        on left: 112 113 114 115
+        on right: 111
+    else_if (103)
+        on left: 116 117
+        on right: 113 114 116
+    switch (104)
+        on left: 118 119
+        on right: 28
+    cases (105)
+        on left: 120 121
+        on right: 118 119 120
+    case (106)
+        on left: 122
+        on right: 120 121
+    while (107)
+        on left: 123
+        on right: 23
+    do_while (108)
+        on left: 124
+        on right: 24
+    for_initialization (109)
+        on left: 125 126
+        on right: 129
+    for_step (110)
+        on left: 127 128
+        on right: 129
+    for (111)
+        on left: 129
+        on right: 25
+    read (112)
+        on left: 130
+        on right: 105
+    write (113)
+        on left: 131
+        on right: 27
+    input_args (114)
+        on left: 132 133
+        on right: 130
+
+
+State 0
+
+    0 $accept: • prog $end
+
+    ID       shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 3
+    STRUCT   shift, and go to state 4
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    prog                   go to state 9
+    general_stmt           go to state 10
+    general_stmt_list      go to state 11
+    func_declaration_list  go to state 12
+    func_declaration       go to state 13
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+
+
+State 1
+
+   38 var_declaration: ID • ID
+
+    ID  shift, and go to state 21
+
+
+State 2
+
+   66 primitive_type: INTEGER •
+
+    $default  reduce using rule 66 (primitive_type)
+
+
+State 3
+
+   41 list_declaration: LIST • '<' list_types '>' ID
+   64 type: LIST • '<' list_types '>'
+
+    '<'  shift, and go to state 22
+
+
+State 4
+
+   65 type: STRUCT •
+   71 struct_declaration: STRUCT • ID '=' '{' var_declaration_list '}'
+
+    ID  shift, and go to state 23
+
+    $default  reduce using rule 65 (type)
+
+
+State 5
+
+   67 primitive_type: FLOAT •
+
+    $default  reduce using rule 67 (primitive_type)
+
+
+State 6
+
+   68 primitive_type: STRING •
+
+    $default  reduce using rule 68 (primitive_type)
+
+
+State 7
+
+   69 primitive_type: VOID •
+
+    $default  reduce using rule 69 (primitive_type)
+
+
+State 8
+
+   70 primitive_type: BOOLEAN •
+
+    $default  reduce using rule 70 (primitive_type)
+
+
+State 9
+
+    0 $accept: prog • $end
+
+    $end  shift, and go to state 24
+
+
+State 10
+
+    7 general_stmt_list: general_stmt • ';'
+
+    ';'  shift, and go to state 25
+
+
+State 11
+
+    2 prog: general_stmt_list • func_declaration_list
+    8 general_stmt_list: general_stmt_list • general_stmt ';'
+
+    ID       shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 3
+    STRUCT   shift, and go to state 4
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    general_stmt           go to state 26
+    func_declaration_list  go to state 27
+    func_declaration       go to state 13
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+
+
+State 12
+
+    1 prog: func_declaration_list •
+   10 func_declaration_list: func_declaration_list • func_declaration
+
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 28
+    STRUCT   shift, and go to state 29
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    $default  reduce using rule 1 (prog)
+
+    func_declaration  go to state 30
+    type              go to state 18
+    primitive_type    go to state 31
+
+
+State 13
+
+    9 func_declaration_list: func_declaration •
+
+    $default  reduce using rule 9 (func_declaration_list)
+
+
+State 14
+
+    6 general_stmt: var_initialization •
+
+    $default  reduce using rule 6 (general_stmt)
+
+
+State 15
+
+    3 general_stmt: var_declaration •
+
+    $default  reduce using rule 3 (general_stmt)
+
+
+State 16
+
+   37 var_declaration: list_declaration •
+   45 list_initialization: list_declaration • '=' NEW LIST '<' '>' '(' ')'
+   46                    | list_declaration • '=' NEW LIST '<' '>' '(' ID ')'
+
+    '='  shift, and go to state 32
+
+    $default  reduce using rule 37 (var_declaration)
+
+
+State 17
+
+    4 general_stmt: list_initialization •
+
+    $default  reduce using rule 4 (general_stmt)
+
+
+State 18
+
+   11 func_declaration: type • FUNCTION ID '(' params_list ')' '{' stmt_list '}'
+
+    FUNCTION  shift, and go to state 33
+
+
+State 19
+
+   35 var_initialization: primitive_type • ID '=' expression
+   36 var_declaration: primitive_type • ID
+   63 type: primitive_type •
+
+    ID  shift, and go to state 34
+
+    $default  reduce using rule 63 (type)
+
+
+State 20
+
+    5 general_stmt: struct_declaration •
+
+    $default  reduce using rule 5 (general_stmt)
+
+
+State 21
+
+   38 var_declaration: ID ID •
+
+    $default  reduce using rule 38 (var_declaration)
+
+
+State 22
+
+   41 list_declaration: LIST '<' • list_types '>' ID
+   64 type: LIST '<' • list_types '>'
+
+    ID       shift, and go to state 35
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 36
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    list_types      go to state 37
+    primitive_type  go to state 38
+
+
+State 23
+
+   71 struct_declaration: STRUCT ID • '=' '{' var_declaration_list '}'
+
+    '='  shift, and go to state 39
+
+
+State 24
+
+    0 $accept: prog $end •
+
+    $default  accept
+
+
+State 25
+
+    7 general_stmt_list: general_stmt ';' •
+
+    $default  reduce using rule 7 (general_stmt_list)
+
+
+State 26
+
+    8 general_stmt_list: general_stmt_list general_stmt • ';'
+
+    ';'  shift, and go to state 40
+
+
+State 27
+
+    2 prog: general_stmt_list func_declaration_list •
+   10 func_declaration_list: func_declaration_list • func_declaration
+
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 28
+    STRUCT   shift, and go to state 29
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    $default  reduce using rule 2 (prog)
+
+    func_declaration  go to state 30
+    type              go to state 18
+    primitive_type    go to state 31
+
+
+State 28
+
+   64 type: LIST • '<' list_types '>'
+
+    '<'  shift, and go to state 41
+
+
+State 29
+
+   65 type: STRUCT •
+
+    $default  reduce using rule 65 (type)
+
+
+State 30
+
+   10 func_declaration_list: func_declaration_list func_declaration •
+
+    $default  reduce using rule 10 (func_declaration_list)
+
+
+State 31
+
+   63 type: primitive_type •
+
+    $default  reduce using rule 63 (type)
+
+
+State 32
+
+   45 list_initialization: list_declaration '=' • NEW LIST '<' '>' '(' ')'
+   46                    | list_declaration '=' • NEW LIST '<' '>' '(' ID ')'
+
+    NEW  shift, and go to state 42
+
+
+State 33
+
+   11 func_declaration: type FUNCTION • ID '(' params_list ')' '{' stmt_list '}'
+
+    ID  shift, and go to state 43
+
+
+State 34
+
+   35 var_initialization: primitive_type ID • '=' expression
+   36 var_declaration: primitive_type ID •
+
+    '='  shift, and go to state 44
+
+    $default  reduce using rule 36 (var_declaration)
+
+
+State 35
+
+   43 list_types: ID •
+
+    $default  reduce using rule 43 (list_types)
+
+
+State 36
+
+   44 list_types: LIST • '<' list_types '>'
+
+    '<'  shift, and go to state 45
+
+
+State 37
+
+   41 list_declaration: LIST '<' list_types • '>' ID
+   64 type: LIST '<' list_types • '>'
+
+    '>'  shift, and go to state 46
+
+
+State 38
+
+   42 list_types: primitive_type •
+
+    $default  reduce using rule 42 (list_types)
+
+
+State 39
+
+   71 struct_declaration: STRUCT ID '=' • '{' var_declaration_list '}'
+
+    '{'  shift, and go to state 47
+
+
+State 40
+
+    8 general_stmt_list: general_stmt_list general_stmt ';' •
+
+    $default  reduce using rule 8 (general_stmt_list)
+
+
+State 41
+
+   64 type: LIST '<' • list_types '>'
+
+    ID       shift, and go to state 35
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 36
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    list_types      go to state 48
+    primitive_type  go to state 38
+
+
+State 42
+
+   45 list_initialization: list_declaration '=' NEW • LIST '<' '>' '(' ')'
+   46                    | list_declaration '=' NEW • LIST '<' '>' '(' ID ')'
+
+    LIST  shift, and go to state 49
+
+
+State 43
+
+   11 func_declaration: type FUNCTION ID • '(' params_list ')' '{' stmt_list '}'
+
+    '('  shift, and go to state 50
+
+
+State 44
+
+   35 var_initialization: primitive_type ID '=' • expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 62
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 45
+
+   44 list_types: LIST '<' • list_types '>'
+
+    ID       shift, and go to state 35
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 36
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    list_types      go to state 70
+    primitive_type  go to state 38
+
+
+State 46
+
+   41 list_declaration: LIST '<' list_types '>' • ID
+   64 type: LIST '<' list_types '>' •
+
+    ID  shift, and go to state 71
+
+    $default  reduce using rule 64 (type)
+
+
+State 47
+
+   71 struct_declaration: STRUCT ID '=' '{' • var_declaration_list '}'
+
+    ID       shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 72
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    var_declaration       go to state 73
+    var_declaration_list  go to state 74
+    list_declaration      go to state 75
+    primitive_type        go to state 76
+
+
+State 48
+
+   64 type: LIST '<' list_types • '>'
+
+    '>'  shift, and go to state 77
+
+
+State 49
+
+   45 list_initialization: list_declaration '=' NEW LIST • '<' '>' '(' ')'
+   46                    | list_declaration '=' NEW LIST • '<' '>' '(' ID ')'
+
+    '<'  shift, and go to state 78
+
+
+State 50
+
+   11 func_declaration: type FUNCTION ID '(' • params_list ')' '{' stmt_list '}'
+
+    ID       shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 72
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    $default  reduce using rule 33 (params_list)
+
+    params_list           go to state 79
+    var_declaration       go to state 73
+    var_declaration_list  go to state 80
+    list_declaration      go to state 75
+    primitive_type        go to state 76
+
+
+State 51
+
+   54 access: ID • access_suffix_list
+   96 unary: ID • UNARY_SUM
+   97      | ID • UNARY_SUBTRACTION
+   99      | ID •
+  107 func_call: ID • '(' args ')'
+
+    UNARY_SUM          shift, and go to state 81
+    UNARY_SUBTRACTION  shift, and go to state 82
+    '('                shift, and go to state 83
+    '.'                shift, and go to state 84
+    '['                shift, and go to state 85
+
+    $default  reduce using rule 99 (unary)
+
+    access_suffix_list  go to state 86
+    access_suffix       go to state 87
+
+
+State 52
+
+  103 unary: STRING_LITERAL •
+
+    $default  reduce using rule 103 (unary)
+
+
+State 53
+
+   61 float_literal: FLOAT_LITERAL •
+
+    $default  reduce using rule 61 (float_literal)
+
+
+State 54
+
+   59 int_literal: INT_LITERAL •
+
+    $default  reduce using rule 59 (int_literal)
+
+
+State 55
+
+  102 unary: BOOL_LITERAL •
+
+    $default  reduce using rule 102 (unary)
+
+
+State 56
+
+  130 read: INPUT • '(' input_args ')'
+
+    '('  shift, and go to state 88
+
+
+State 57
+
+   98 unary: '(' • expression ')'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 89
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 58
+
+   60 int_literal: '-' • INT_LITERAL
+   62 float_literal: '-' • FLOAT_LITERAL
+
+    FLOAT_LITERAL  shift, and go to state 90
+    INT_LITERAL    shift, and go to state 91
+
+
+State 59
+
+  106 unary: access •
+
+    $default  reduce using rule 106 (unary)
+
+
+State 60
+
+  100 unary: int_literal •
+
+    $default  reduce using rule 100 (unary)
+
+
+State 61
+
+  101 unary: float_literal •
+
+    $default  reduce using rule 101 (unary)
+
+
+State 62
+
+   35 var_initialization: primitive_type ID '=' expression •
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+
+    $default  reduce using rule 35 (var_initialization)
+
+
+State 63
+
+   80 expression: comparison_expression •
+   81 comparison_expression: comparison_expression • EQUALS relation_expression
+   82                      | comparison_expression • DIFF relation_expression
+
+    EQUALS  shift, and go to state 94
+    DIFF    shift, and go to state 95
+
+    $default  reduce using rule 80 (expression)
+
+
+State 64
+
+   83 comparison_expression: relation_expression •
+   84 relation_expression: relation_expression • '>' arithmatic_expression
+   85                    | relation_expression • '<' arithmatic_expression
+   86                    | relation_expression • GTE arithmatic_expression
+   87                    | relation_expression • LTE arithmatic_expression
+
+    GTE  shift, and go to state 96
+    LTE  shift, and go to state 97
+    '<'  shift, and go to state 98
+    '>'  shift, and go to state 99
+
+    $default  reduce using rule 83 (comparison_expression)
+
+
+State 65
+
+   88 relation_expression: arithmatic_expression •
+   89 arithmatic_expression: arithmatic_expression • '+' factor
+   90                      | arithmatic_expression • '-' factor
+
+    '-'  shift, and go to state 100
+    '+'  shift, and go to state 101
+
+    $default  reduce using rule 88 (relation_expression)
+
+
+State 66
+
+   91 arithmatic_expression: factor •
+   92 factor: factor • '*' unary
+   93       | factor • '/' unary
+   94       | factor • INT_DIVISION unary
+
+    INT_DIVISION  shift, and go to state 102
+    '*'           shift, and go to state 103
+    '/'           shift, and go to state 104
+
+    $default  reduce using rule 91 (arithmatic_expression)
+
+
+State 67
+
+   95 factor: unary •
+
+    $default  reduce using rule 95 (factor)
+
+
+State 68
+
+  104 unary: func_call •
+
+    $default  reduce using rule 104 (unary)
+
+
+State 69
+
+  105 unary: read •
+
+    $default  reduce using rule 105 (unary)
+
+
+State 70
+
+   44 list_types: LIST '<' list_types • '>'
+
+    '>'  shift, and go to state 105
+
+
+State 71
+
+   41 list_declaration: LIST '<' list_types '>' ID •
+
+    $default  reduce using rule 41 (list_declaration)
+
+
+State 72
+
+   41 list_declaration: LIST • '<' list_types '>' ID
+
+    '<'  shift, and go to state 106
+
+
+State 73
+
+   39 var_declaration_list: var_declaration •
+
+    $default  reduce using rule 39 (var_declaration_list)
+
+
+State 74
+
+   40 var_declaration_list: var_declaration_list • ',' var_declaration
+   71 struct_declaration: STRUCT ID '=' '{' var_declaration_list • '}'
+
+    '}'  shift, and go to state 107
+    ','  shift, and go to state 108
+
+
+State 75
+
+   37 var_declaration: list_declaration •
+
+    $default  reduce using rule 37 (var_declaration)
+
+
+State 76
+
+   36 var_declaration: primitive_type • ID
+
+    ID  shift, and go to state 109
+
+
+State 77
+
+   64 type: LIST '<' list_types '>' •
+
+    $default  reduce using rule 64 (type)
+
+
+State 78
+
+   45 list_initialization: list_declaration '=' NEW LIST '<' • '>' '(' ')'
+   46                    | list_declaration '=' NEW LIST '<' • '>' '(' ID ')'
+
+    '>'  shift, and go to state 110
+
+
+State 79
+
+   11 func_declaration: type FUNCTION ID '(' params_list • ')' '{' stmt_list '}'
+
+    ')'  shift, and go to state 111
+
+
+State 80
+
+   34 params_list: var_declaration_list •
+   40 var_declaration_list: var_declaration_list • ',' var_declaration
+
+    ','  shift, and go to state 108
+
+    $default  reduce using rule 34 (params_list)
+
+
+State 81
+
+   96 unary: ID UNARY_SUM •
+
+    $default  reduce using rule 96 (unary)
+
+
+State 82
+
+   97 unary: ID UNARY_SUBTRACTION •
+
+    $default  reduce using rule 97 (unary)
+
+
+State 83
+
+  107 func_call: ID '(' • args ')'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    $default  reduce using rule 110 (args)
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 112
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    args                   go to state 113
+    read                   go to state 69
+
+
+State 84
+
+   58 access_suffix: '.' • ID
+
+    ID  shift, and go to state 114
+
+
+State 85
+
+   57 access_suffix: '[' • expression ']'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 115
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 86
+
+   54 access: ID access_suffix_list •
+   56 access_suffix_list: access_suffix_list • access_suffix
+
+    '.'  shift, and go to state 84
+    '['  shift, and go to state 85
+
+    $default  reduce using rule 54 (access)
+
+    access_suffix  go to state 116
+
+
+State 87
+
+   55 access_suffix_list: access_suffix •
+
+    $default  reduce using rule 55 (access_suffix_list)
+
+
+State 88
+
+  130 read: INPUT '(' • input_args ')'
+
+    STRING_LITERAL  shift, and go to state 117
+
+    $default  reduce using rule 132 (input_args)
+
+    input_args  go to state 118
+
+
+State 89
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+   98 unary: '(' expression • ')'
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ')'  shift, and go to state 119
+
+
+State 90
+
+   62 float_literal: '-' FLOAT_LITERAL •
+
+    $default  reduce using rule 62 (float_literal)
+
+
+State 91
+
+   60 int_literal: '-' INT_LITERAL •
+
+    $default  reduce using rule 60 (int_literal)
+
+
+State 92
+
+   78 expression: expression AND • comparison_expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    comparison_expression  go to state 120
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 93
+
+   79 expression: expression OR • comparison_expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    comparison_expression  go to state 121
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 94
+
+   81 comparison_expression: comparison_expression EQUALS • relation_expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    relation_expression    go to state 122
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 95
+
+   82 comparison_expression: comparison_expression DIFF • relation_expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    relation_expression    go to state 123
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 96
+
+   86 relation_expression: relation_expression GTE • arithmatic_expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    arithmatic_expression  go to state 124
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 97
+
+   87 relation_expression: relation_expression LTE • arithmatic_expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    arithmatic_expression  go to state 125
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 98
+
+   85 relation_expression: relation_expression '<' • arithmatic_expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    arithmatic_expression  go to state 126
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 99
+
+   84 relation_expression: relation_expression '>' • arithmatic_expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    arithmatic_expression  go to state 127
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 100
+
+   90 arithmatic_expression: arithmatic_expression '-' • factor
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access         go to state 59
+    int_literal    go to state 60
+    float_literal  go to state 61
+    factor         go to state 128
+    unary          go to state 67
+    func_call      go to state 68
+    read           go to state 69
+
+
+State 101
+
+   89 arithmatic_expression: arithmatic_expression '+' • factor
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access         go to state 59
+    int_literal    go to state 60
+    float_literal  go to state 61
+    factor         go to state 129
+    unary          go to state 67
+    func_call      go to state 68
+    read           go to state 69
+
+
+State 102
+
+   94 factor: factor INT_DIVISION • unary
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access         go to state 59
+    int_literal    go to state 60
+    float_literal  go to state 61
+    unary          go to state 130
+    func_call      go to state 68
+    read           go to state 69
+
+
+State 103
+
+   92 factor: factor '*' • unary
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access         go to state 59
+    int_literal    go to state 60
+    float_literal  go to state 61
+    unary          go to state 131
+    func_call      go to state 68
+    read           go to state 69
+
+
+State 104
+
+   93 factor: factor '/' • unary
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access         go to state 59
+    int_literal    go to state 60
+    float_literal  go to state 61
+    unary          go to state 132
+    func_call      go to state 68
+    read           go to state 69
+
+
+State 105
+
+   44 list_types: LIST '<' list_types '>' •
+
+    $default  reduce using rule 44 (list_types)
+
+
+State 106
+
+   41 list_declaration: LIST '<' • list_types '>' ID
+
+    ID       shift, and go to state 35
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 36
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    list_types      go to state 133
+    primitive_type  go to state 38
+
+
+State 107
+
+   71 struct_declaration: STRUCT ID '=' '{' var_declaration_list '}' •
+
+    $default  reduce using rule 71 (struct_declaration)
+
+
+State 108
+
+   40 var_declaration_list: var_declaration_list ',' • var_declaration
+
+    ID       shift, and go to state 1
+    INTEGER  shift, and go to state 2
+    LIST     shift, and go to state 72
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    var_declaration   go to state 134
+    list_declaration  go to state 75
+    primitive_type    go to state 76
+
+
+State 109
+
+   36 var_declaration: primitive_type ID •
+
+    $default  reduce using rule 36 (var_declaration)
+
+
+State 110
+
+   45 list_initialization: list_declaration '=' NEW LIST '<' '>' • '(' ')'
+   46                    | list_declaration '=' NEW LIST '<' '>' • '(' ID ')'
+
+    '('  shift, and go to state 135
+
+
+State 111
+
+   11 func_declaration: type FUNCTION ID '(' params_list ')' • '{' stmt_list '}'
+
+    '{'  shift, and go to state 136
+
+
+State 112
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  109 args: expression •
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+
+    $default  reduce using rule 109 (args)
+
+
+State 113
+
+  107 func_call: ID '(' args • ')'
+  108 args: args • ',' expression
+
+    ')'  shift, and go to state 137
+    ','  shift, and go to state 138
+
+
+State 114
+
+   58 access_suffix: '.' ID •
+
+    $default  reduce using rule 58 (access_suffix)
+
+
+State 115
+
+   57 access_suffix: '[' expression • ']'
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ']'  shift, and go to state 139
+
+
+State 116
+
+   56 access_suffix_list: access_suffix_list access_suffix •
+
+    $default  reduce using rule 56 (access_suffix_list)
+
+
+State 117
+
+  133 input_args: STRING_LITERAL •
+
+    $default  reduce using rule 133 (input_args)
+
+
+State 118
+
+  130 read: INPUT '(' input_args • ')'
+
+    ')'  shift, and go to state 140
+
+
+State 119
+
+   98 unary: '(' expression ')' •
+
+    $default  reduce using rule 98 (unary)
+
+
+State 120
+
+   78 expression: expression AND comparison_expression •
+   81 comparison_expression: comparison_expression • EQUALS relation_expression
+   82                      | comparison_expression • DIFF relation_expression
+
+    EQUALS  shift, and go to state 94
+    DIFF    shift, and go to state 95
+
+    $default  reduce using rule 78 (expression)
+
+
+State 121
+
+   79 expression: expression OR comparison_expression •
+   81 comparison_expression: comparison_expression • EQUALS relation_expression
+   82                      | comparison_expression • DIFF relation_expression
+
+    EQUALS  shift, and go to state 94
+    DIFF    shift, and go to state 95
+
+    $default  reduce using rule 79 (expression)
+
+
+State 122
+
+   81 comparison_expression: comparison_expression EQUALS relation_expression •
+   84 relation_expression: relation_expression • '>' arithmatic_expression
+   85                    | relation_expression • '<' arithmatic_expression
+   86                    | relation_expression • GTE arithmatic_expression
+   87                    | relation_expression • LTE arithmatic_expression
+
+    GTE  shift, and go to state 96
+    LTE  shift, and go to state 97
+    '<'  shift, and go to state 98
+    '>'  shift, and go to state 99
+
+    $default  reduce using rule 81 (comparison_expression)
+
+
+State 123
+
+   82 comparison_expression: comparison_expression DIFF relation_expression •
+   84 relation_expression: relation_expression • '>' arithmatic_expression
+   85                    | relation_expression • '<' arithmatic_expression
+   86                    | relation_expression • GTE arithmatic_expression
+   87                    | relation_expression • LTE arithmatic_expression
+
+    GTE  shift, and go to state 96
+    LTE  shift, and go to state 97
+    '<'  shift, and go to state 98
+    '>'  shift, and go to state 99
+
+    $default  reduce using rule 82 (comparison_expression)
+
+
+State 124
+
+   86 relation_expression: relation_expression GTE arithmatic_expression •
+   89 arithmatic_expression: arithmatic_expression • '+' factor
+   90                      | arithmatic_expression • '-' factor
+
+    '-'  shift, and go to state 100
+    '+'  shift, and go to state 101
+
+    $default  reduce using rule 86 (relation_expression)
+
+
+State 125
+
+   87 relation_expression: relation_expression LTE arithmatic_expression •
+   89 arithmatic_expression: arithmatic_expression • '+' factor
+   90                      | arithmatic_expression • '-' factor
+
+    '-'  shift, and go to state 100
+    '+'  shift, and go to state 101
+
+    $default  reduce using rule 87 (relation_expression)
+
+
+State 126
+
+   85 relation_expression: relation_expression '<' arithmatic_expression •
+   89 arithmatic_expression: arithmatic_expression • '+' factor
+   90                      | arithmatic_expression • '-' factor
+
+    '-'  shift, and go to state 100
+    '+'  shift, and go to state 101
+
+    $default  reduce using rule 85 (relation_expression)
+
+
+State 127
+
+   84 relation_expression: relation_expression '>' arithmatic_expression •
+   89 arithmatic_expression: arithmatic_expression • '+' factor
+   90                      | arithmatic_expression • '-' factor
+
+    '-'  shift, and go to state 100
+    '+'  shift, and go to state 101
+
+    $default  reduce using rule 84 (relation_expression)
+
+
+State 128
+
+   90 arithmatic_expression: arithmatic_expression '-' factor •
+   92 factor: factor • '*' unary
+   93       | factor • '/' unary
+   94       | factor • INT_DIVISION unary
+
+    INT_DIVISION  shift, and go to state 102
+    '*'           shift, and go to state 103
+    '/'           shift, and go to state 104
+
+    $default  reduce using rule 90 (arithmatic_expression)
+
+
+State 129
+
+   89 arithmatic_expression: arithmatic_expression '+' factor •
+   92 factor: factor • '*' unary
+   93       | factor • '/' unary
+   94       | factor • INT_DIVISION unary
+
+    INT_DIVISION  shift, and go to state 102
+    '*'           shift, and go to state 103
+    '/'           shift, and go to state 104
+
+    $default  reduce using rule 89 (arithmatic_expression)
+
+
+State 130
+
+   94 factor: factor INT_DIVISION unary •
+
+    $default  reduce using rule 94 (factor)
+
+
+State 131
+
+   92 factor: factor '*' unary •
+
+    $default  reduce using rule 92 (factor)
+
+
+State 132
+
+   93 factor: factor '/' unary •
+
+    $default  reduce using rule 93 (factor)
+
+
+State 133
+
+   41 list_declaration: LIST '<' list_types • '>' ID
+
+    '>'  shift, and go to state 141
+
+
+State 134
+
+   40 var_declaration_list: var_declaration_list ',' var_declaration •
+
+    $default  reduce using rule 40 (var_declaration_list)
+
+
+State 135
+
+   45 list_initialization: list_declaration '=' NEW LIST '<' '>' '(' • ')'
+   46                    | list_declaration '=' NEW LIST '<' '>' '(' • ID ')'
+
+    ID   shift, and go to state 142
+    ')'  shift, and go to state 143
+
+
+State 136
+
+   11 func_declaration: type FUNCTION ID '(' params_list ')' '{' • stmt_list '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 156
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 137
+
+  107 func_call: ID '(' args ')' •
+
+    $default  reduce using rule 107 (func_call)
+
+
+State 138
+
+  108 args: args ',' • expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 172
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 139
+
+   57 access_suffix: '[' expression ']' •
+
+    $default  reduce using rule 57 (access_suffix)
+
+
+State 140
+
+  130 read: INPUT '(' input_args ')' •
+
+    $default  reduce using rule 130 (read)
+
+
+State 141
+
+   41 list_declaration: LIST '<' list_types '>' • ID
+
+    ID  shift, and go to state 71
+
+
+State 142
+
+   46 list_initialization: list_declaration '=' NEW LIST '<' '>' '(' ID • ')'
+
+    ')'  shift, and go to state 173
+
+
+State 143
+
+   45 list_initialization: list_declaration '=' NEW LIST '<' '>' '(' ')' •
+
+    $default  reduce using rule 45 (list_initialization)
+
+
+State 144
+
+   38 var_declaration: ID • ID
+   47 list_assign: ID • '=' NEW LIST '<' '>' '(' ')'
+   48            | ID • '=' NEW LIST '<' '>' '(' ID ')'
+   49 list_push: ID • access_suffix_list '.' ADD '(' expression ')'
+   50          | ID • '.' ADD '(' expression ')'
+   51 list_remove: ID • access_suffix_list '.' REMOVE '(' ')'
+   52            | ID • '.' REMOVE '(' ')'
+   54 access: ID • access_suffix_list
+   72 var_assign: ID • '=' expression
+   73           | ID • composite_assign_operator expression
+   96 unary: ID • UNARY_SUM
+   97      | ID • UNARY_SUBTRACTION
+   99      | ID •
+  107 func_call: ID • '(' args ')'
+
+    ID                  shift, and go to state 21
+    SUM_ASSIGN          shift, and go to state 174
+    SUBTRACTION_ASSIGN  shift, and go to state 175
+    TIMES_ASSIGN        shift, and go to state 176
+    DIVISION_ASSIGN     shift, and go to state 177
+    UNARY_SUM           shift, and go to state 81
+    UNARY_SUBTRACTION   shift, and go to state 82
+    '('                 shift, and go to state 83
+    '='                 shift, and go to state 178
+    '.'                 shift, and go to state 179
+    '['                 shift, and go to state 85
+
+    $default  reduce using rule 99 (unary)
+
+    access_suffix_list         go to state 180
+    access_suffix              go to state 87
+    composite_assign_operator  go to state 181
+
+
+State 145
+
+   22 stmt: CONTINUE • ';'
+
+    ';'  shift, and go to state 182
+
+
+State 146
+
+  123 while: WHILE • '(' expression ')' '{' stmt_list '}'
+
+    '('  shift, and go to state 183
+
+
+State 147
+
+  124 do_while: DO • '{' stmt_list '}' WHILE '(' expression ')'
+
+    '{'  shift, and go to state 184
+
+
+State 148
+
+   21 stmt: BREAK • ';'
+
+    ';'  shift, and go to state 185
+
+
+State 149
+
+   31 return: RETURN •
+   32       | RETURN • expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    $default  reduce using rule 31 (return)
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 186
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 150
+
+  129 for: FOR • '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'
+
+    '('  shift, and go to state 187
+
+
+State 151
+
+  111 if: IF • '(' expression ')' '{' stmt_list '}' if_complement
+
+    '('  shift, and go to state 188
+
+
+State 152
+
+  131 write: OUTPUT • '(' expression ')'
+
+    '('  shift, and go to state 189
+
+
+State 153
+
+  118 switch: SWITCH • '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'
+  119       | SWITCH • '(' ID ')' '{' cases '}'
+
+    '('  shift, and go to state 190
+
+
+State 154
+
+   14 stmt: general_stmt • ';'
+
+    ';'  shift, and go to state 191
+
+
+State 155
+
+   18 stmt: func_declaration •
+
+    $default  reduce using rule 18 (stmt)
+
+
+State 156
+
+   11 func_declaration: type FUNCTION ID '(' params_list ')' '{' stmt_list • '}'
+   13 stmt_list: stmt_list • stmt
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '}'             shift, and go to state 192
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 157
+
+   12 stmt_list: stmt •
+
+    $default  reduce using rule 12 (stmt_list)
+
+
+State 158
+
+   20 stmt: return • ';'
+
+    ';'  shift, and go to state 194
+
+
+State 159
+
+   17 stmt: list_assign • ';'
+
+    ';'  shift, and go to state 195
+
+
+State 160
+
+   29 stmt: list_push • ';'
+
+    ';'  shift, and go to state 196
+
+
+State 161
+
+   30 stmt: list_remove • ';'
+
+    ';'  shift, and go to state 197
+
+
+State 162
+
+   15 stmt: access_assign • ';'
+
+    ';'  shift, and go to state 198
+
+
+State 163
+
+   53 access_assign: access • '=' expression
+  106 unary: access •
+
+    '='  shift, and go to state 199
+
+    $default  reduce using rule 106 (unary)
+
+
+State 164
+
+   16 stmt: var_assign • ';'
+
+    ';'  shift, and go to state 200
+
+
+State 165
+
+   26 stmt: expression • ';'
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ';'  shift, and go to state 201
+
+
+State 166
+
+   19 stmt: if •
+
+    $default  reduce using rule 19 (stmt)
+
+
+State 167
+
+   28 stmt: switch •
+
+    $default  reduce using rule 28 (stmt)
+
+
+State 168
+
+   23 stmt: while •
+
+    $default  reduce using rule 23 (stmt)
+
+
+State 169
+
+   24 stmt: do_while • ';'
+
+    ';'  shift, and go to state 202
+
+
+State 170
+
+   25 stmt: for •
+
+    $default  reduce using rule 25 (stmt)
+
+
+State 171
+
+   27 stmt: write • ';'
+
+    ';'  shift, and go to state 203
+
+
+State 172
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  108 args: args ',' expression •
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+
+    $default  reduce using rule 108 (args)
+
+
+State 173
+
+   46 list_initialization: list_declaration '=' NEW LIST '<' '>' '(' ID ')' •
+
+    $default  reduce using rule 46 (list_initialization)
+
+
+State 174
+
+   74 composite_assign_operator: SUM_ASSIGN •
+
+    $default  reduce using rule 74 (composite_assign_operator)
+
+
+State 175
+
+   75 composite_assign_operator: SUBTRACTION_ASSIGN •
+
+    $default  reduce using rule 75 (composite_assign_operator)
+
+
+State 176
+
+   76 composite_assign_operator: TIMES_ASSIGN •
+
+    $default  reduce using rule 76 (composite_assign_operator)
+
+
+State 177
+
+   77 composite_assign_operator: DIVISION_ASSIGN •
+
+    $default  reduce using rule 77 (composite_assign_operator)
+
+
+State 178
+
+   47 list_assign: ID '=' • NEW LIST '<' '>' '(' ')'
+   48            | ID '=' • NEW LIST '<' '>' '(' ID ')'
+   72 var_assign: ID '=' • expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    NEW             shift, and go to state 204
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 205
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 179
+
+   50 list_push: ID '.' • ADD '(' expression ')'
+   52 list_remove: ID '.' • REMOVE '(' ')'
+   58 access_suffix: '.' • ID
+
+    ID      shift, and go to state 114
+    ADD     shift, and go to state 206
+    REMOVE  shift, and go to state 207
+
+
+State 180
+
+   49 list_push: ID access_suffix_list • '.' ADD '(' expression ')'
+   51 list_remove: ID access_suffix_list • '.' REMOVE '(' ')'
+   54 access: ID access_suffix_list •
+   56 access_suffix_list: access_suffix_list • access_suffix
+
+    '.'  shift, and go to state 208
+    '['  shift, and go to state 85
+
+    $default  reduce using rule 54 (access)
+
+    access_suffix  go to state 116
+
+
+State 181
+
+   73 var_assign: ID composite_assign_operator • expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 209
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 182
+
+   22 stmt: CONTINUE ';' •
+
+    $default  reduce using rule 22 (stmt)
+
+
+State 183
+
+  123 while: WHILE '(' • expression ')' '{' stmt_list '}'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 210
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 184
+
+  124 do_while: DO '{' • stmt_list '}' WHILE '(' expression ')'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 211
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 185
+
+   21 stmt: BREAK ';' •
+
+    $default  reduce using rule 21 (stmt)
+
+
+State 186
+
+   32 return: RETURN expression •
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+
+    $default  reduce using rule 32 (return)
+
+
+State 187
+
+  129 for: FOR '(' • for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'
+
+    ID       shift, and go to state 212
+    INTEGER  shift, and go to state 2
+    FLOAT    shift, and go to state 5
+    STRING   shift, and go to state 6
+    VOID     shift, and go to state 7
+    BOOLEAN  shift, and go to state 8
+
+    var_initialization  go to state 213
+    primitive_type      go to state 214
+    var_assign          go to state 215
+    for_initialization  go to state 216
+
+
+State 188
+
+  111 if: IF '(' • expression ')' '{' stmt_list '}' if_complement
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 217
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 189
+
+  131 write: OUTPUT '(' • expression ')'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 218
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 190
+
+  118 switch: SWITCH '(' • ID ')' '{' cases DEFAULT ':' stmt_list '}'
+  119       | SWITCH '(' • ID ')' '{' cases '}'
+
+    ID  shift, and go to state 219
+
+
+State 191
+
+   14 stmt: general_stmt ';' •
+
+    $default  reduce using rule 14 (stmt)
+
+
+State 192
+
+   11 func_declaration: type FUNCTION ID '(' params_list ')' '{' stmt_list '}' •
+
+    $default  reduce using rule 11 (func_declaration)
+
+
+State 193
+
+   13 stmt_list: stmt_list stmt •
+
+    $default  reduce using rule 13 (stmt_list)
+
+
+State 194
+
+   20 stmt: return ';' •
+
+    $default  reduce using rule 20 (stmt)
+
+
+State 195
+
+   17 stmt: list_assign ';' •
+
+    $default  reduce using rule 17 (stmt)
+
+
+State 196
+
+   29 stmt: list_push ';' •
+
+    $default  reduce using rule 29 (stmt)
+
+
+State 197
+
+   30 stmt: list_remove ';' •
+
+    $default  reduce using rule 30 (stmt)
+
+
+State 198
+
+   15 stmt: access_assign ';' •
+
+    $default  reduce using rule 15 (stmt)
+
+
+State 199
+
+   53 access_assign: access '=' • expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 220
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 200
+
+   16 stmt: var_assign ';' •
+
+    $default  reduce using rule 16 (stmt)
+
+
+State 201
+
+   26 stmt: expression ';' •
+
+    $default  reduce using rule 26 (stmt)
+
+
+State 202
+
+   24 stmt: do_while ';' •
+
+    $default  reduce using rule 24 (stmt)
+
+
+State 203
+
+   27 stmt: write ';' •
+
+    $default  reduce using rule 27 (stmt)
+
+
+State 204
+
+   47 list_assign: ID '=' NEW • LIST '<' '>' '(' ')'
+   48            | ID '=' NEW • LIST '<' '>' '(' ID ')'
+
+    LIST  shift, and go to state 221
+
+
+State 205
+
+   72 var_assign: ID '=' expression •
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+
+    $default  reduce using rule 72 (var_assign)
+
+
+State 206
+
+   50 list_push: ID '.' ADD • '(' expression ')'
+
+    '('  shift, and go to state 222
+
+
+State 207
+
+   52 list_remove: ID '.' REMOVE • '(' ')'
+
+    '('  shift, and go to state 223
+
+
+State 208
+
+   49 list_push: ID access_suffix_list '.' • ADD '(' expression ')'
+   51 list_remove: ID access_suffix_list '.' • REMOVE '(' ')'
+   58 access_suffix: '.' • ID
+
+    ID      shift, and go to state 114
+    ADD     shift, and go to state 224
+    REMOVE  shift, and go to state 225
+
+
+State 209
+
+   73 var_assign: ID composite_assign_operator expression •
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+
+    $default  reduce using rule 73 (var_assign)
+
+
+State 210
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  123 while: WHILE '(' expression • ')' '{' stmt_list '}'
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ')'  shift, and go to state 226
+
+
+State 211
+
+   13 stmt_list: stmt_list • stmt
+  124 do_while: DO '{' stmt_list • '}' WHILE '(' expression ')'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '}'             shift, and go to state 227
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 212
+
+   72 var_assign: ID • '=' expression
+   73           | ID • composite_assign_operator expression
+
+    SUM_ASSIGN          shift, and go to state 174
+    SUBTRACTION_ASSIGN  shift, and go to state 175
+    TIMES_ASSIGN        shift, and go to state 176
+    DIVISION_ASSIGN     shift, and go to state 177
+    '='                 shift, and go to state 228
+
+    composite_assign_operator  go to state 181
+
+
+State 213
+
+  125 for_initialization: var_initialization •
+
+    $default  reduce using rule 125 (for_initialization)
+
+
+State 214
+
+   35 var_initialization: primitive_type • ID '=' expression
+
+    ID  shift, and go to state 229
+
+
+State 215
+
+  126 for_initialization: var_assign •
+
+    $default  reduce using rule 126 (for_initialization)
+
+
+State 216
+
+  129 for: FOR '(' for_initialization • ',' expression ',' for_step ')' '{' stmt_list '}'
+
+    ','  shift, and go to state 230
+
+
+State 217
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  111 if: IF '(' expression • ')' '{' stmt_list '}' if_complement
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ')'  shift, and go to state 231
+
+
+State 218
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  131 write: OUTPUT '(' expression • ')'
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ')'  shift, and go to state 232
+
+
+State 219
+
+  118 switch: SWITCH '(' ID • ')' '{' cases DEFAULT ':' stmt_list '}'
+  119       | SWITCH '(' ID • ')' '{' cases '}'
+
+    ')'  shift, and go to state 233
+
+
+State 220
+
+   53 access_assign: access '=' expression •
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+
+    $default  reduce using rule 53 (access_assign)
+
+
+State 221
+
+   47 list_assign: ID '=' NEW LIST • '<' '>' '(' ')'
+   48            | ID '=' NEW LIST • '<' '>' '(' ID ')'
+
+    '<'  shift, and go to state 234
+
+
+State 222
+
+   50 list_push: ID '.' ADD '(' • expression ')'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 235
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 223
+
+   52 list_remove: ID '.' REMOVE '(' • ')'
+
+    ')'  shift, and go to state 236
+
+
+State 224
+
+   49 list_push: ID access_suffix_list '.' ADD • '(' expression ')'
+
+    '('  shift, and go to state 237
+
+
+State 225
+
+   51 list_remove: ID access_suffix_list '.' REMOVE • '(' ')'
+
+    '('  shift, and go to state 238
+
+
+State 226
+
+  123 while: WHILE '(' expression ')' • '{' stmt_list '}'
+
+    '{'  shift, and go to state 239
+
+
+State 227
+
+  124 do_while: DO '{' stmt_list '}' • WHILE '(' expression ')'
+
+    WHILE  shift, and go to state 240
+
+
+State 228
+
+   72 var_assign: ID '=' • expression
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 205
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 229
+
+   35 var_initialization: primitive_type ID • '=' expression
+
+    '='  shift, and go to state 44
+
+
+State 230
+
+  129 for: FOR '(' for_initialization ',' • expression ',' for_step ')' '{' stmt_list '}'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 241
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 231
+
+  111 if: IF '(' expression ')' • '{' stmt_list '}' if_complement
+
+    '{'  shift, and go to state 242
+
+
+State 232
+
+  131 write: OUTPUT '(' expression ')' •
+
+    $default  reduce using rule 131 (write)
+
+
+State 233
+
+  118 switch: SWITCH '(' ID ')' • '{' cases DEFAULT ':' stmt_list '}'
+  119       | SWITCH '(' ID ')' • '{' cases '}'
+
+    '{'  shift, and go to state 243
+
+
+State 234
+
+   47 list_assign: ID '=' NEW LIST '<' • '>' '(' ')'
+   48            | ID '=' NEW LIST '<' • '>' '(' ID ')'
+
+    '>'  shift, and go to state 244
+
+
+State 235
+
+   50 list_push: ID '.' ADD '(' expression • ')'
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ')'  shift, and go to state 245
+
+
+State 236
+
+   52 list_remove: ID '.' REMOVE '(' ')' •
+
+    $default  reduce using rule 52 (list_remove)
+
+
+State 237
+
+   49 list_push: ID access_suffix_list '.' ADD '(' • expression ')'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 246
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 238
+
+   51 list_remove: ID access_suffix_list '.' REMOVE '(' • ')'
+
+    ')'  shift, and go to state 247
+
+
+State 239
+
+  123 while: WHILE '(' expression ')' '{' • stmt_list '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 248
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 240
+
+  124 do_while: DO '{' stmt_list '}' WHILE • '(' expression ')'
+
+    '('  shift, and go to state 249
+
+
+State 241
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  129 for: FOR '(' for_initialization ',' expression • ',' for_step ')' '{' stmt_list '}'
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ','  shift, and go to state 250
+
+
+State 242
+
+  111 if: IF '(' expression ')' '{' • stmt_list '}' if_complement
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 251
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 243
+
+  118 switch: SWITCH '(' ID ')' '{' • cases DEFAULT ':' stmt_list '}'
+  119       | SWITCH '(' ID ')' '{' • cases '}'
+
+    CASE  shift, and go to state 252
+
+    cases  go to state 253
+    case   go to state 254
+
+
+State 244
+
+   47 list_assign: ID '=' NEW LIST '<' '>' • '(' ')'
+   48            | ID '=' NEW LIST '<' '>' • '(' ID ')'
+
+    '('  shift, and go to state 255
+
+
+State 245
+
+   50 list_push: ID '.' ADD '(' expression ')' •
+
+    $default  reduce using rule 50 (list_push)
+
+
+State 246
+
+   49 list_push: ID access_suffix_list '.' ADD '(' expression • ')'
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ')'  shift, and go to state 256
+
+
+State 247
+
+   51 list_remove: ID access_suffix_list '.' REMOVE '(' ')' •
+
+    $default  reduce using rule 51 (list_remove)
+
+
+State 248
+
+   13 stmt_list: stmt_list • stmt
+  123 while: WHILE '(' expression ')' '{' stmt_list • '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '}'             shift, and go to state 257
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 249
+
+  124 do_while: DO '{' stmt_list '}' WHILE '(' • expression ')'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 258
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 250
+
+  129 for: FOR '(' for_initialization ',' expression ',' • for_step ')' '{' stmt_list '}'
+
+    ID              shift, and go to state 259
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    var_assign             go to state 260
+    expression             go to state 261
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    for_step               go to state 262
+    read                   go to state 69
+
+
+State 251
+
+   13 stmt_list: stmt_list • stmt
+  111 if: IF '(' expression ')' '{' stmt_list • '}' if_complement
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '}'             shift, and go to state 263
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 252
+
+  122 case: CASE • expression ':' stmt_list
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 264
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 253
+
+  118 switch: SWITCH '(' ID ')' '{' cases • DEFAULT ':' stmt_list '}'
+  119       | SWITCH '(' ID ')' '{' cases • '}'
+  120 cases: cases • case
+
+    CASE     shift, and go to state 252
+    DEFAULT  shift, and go to state 265
+    '}'      shift, and go to state 266
+
+    case  go to state 267
+
+
+State 254
+
+  121 cases: case •
+
+    $default  reduce using rule 121 (cases)
+
+
+State 255
+
+   47 list_assign: ID '=' NEW LIST '<' '>' '(' • ')'
+   48            | ID '=' NEW LIST '<' '>' '(' • ID ')'
+
+    ID   shift, and go to state 268
+    ')'  shift, and go to state 269
+
+
+State 256
+
+   49 list_push: ID access_suffix_list '.' ADD '(' expression ')' •
+
+    $default  reduce using rule 49 (list_push)
+
+
+State 257
+
+  123 while: WHILE '(' expression ')' '{' stmt_list '}' •
+
+    $default  reduce using rule 123 (while)
+
+
+State 258
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  124 do_while: DO '{' stmt_list '}' WHILE '(' expression • ')'
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ')'  shift, and go to state 270
+
+
+State 259
+
+   54 access: ID • access_suffix_list
+   72 var_assign: ID • '=' expression
+   73           | ID • composite_assign_operator expression
+   96 unary: ID • UNARY_SUM
+   97      | ID • UNARY_SUBTRACTION
+   99      | ID •
+  107 func_call: ID • '(' args ')'
+
+    SUM_ASSIGN          shift, and go to state 174
+    SUBTRACTION_ASSIGN  shift, and go to state 175
+    TIMES_ASSIGN        shift, and go to state 176
+    DIVISION_ASSIGN     shift, and go to state 177
+    UNARY_SUM           shift, and go to state 81
+    UNARY_SUBTRACTION   shift, and go to state 82
+    '('                 shift, and go to state 83
+    '='                 shift, and go to state 228
+    '.'                 shift, and go to state 84
+    '['                 shift, and go to state 85
+
+    $default  reduce using rule 99 (unary)
+
+    access_suffix_list         go to state 86
+    access_suffix              go to state 87
+    composite_assign_operator  go to state 181
+
+
+State 260
+
+  127 for_step: var_assign •
+
+    $default  reduce using rule 127 (for_step)
+
+
+State 261
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  128 for_step: expression •
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+
+    $default  reduce using rule 128 (for_step)
+
+
+State 262
+
+  129 for: FOR '(' for_initialization ',' expression ',' for_step • ')' '{' stmt_list '}'
+
+    ')'  shift, and go to state 271
+
+
+State 263
+
+  111 if: IF '(' expression ')' '{' stmt_list '}' • if_complement
+
+    ELSE     shift, and go to state 272
+    ELSE_IF  shift, and go to state 273
+
+    $default  reduce using rule 115 (if_complement)
+
+    if_complement  go to state 274
+    else_if        go to state 275
+
+
+State 264
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  122 case: CASE expression • ':' stmt_list
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ':'  shift, and go to state 276
+
+
+State 265
+
+  118 switch: SWITCH '(' ID ')' '{' cases DEFAULT • ':' stmt_list '}'
+
+    ':'  shift, and go to state 277
+
+
+State 266
+
+  119 switch: SWITCH '(' ID ')' '{' cases '}' •
+
+    $default  reduce using rule 119 (switch)
+
+
+State 267
+
+  120 cases: cases case •
+
+    $default  reduce using rule 120 (cases)
+
+
+State 268
+
+   48 list_assign: ID '=' NEW LIST '<' '>' '(' ID • ')'
+
+    ')'  shift, and go to state 278
+
+
+State 269
+
+   47 list_assign: ID '=' NEW LIST '<' '>' '(' ')' •
+
+    $default  reduce using rule 47 (list_assign)
+
+
+State 270
+
+  124 do_while: DO '{' stmt_list '}' WHILE '(' expression ')' •
+
+    $default  reduce using rule 124 (do_while)
+
+
+State 271
+
+  129 for: FOR '(' for_initialization ',' expression ',' for_step ')' • '{' stmt_list '}'
+
+    '{'  shift, and go to state 279
+
+
+State 272
+
+  112 if_complement: ELSE • '{' stmt_list '}'
+
+    '{'  shift, and go to state 280
+
+
+State 273
+
+  117 else_if: ELSE_IF • '(' expression ')' '{' stmt_list '}'
+
+    '('  shift, and go to state 281
+
+
+State 274
+
+  111 if: IF '(' expression ')' '{' stmt_list '}' if_complement •
+
+    $default  reduce using rule 111 (if)
+
+
+State 275
+
+  113 if_complement: else_if •
+  114              | else_if • ELSE '{' stmt_list '}'
+  116 else_if: else_if • ELSE_IF '(' expression ')' '{' stmt_list '}'
+
+    ELSE     shift, and go to state 282
+    ELSE_IF  shift, and go to state 283
+
+    $default  reduce using rule 113 (if_complement)
+
+
+State 276
+
+  122 case: CASE expression ':' • stmt_list
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 284
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 277
+
+  118 switch: SWITCH '(' ID ')' '{' cases DEFAULT ':' • stmt_list '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 285
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 278
+
+   48 list_assign: ID '=' NEW LIST '<' '>' '(' ID ')' •
+
+    $default  reduce using rule 48 (list_assign)
+
+
+State 279
+
+  129 for: FOR '(' for_initialization ',' expression ',' for_step ')' '{' • stmt_list '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 286
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 280
+
+  112 if_complement: ELSE '{' • stmt_list '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 287
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 281
+
+  117 else_if: ELSE_IF '(' • expression ')' '{' stmt_list '}'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 288
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 282
+
+  114 if_complement: else_if ELSE • '{' stmt_list '}'
+
+    '{'  shift, and go to state 289
+
+
+State 283
+
+  116 else_if: else_if ELSE_IF • '(' expression ')' '{' stmt_list '}'
+
+    '('  shift, and go to state 290
+
+
+State 284
+
+   13 stmt_list: stmt_list • stmt
+  122 case: CASE expression ':' stmt_list •
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    $default  reduce using rule 122 (case)
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 285
+
+   13 stmt_list: stmt_list • stmt
+  118 switch: SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list • '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '}'             shift, and go to state 291
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 286
+
+   13 stmt_list: stmt_list • stmt
+  129 for: FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list • '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '}'             shift, and go to state 292
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 287
+
+   13 stmt_list: stmt_list • stmt
+  112 if_complement: ELSE '{' stmt_list • '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '}'             shift, and go to state 293
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 288
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  117 else_if: ELSE_IF '(' expression • ')' '{' stmt_list '}'
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ')'  shift, and go to state 294
+
+
+State 289
+
+  114 if_complement: else_if ELSE '{' • stmt_list '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 295
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 290
+
+  116 else_if: else_if ELSE_IF '(' • expression ')' '{' stmt_list '}'
+
+    ID              shift, and go to state 51
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INPUT           shift, and go to state 56
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    access                 go to state 59
+    int_literal            go to state 60
+    float_literal          go to state 61
+    expression             go to state 296
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    read                   go to state 69
+
+
+State 291
+
+  118 switch: SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}' •
+
+    $default  reduce using rule 118 (switch)
+
+
+State 292
+
+  129 for: FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}' •
+
+    $default  reduce using rule 129 (for)
+
+
+State 293
+
+  112 if_complement: ELSE '{' stmt_list '}' •
+
+    $default  reduce using rule 112 (if_complement)
+
+
+State 294
+
+  117 else_if: ELSE_IF '(' expression ')' • '{' stmt_list '}'
+
+    '{'  shift, and go to state 297
+
+
+State 295
+
+   13 stmt_list: stmt_list • stmt
+  114 if_complement: else_if ELSE '{' stmt_list • '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '}'             shift, and go to state 298
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 296
+
+   78 expression: expression • AND comparison_expression
+   79           | expression • OR comparison_expression
+  116 else_if: else_if ELSE_IF '(' expression • ')' '{' stmt_list '}'
+
+    AND  shift, and go to state 92
+    OR   shift, and go to state 93
+    ')'  shift, and go to state 299
+
+
+State 297
+
+  117 else_if: ELSE_IF '(' expression ')' '{' • stmt_list '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 300
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 298
+
+  114 if_complement: else_if ELSE '{' stmt_list '}' •
+
+    $default  reduce using rule 114 (if_complement)
+
+
+State 299
+
+  116 else_if: else_if ELSE_IF '(' expression ')' • '{' stmt_list '}'
+
+    '{'  shift, and go to state 301
+
+
+State 300
+
+   13 stmt_list: stmt_list • stmt
+  117 else_if: ELSE_IF '(' expression ')' '{' stmt_list • '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '}'             shift, and go to state 302
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 301
+
+  116 else_if: else_if ELSE_IF '(' expression ')' '{' • stmt_list '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt_list              go to state 303
+    stmt                   go to state 157
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 302
+
+  117 else_if: ELSE_IF '(' expression ')' '{' stmt_list '}' •
+
+    $default  reduce using rule 117 (else_if)
+
+
+State 303
+
+   13 stmt_list: stmt_list • stmt
+  116 else_if: else_if ELSE_IF '(' expression ')' '{' stmt_list • '}'
+
+    ID              shift, and go to state 144
+    STRING_LITERAL  shift, and go to state 52
+    FLOAT_LITERAL   shift, and go to state 53
+    INT_LITERAL     shift, and go to state 54
+    BOOL_LITERAL    shift, and go to state 55
+    INTEGER         shift, and go to state 2
+    LIST            shift, and go to state 3
+    STRUCT          shift, and go to state 4
+    CONTINUE        shift, and go to state 145
+    WHILE           shift, and go to state 146
+    FLOAT           shift, and go to state 5
+    STRING          shift, and go to state 6
+    DO              shift, and go to state 147
+    BREAK           shift, and go to state 148
+    RETURN          shift, and go to state 149
+    FOR             shift, and go to state 150
+    VOID            shift, and go to state 7
+    BOOLEAN         shift, and go to state 8
+    IF              shift, and go to state 151
+    INPUT           shift, and go to state 56
+    OUTPUT          shift, and go to state 152
+    SWITCH          shift, and go to state 153
+    '('             shift, and go to state 57
+    '}'             shift, and go to state 304
+    '-'             shift, and go to state 58
+
+    general_stmt           go to state 154
+    func_declaration       go to state 155
+    stmt                   go to state 193
+    return                 go to state 158
+    var_initialization     go to state 14
+    var_declaration        go to state 15
+    list_declaration       go to state 16
+    list_initialization    go to state 17
+    list_assign            go to state 159
+    list_push              go to state 160
+    list_remove            go to state 161
+    access_assign          go to state 162
+    access                 go to state 163
+    int_literal            go to state 60
+    float_literal          go to state 61
+    type                   go to state 18
+    primitive_type         go to state 19
+    struct_declaration     go to state 20
+    var_assign             go to state 164
+    expression             go to state 165
+    comparison_expression  go to state 63
+    relation_expression    go to state 64
+    arithmatic_expression  go to state 65
+    factor                 go to state 66
+    unary                  go to state 67
+    func_call              go to state 68
+    if                     go to state 166
+    switch                 go to state 167
+    while                  go to state 168
+    do_while               go to state 169
+    for                    go to state 170
+    read                   go to state 69
+    write                  go to state 171
+
+
+State 304
+
+  116 else_if: else_if ELSE_IF '(' expression ')' '{' stmt_list '}' •
+
+    $default  reduce using rule 116 (else_if)

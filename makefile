@@ -1,16 +1,20 @@
 all: compilador
 
-compilador: lex.yy.c sintatico.tab.c 
+# Dependências apontam para os arquivos na pasta output
+compilador: ./output/lex.yy.c ./output/sintatico.tab.c 
 	gcc ./output/lex.yy.c ./output/sintatico.tab.c ./lib/*.c -o ./output/parser
 
-lex.yy.c: lexico.l
+# Alvo atualizado para incluir o caminho
+./output/lex.yy.c: lexico.l
 	flex -o ./output/lex.yy.c lexico.l
 
-sintatico.tab.c: sintatico.y  
+# Alvo atualizado para incluir o caminho
+./output/sintatico.tab.c: sintatico.y  
 	bison -d -v --debug -b ./output/sintatico sintatico.y
 
 clean:
-	rm -rf ./output/lex.yy.c ./output/sintatico.tab.* ./output/parser output.txt ./output/sintatico.output ./output/output.c
+	rm -rf ./output/*
+	# Dica: use rm -rf ./output/* para limpar tudo dentro da pasta
 
 parse: all
 	./output/parser < ./input/teste.txt

@@ -30,4 +30,8 @@ int teste = "verdadeiro";
 
 vazio func main(){
    int teste7;
+
+   se(teste7){
+      int teste = 2;
+   }
 }
