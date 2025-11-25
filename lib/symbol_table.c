@@ -93,6 +93,19 @@ structure table_get_structure(table* table, const char* key) {
     return entry->structure;
 }
 
+void* table_get_value(table* table, const char* key) {
+    uint64_t hash = hash_key(key);
+    int index = hash % table->capacity;
+
+    table_entry* entry = get_table_entry(table->entries, table->capacity, key, hash, index);
+
+    if (entry == NULL) {
+        return NULL;
+    }
+
+    return entry->value;
+}
+
 table_entry* table_get_entry_object(table* table, const char* key) {
     uint64_t hash = hash_key(key);
     int index = hash % table->capacity;
@@ -106,7 +119,7 @@ table_entry* table_get_entry_object(table* table, const char* key) {
     return entry;
 }
 
-static const char* table_set_entry(table_entry* entries, int capacity, const char* key, type type, structure structure, int* plength) {
+static const char* table_set_entry(table_entry* entries, int capacity, const char* key, type type, structure structure, void* value, int* plength) {
     // AND hash with capacity-1 to ensure it's within entries array.
     uint64_t hash = hash_key(key);
     int index = hash % capacity;
@@ -115,6 +128,7 @@ static const char* table_set_entry(table_entry* entries, int capacity, const cha
     if (entry != NULL) {
         entry->type = type;
         entry->structure = structure;
+        entry->value = value;
         return entry->key;
     }
 
@@ -132,11 +146,12 @@ static const char* table_set_entry(table_entry* entries, int capacity, const cha
     entries[index].key = (char*)key;
     entries[index].type = type;
     entries[index].structure = structure;
+    entries[index].value = value;
 
     return key;
 }
 
-const char* table_set(table* table, const char* key, type type, structure structure) {
+const char* table_set(table* table, const char* key, type type, structure structure, void* value) {
     /* if length will exceed half of current capacity, expand it. */
     if (table->length >= table->capacity / 2) {
         if (!table_expand(table)) {
@@ -144,7 +159,7 @@ const char* table_set(table* table, const char* key, type type, structure struct
         }
     }
 
-    return table_set_entry(table->entries, table->capacity, key, type, structure, &table->length);
+    return table_set_entry(table->entries, table->capacity, key, type, structure, value, &table->length);
 }
 
 /* expand hash table to twice its current size. Return true on success, false if out of memory*/
@@ -167,7 +182,7 @@ static bool table_expand(table* table) {
     for (int i = 0; i < table->capacity; i++) {
         table_entry entry = table->entries[i];
         if (entry.key != NULL) {
-            table_set_entry(new_entries, new_capacity, entry.key, entry.type, entry.structure, NULL);
+            table_set_entry(new_entries, new_capacity, entry.key, entry.type, entry.structure, entry.value, NULL);
         }
     }
 

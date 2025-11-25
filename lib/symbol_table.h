@@ -14,6 +14,7 @@ typedef struct {
     const char* key;     /* variable's name */
     type type;           /* variable's primitive type */
     structure structure; /* variable's structure type: primary or user defined */
+    void* value;         /* variable's value*/
 } table_entry;
 
 
@@ -29,7 +30,7 @@ void table_destroy(table* table);
 
 void* table_get(table* table, const char* key);
 
-const char* table_set(table* table, const char* key, type type, structure structure);
+const char* table_set(table* table, const char* key, type type, structure structure, void* value);
 
 static bool table_expand(table* table);
 
