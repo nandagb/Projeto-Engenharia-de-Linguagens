@@ -34,4 +34,12 @@ const char* table_set(table* table, const char* key, type type, structure struct
 
 static bool table_expand(table* table);
 
+type table_get_type(table* table, const char* key);
+
+structure table_get_structure(table* table, const char* key);
+
+void* table_get_value(table* table, const char* key);
+
+table_entry* table_get_entry_object(table* table, const char* key);
+
 #endif
