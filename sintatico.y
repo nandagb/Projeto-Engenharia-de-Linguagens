@@ -37,7 +37,7 @@ Stack stack;
 %type <rec> for_initialization for_step input_args */
 
 %type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list 
-%type <rec> func_declaration func_declaration_list general_stmt_list type list_types
+%type <rec> func_declaration func_declaration_list general_stmt_list type list_types return
 %type <rec> list_declaration list_initialization struct_declaration var_declaration_list
 %type <rec> var_initialization expression comparison_expression relation_expression
 %type <rec> arithmatic_expression factor unary int_literal float_literal
@@ -160,7 +160,7 @@ func_declaration_list    : func_declaration
                          }
 ;
 
-func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func"); } stmt_list '}'
+func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func"); } stmt_list '}' {pop(&stack);}
                     {
                          char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $9->code, "}"};
                          int list_size = 8;
@@ -222,6 +222,17 @@ stmt : general_stmt ';'
      | func_declaration
      | if
      | return ';'
+     {
+          char * str_list[] = {$1->code, ";\n"};
+
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+
+          $$ = createRecord(s, $1->type);
+
+          freeRecord($1);
+          free(s);
+     }
      | BREAK ';'                                                                                  {/*printf("BREAK\n");*/}
      | CONTINUE ';'                                                                               {/*printf("CONTINUE\n");*/}
      | while
@@ -238,25 +249,20 @@ stmt : general_stmt ';'
 
 
 return : RETURN
-       /* {
+       {
           $$ = createRecord("return ", EUNTYPED);
-       } */
+       }
        | RETURN expression
-       /* {
+       {
           char * str_list[] = {"return ", $2->code};
           int list_size = 2;
           char * s = cat(str_list, list_size);
           
-          // Free só é necessário quando se é utilizado malloc(), calloc() e realloc(), ou seja, memória alocada dinamicamente.
-          // for(int i = 0; i < list_size; i++){
-          //      free(str_list[i]);
-          // }
-          // free(str_list);
+          $$ = createRecord(s, $2->type);
+
           freeRecord($2);
-          
-          $$ = createRecord(s, EUNTYPED);
           free(s);
-       }                                                                      */
+       }
 ;
 
 /* ANALISAR A POSSIBILIDADE DE UTILIZAR UMA LISTA LIGADA PARA LISTA DE PARÂMETROS OU LISTA DE STATEMENTS */
