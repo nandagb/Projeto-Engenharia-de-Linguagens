@@ -1,6 +1,8 @@
 #include "scope.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
 
 // Define the maximim capacity of the stack
 #define MAX_SIZE 100
@@ -20,6 +22,13 @@ bool isFull(Stack *stack) {
     return stack->top == MAX_SIZE - 1;  
 }
 
+bool find(Stack *stack, char* value){
+    for(int i = 0; i < stack->top; i++){
+        if(!strcmp(stack->arr[i], value)) return true;
+    }
+    return false;
+}
+
 // Function to push an element onto the stack
 //TODO: AUMENTAR TAMANHO DINAMICAMENTE
 void push(Stack *stack, char* value) {
@@ -27,7 +36,15 @@ void push(Stack *stack, char* value) {
         printf("Stack Overflow\n");
         return;
     }
-    stack->arr[++stack->top] = value;
+
+    char*str = "";
+    do{
+        int random = rand();
+        str = "";
+        sprintf(str, "%d", random);
+    } while (!find(stack, str));
+    
+    stack->arr[++stack->top] = strcat(value, str);
     printf("Pushed %s onto the stack\n", value);
 }
 

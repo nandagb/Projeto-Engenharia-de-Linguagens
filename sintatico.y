@@ -5,12 +5,14 @@
 #include "./../lib/cat.h"
 #include "./../lib/file_gen.h"
 #include "./../lib/symbol_table.h"
+#include "./../lib/scope.h"
 
 int yylex(void);
 int yyerror(char *s);
 extern int yylineno;
 extern char * yytext;
 table* sym_table;
+Stack stack;
 
 %}
 
@@ -43,11 +45,19 @@ table* sym_table;
 %start prog
  
 %%
-prog : prog_options
+prog : 
      {
           /* creates symbol table for the program*/
           sym_table = table_create();
+          initialize(&stack);
+          push(&stack, "global");
      }
+     prog_options
+     {
+          table_destroy(sym_table);
+          pop(&stack);
+     }
+     
 ;
 
 prog_options : func_declaration_list
@@ -150,7 +160,7 @@ func_declaration_list    : func_declaration
                          }
 ;
 
-func_declaration    : type FUNCTION ID '(' params_list ')' '{' stmt_list '}'
+func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func") } stmt_list '}'
                     {
                          char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $8->code, "}"};
                          int list_size = 8;
@@ -1028,7 +1038,6 @@ input_args :
 
 int main (void) {
 	int result = yyparse ( );
-     table_destroy(sym_table);
      return result;
 }
 
