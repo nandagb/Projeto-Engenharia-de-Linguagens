@@ -160,15 +160,15 @@ func_declaration_list    : func_declaration
                          }
 ;
 
-func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func") } stmt_list '}'
+func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func"); } stmt_list '}'
                     {
-                         char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $8->code, "}"};
+                         char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $9->code, "}"};
                          int list_size = 8;
                          char * s = cat(str_list, list_size);
                          
                          freeRecord($1);
                          freeRecord($5);
-                         freeRecord($8);
+                         freeRecord($9);
                          
                          $$ = createRecord(s, EUNTYPED);
                          free(s);
