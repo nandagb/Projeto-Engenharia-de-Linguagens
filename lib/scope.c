@@ -37,15 +37,24 @@ void push(Stack *stack, char* value) {
         return;
     }
 
-    char*str = "";
+    char str[20];
     do{
         int random = rand();
-        str = "";
         sprintf(str, "%d", random);
-    } while (!find(stack, str));
+    } while (find(stack, str));
+
+    size_t len = strlen(value) + strlen(str) + 1;
+    char *new_value = malloc(len);
+    if (!new_value) {
+        printf("Erro de alocacao\n");
+        return;
+    }
+
+    strcpy(new_value, value);
+    strcat(new_value, str);
     
-    stack->arr[++stack->top] = strcat(value, str);
-    printf("Pushed %s onto the stack\n", value);
+    stack->arr[++stack->top] = new_value;
+    printf("Pushed %s onto the stack\n", new_value);
 }
 
 // Function to pop an element from the stack
