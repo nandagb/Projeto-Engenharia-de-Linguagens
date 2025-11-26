@@ -6,6 +6,7 @@
 #include "./../lib/file_gen.h"
 #include "./../lib/symbol_table.h"
 #include "./../lib/scope.h"
+#include "./../lib/type_conversions.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -36,7 +37,7 @@ Stack stack;
 %type <rec> relation_expression arithmatic_expression factor func_call read args if_complement else_if cases
 %type <rec> for_initialization for_step input_args */
 
-%type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list 
+%type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list type_conversion
 %type <rec> func_declaration func_declaration_list general_stmt_list type list_types return
 %type <rec> list_declaration list_initialization struct_declaration var_declaration_list
 %type <rec> var_initialization expression comparison_expression relation_expression
@@ -63,8 +64,8 @@ prog :
 
 prog_options : func_declaration_list
      {
-          char * include_list[] = {"#include <stdbool.h>", "\n"};
-          char * include_str = cat(include_list, 2);
+          char * include_list[] = {"#include <stdbool.h>", "\n", "#include <stdlib.h>", "\n", "#include <stdio.h>", "\n"};
+          char * include_str = cat(include_list, 6);
 
           char * str_list[] = {include_str, $1->code};
           int list_size = 2;
@@ -902,6 +903,11 @@ unary : ID UNARY_SUM
       /* {
          $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
       } */
+      | type_conversion
+      {
+         $$ = createRecord($1->code, $1->type);
+         freeRecord($1);
+      }
 ; 
 
 func_call : ID '(' args ')'
@@ -1052,6 +1058,54 @@ read : INPUT '(' input_args ')'
                $$ = createRecord(s, EUNTYPED);
                free(s);
           } */
+;
+
+type_conversion : primitive_type '(' expression ')'
+               {
+                    printf("INSIDE TYPE CONVERSION\n");
+                    if ($1->type == ESTRING) {
+                         printf("PRIMITIVE TYPE IS A STRING\n");
+                         printf("EXPRESSION IS A %d\n", $3->type);
+                         // if ($3->type == EINTEGER) {
+                         //      s = malloc(200);
+
+                         //      sprintf(s, "({ char* tmp = malloc(32); sprintf(tmp, \"%%d\", %s); tmp; })", $3->code);
+                         // }
+                         // if ($3->type == EFLOAT) {
+                              printf("EXPRESSION IS A FLOAT\n");
+                              char *s = NULL;
+                              s = malloc(200);
+
+                              sprintf(s, "({ char* tmp = malloc(32); sprintf(tmp, \"%%f\", %s); tmp; })", $3->code);
+                              $$ = createRecord(strdup(s), $1->type);
+
+                              freeRecord($1);
+                              freeRecord($3);
+                              free(s);
+                         // }
+                         // else if ($3->type == EBOOL) {
+                         // }
+                         // else if ($3->type == ESTRING) {
+                         //      // if its already a string, do nothing
+                         //      char * str_list[] = {$3->code};
+                         //      int list_size = 1;
+                         //      s = cat(str_list, list_size);
+                         // }
+                    }
+                    // else {
+                    //      //TODO: check if conversions from texto to number work
+                    //      char * str_list[] = {"(", $1->code, ") ", $3->code};
+                    //      int list_size = 4;
+                    //      s = cat(str_list, list_size);
+                    // }
+
+                    //TODO: check types
+                    // $$ = createRecord(strdup(s), $1->type);
+
+                    // freeRecord($1);
+                    // freeRecord($3);
+                    // if (s != NULL) free(s);
+               }
 ;
 
 write : OUTPUT '(' expression ')'                                                                   

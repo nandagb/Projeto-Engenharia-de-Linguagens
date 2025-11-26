@@ -9,5 +9,5 @@ vazio func main(){
    int c = 4;
 
    real resultado = expressao(x, y, c);
-   saida(resultado);
+   saida(texto(resultado));
 }
