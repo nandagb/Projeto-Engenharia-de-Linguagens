@@ -41,7 +41,7 @@ Stack stack;
 %type <rec> list_declaration list_initialization struct_declaration var_declaration_list
 %type <rec> var_initialization expression comparison_expression relation_expression
 %type <rec> arithmatic_expression factor unary int_literal float_literal func_call args
-%type <rec> var_assign
+%type <rec> var_assign write
 
 %start prog
  
@@ -253,6 +253,17 @@ stmt : general_stmt ';'
      | expression ';'         
      /* | read ';' */
      | write ';'
+     {
+          char * str_list[] = {$1->code, ";\n"};
+
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+
+          $$ = createRecord(s, $1->type);
+
+          freeRecord($1);
+          free(s);
+     }
      /* | struct_attr_assign ';' */
      | switch
      | list_push ';'
@@ -1044,19 +1055,16 @@ read : INPUT '(' input_args ')'
 ;
 
 write : OUTPUT '(' expression ')'                                                                   
-          /* {
+          {
                char * str_list[] = {"printf", "(", $3->code, ")"};
                int list_size = 4;
                char * s = cat(str_list, list_size);
                
-               for(int i = 0; i < list_size; i++){
-                    free(str_list[i]);
-               }
-               freeRecord($3);
-               
                $$ = createRecord(s, EUNTYPED);
+
+               freeRecord($3);
                free(s);
-          } */
+          }
 ;
 
 input_args :
