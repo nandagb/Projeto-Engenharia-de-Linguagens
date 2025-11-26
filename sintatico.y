@@ -1110,8 +1110,8 @@ type_conversion : primitive_type '(' expression ')'
 
 write : OUTPUT '(' expression ')'                                                                   
           {
-               char * str_list[] = {"printf", "(", $3->code, ")"};
-               int list_size = 4;
+               char * str_list[] = {"printf(\"%s\", ", $3->code, ")"};
+               int list_size = 3;
                char * s = cat(str_list, list_size);
                
                $$ = createRecord(s, EUNTYPED);
