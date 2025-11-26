@@ -6,7 +6,6 @@
 #include "./../lib/file_gen.h"
 #include "./../lib/symbol_table.h"
 #include "./../lib/scope.h"
-#include "./../lib/type_conversions.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -737,6 +736,7 @@ relation_expression : relation_expression '>' arithmatic_expression
                     }
                     | arithmatic_expression
                     {
+                         // printf("A4: %s -> %d\n", $1->code, $1->type);
                          $$ = createRecord($1->code, $1->type);
                          freeRecord($1);
                     }
@@ -748,8 +748,13 @@ arithmatic_expression    : arithmatic_expression '+' factor
                               int list_size = 3;
                               char * s = cat(str_list, list_size);
 
+                              type expression_type = EINTEGER;
                               //TODO: FAZER ALTERAÇÃO DO TIPO COM BASE NO VALORES INSERIDOS
-                              $$ = createRecord(s,EUNTYPED);
+                              if($1->type == EFLOAT || $3->type == EFLOAT){
+                                   expression_type = EFLOAT;
+                              }
+
+                              $$ = createRecord(s,expression_type);
                               
                               free($1);
                               free($3);
@@ -761,8 +766,13 @@ arithmatic_expression    : arithmatic_expression '+' factor
                               int list_size = 3;
                               char * s = cat(str_list, list_size);
 
+                              type expression_type = EINTEGER;
                               //TODO: FAZER ALTERAÇÃO DO TIPO COM BASE NO VALORES INSERIDOS
-                              $$ = createRecord(s,EUNTYPED);
+                              if($1->type == EFLOAT || $3->type == EFLOAT){
+                                   expression_type = EFLOAT;
+                              }
+
+                              $$ = createRecord(s,expression_type);
                               
                               free($1);
                               free($3);
@@ -778,14 +788,18 @@ arithmatic_expression    : arithmatic_expression '+' factor
 factor    : factor '*' unary
           {
                // TODO: SOLVE THIS ERROR BELLOW
-               // int teste = 2.1 / (4 +1)  *5; is parsing to int teste = 2.1 / (4 + 1) + 5;
 
-               char * str_list[] = {$1->code," + ", $3->code};
+               char * str_list[] = {$1->code," * ", $3->code};
                int list_size = 3;
                char * s = cat(str_list, list_size);
 
+               type expression_type = EINTEGER;
                //TODO: FAZER ALTERAÇÃO DO TIPO COM BASE NO VALORES INSERIDOS
-               $$ = createRecord(s,EUNTYPED);
+               if($1->type == EFLOAT || $3->type == EFLOAT){
+                    expression_type = EFLOAT;
+               }
+
+               $$ = createRecord(s,expression_type);
                
                free($1);
                free($3);
@@ -797,8 +811,13 @@ factor    : factor '*' unary
                int list_size = 3;
                char * s = cat(str_list, list_size);
 
+               type expression_type = EINTEGER;
                //TODO: FAZER ALTERAÇÃO DO TIPO COM BASE NO VALORES INSERIDOS
-               $$ = createRecord(s,EUNTYPED);
+               if($1->type == EFLOAT || $3->type == EFLOAT){
+                    expression_type = EFLOAT;
+               }
+
+               $$ = createRecord(s,expression_type);
                
                free($1);
                free($3);
@@ -1063,6 +1082,7 @@ read : INPUT '(' input_args ')'
 type_conversion : primitive_type '(' expression ')'
                {
                     printf("INSIDE TYPE CONVERSION\n");
+                    // printf("A5: %s -> %d\n", $3->code, $3->type);
                     if ($1->type == ESTRING) {
                          printf("PRIMITIVE TYPE IS A STRING\n");
                          printf("EXPRESSION IS A %d\n", $3->type);
