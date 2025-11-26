@@ -283,6 +283,10 @@ params_list :
                $$ = createRecord("",EUNTYPED);
             }
             | var_declaration_list
+            {
+               $$ = createRecord($1->code, EUNTYPED);
+               free($1);
+            }
 ;
 
 //TODO: EXPRESSIONS
@@ -333,20 +337,13 @@ var_declaration  : primitive_type ID
 
 var_declaration_list     : var_declaration
                          {
-                              char * str_list[] = {$1->code, ";"};
-                              int list_size = 2;
-                              
-                              char * s = cat(str_list, list_size);
-
-                              $$ = createRecord(s, EUNTYPED);
-
+                              $$ = createRecord($1->code, EUNTYPED);
                               freeRecord($1);
-                              free(s);
                          }
                          | var_declaration_list ',' var_declaration
                          { 
-                              char * str_list[] = {$1->code, "\n\t",$3->code, ";"};
-                              int list_size = 4;
+                              char * str_list[] = {$1->code, ",", $3->code};
+                              int list_size = 3;
                               char * s = cat(str_list, list_size);
 
                               $$ = createRecord(s, EUNTYPED);
@@ -911,7 +908,22 @@ func_call : ID '(' args ')'
 ;
 
 args : args ',' expression
+     {
+          char * str_list[] = {$1->code, ",", $3->code, ")"};
+          int list_size = 3;
+          char * s = cat(str_list, list_size);
+
+          $$ = createRecord(s, EUNTYPED);
+
+          freeRecord($1);
+          freeRecord($3);
+          free(s);
+     }
      | expression
+     {
+          $$ = createRecord($1->code, $1->type);
+          freeRecord($1);
+     }
      |
      {
           $$ = createRecord("", EUNTYPED);
