@@ -1,19 +1,34 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "./../lib/cat.h"
 #include "./../lib/record.h"
 #include "./../lib/file_gen.h"
+#include "./../lib/symbol_table.h"
+#include "./../lib/scope.h"
 
 int main(){
-    char * str_list[] = {"a", "h"};
-    char * str = cat(str_list, 2);
+    // printf("TESTING SYMBOL TABLE\n");
+    // table* sym_table = table_create();
+    // printf("SYMBOL TABLE CREATED\n");
+    // table_entry* entry = malloc(sizeof(table_entry));
 
-    record * r = createRecord(str, EINTEGER);
+    Stack stack;
+    initialize(&stack);  
 
-    gen_file(r->code, "gen_test.c");
+    push(&stack, "global");
+    printf("Top element: %s\n", peek(&stack));
 
+    push(&stack, "main");
+    printf("Top element: %s\n", peek(&stack));
 
-    int teste = 2.1 / 2;
-    printf("%d\n", teste);
+    push(&stack, "if1");
+    printf("Top element: %s\n", peek(&stack));
+
+    push(&stack, "if2");
+    printf("Top element: %s\n", peek(&stack));
+
+    pop(&stack);
+    printf("Peeked element at position %d: %s\n", 1, peek_position(&stack, 1));
 
     return 0;
 }

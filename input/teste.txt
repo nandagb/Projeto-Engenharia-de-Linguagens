@@ -1,37 +1,14 @@
-int teste5 = teste++;
-int teste6 = teste--;
-int teste = 2;
-int teste = -2;
-int teste = 2.1;
-int teste = -2.1;
-int teste = (2.1 + 4);
-int teste = (2.1 - 4);
-int teste = (2.1 * 4);
-int teste = 2.1 / (4 +1)  *5;
-int teste = 2.1 // 2;
-
-int teste = 2.1 > 2;
-int teste = 2.1 >= 2;
-int teste = 2.1 <= 2;
-int teste = 2.1 < 2;
-
-int teste = 2.1 == 2;
-int teste = 2.1 != 2;
-
-int teste = 2.1 && 2;
-int teste = (2.1 || 2);
-
-int teste = teste;
-
-int teste = verdadeiro;
-int teste = falso;
-
-int teste = "verdadeiro";
+real func expressao(real x, real y, int c){
+#    retorne x;
+    retorne x * x - y + c;
+}
 
 vazio func main(){
-   int teste7;
+   real x = 3.5;
+   real y = 2.1;
+   int c = 4;
 
-   se(teste7){
-      int teste = 2;
-   }
+   real resultado = expressao(x, y, c);
+   texto resultado_texto = texto(resultado);
+   saida(resultado_texto);
 }
