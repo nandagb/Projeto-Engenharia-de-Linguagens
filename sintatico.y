@@ -40,7 +40,8 @@ Stack stack;
 %type <rec> func_declaration func_declaration_list general_stmt_list type list_types return
 %type <rec> list_declaration list_initialization struct_declaration var_declaration_list
 %type <rec> var_initialization expression comparison_expression relation_expression
-%type <rec> arithmatic_expression factor unary int_literal float_literal
+%type <rec> arithmatic_expression factor unary int_literal float_literal func_call args
+%type <rec> var_assign
 
 %start prog
  
@@ -217,7 +218,18 @@ stmt : general_stmt ';'
           $$ = createRecord(s, EUNTYPED);
           free(s);
      } */
-     | var_assign ';'                                                                     
+     | var_assign ';'
+     {
+          char * str_list[] = {$1->code, ";\n"};
+
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+
+          $$ = createRecord(s, $1->type);
+
+          freeRecord($1);
+          free(s);
+     }
      | list_assign ';'                                                                            {/*printf("ID\n");*/}
      | func_declaration
      | if
@@ -582,7 +594,18 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
                     }
 ;	
 
-var_assign : ID '=' expression                                                                     {/*printf("VAR_ASSIGN\n");*/}
+var_assign : ID '=' expression
+           {
+               char * str_list[] = {$1, " = ", $3->code};
+               int list_size = 3;
+               char * s = cat(str_list, list_size);
+
+               // TODO: pegar tipo do var assign pela tabela de simbolos do ID
+               $$ = createRecord(s, EUNTYPED);
+
+               free($3);
+               free(s);
+           }
            | ID composite_assign_operator expression                                               {/*printf("VAR_ASSIGN WITH OPERATOR\n");*/}
 ;
 
@@ -859,9 +882,10 @@ unary : ID UNARY_SUM
           free($1);
       }
       | func_call
-      /* {
-          $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
-      } */
+      {
+          $$ = createRecord($1->code, $1->type);
+          freeRecord($1);
+      }
       | read
       /* {
          $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
@@ -873,29 +897,25 @@ unary : ID UNARY_SUM
 ; 
 
 func_call : ID '(' args ')'
-          /* {
+          {
                char * str_list[] = {$1, "(", $3->code, ")"};
                int list_size = 4;
                char * s = cat(str_list, list_size);
                
-               //TODO: Colocar freeRecord em todos os records
-               for(int i = 0; i < list_size; i++){
-                    free(str_list[i]);
-               }
-               free($1);
-               freeRecord($3);
-               
+               // TODO: pegar tipo do func_call pela tabela de simbolos de ID
                $$ = createRecord(s, EUNTYPED);
+
+               freeRecord($3);
                free(s);
-          } */
+          }
 ;
 
 args : args ',' expression
      | expression
      |
-     /* {
+     {
           $$ = createRecord("", EUNTYPED);
-     } */
+     }
 ;
 
 if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          {/*printf("IF \n");*/} 

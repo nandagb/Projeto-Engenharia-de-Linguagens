@@ -8,6 +8,6 @@ vazio func main(){
    real y = 2.1;
    int c = 4;
 
-   #real resultado = expressao(x, y, c);
+   real resultado = expressao(x, y, c);
    #saida(resultado);
 }
