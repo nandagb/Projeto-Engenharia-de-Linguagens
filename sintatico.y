@@ -998,24 +998,26 @@ args : args ',' expression
      }
 ;
 
-if : IF '(' expression ')' '{' stmt_list '}' if_complement
+if : IF '(' expression ')' '{' {push(&stack, "if");} stmt_list {pop(&stack);} '}' if_complement
      {
           //OK
-          char* label_out = new_label("out");
+          //may need to implement a dictionary, but for now the out label will be the scope of the if
+          char* label_out = peek(&stack);
+          // char* label_out = new_label("out");
           char* label_else = new_label("else");
 
           // in case there are else_if
           char * replacement_list[] = {"goto ", label_out};
           char * replacement_string = cat(replacement_list, 2);
-          $8->code = replace_all($8->code, "_PLACEHOLDER_OUT_", replacement_string);
+          $10->code = replace_all($10->code, "_PLACEHOLDER_OUT_", replacement_string);
           //
 
           char * str_list[] = {
                "if (!", $3->code /*expression*/, ") goto ", label_else, ";\n",
-               $6->code, //stmt_list
+               $7->code, //stmt_list
                "goto ", label_out, ";\n",
                label_else, ":\n",
-               $8->code,//if_complement
+               $10->code,//if_complement
                label_out, ":\n"
           };
 
@@ -1023,8 +1025,8 @@ if : IF '(' expression ')' '{' stmt_list '}' if_complement
           char * s = cat(str_list, list_size);
           
           freeRecord($3);
-          freeRecord($6);
-          freeRecord($8);
+          freeRecord($7);
+          freeRecord($10);
           
           $$ = createRecord(s, EUNTYPED);
           free(s);
@@ -1032,25 +1034,25 @@ if : IF '(' expression ')' '{' stmt_list '}' if_complement
      } 
 ;
 
-if_complement : ELSE '{' stmt_list '}'
+if_complement : ELSE '{' {push(&stack, "else");} stmt_list {pop(&stack);} '}'
                {
                     //OK
-                    $$ = createRecord($3->code, EUNTYPED);
+                    $$ = createRecord($4->code, EUNTYPED);
 
-                    freeRecord($3);
+                    freeRecord($4);
                } 
               | else_if
               //OK
               {$$ = $1;}
-              | else_if ELSE '{' stmt_list '}'
+              | else_if ELSE '{' {push(&stack, "else_if");} stmt_list {pop(&stack);} '}'
               {
                     //OK
-                    char * str_list[] = {$1->code, $4->code, "\n"};
+                    char * str_list[] = {$1->code, $5->code, "\n"};
                     int list_size = 3;
                     char * s = cat(str_list, list_size);
 
                     freeRecord($1);
-                    freeRecord($4);
+                    freeRecord($5);
 
                     $$ = createRecord(s, EUNTYPED);
                     free(s);
@@ -1061,13 +1063,13 @@ if_complement : ELSE '{' stmt_list '}'
                     $$ = createRecord("",EUNTYPED);
               }
 
-else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
+else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stmt_list {pop(&stack);} '}'
           {
                char* label_out_else_if2 = new_label("out_else_if");
                char * str_list[] = {
                     $1->code,
                     "if (!", $4->code/*expression*/, ") goto ", label_out_else_if2, ";\n",
-                    $7->code, "\n",//stmt_list
+                    $8->code, "\n",//stmt_list
                     "_PLACEHOLDER_OUT_;\n",
                     label_out_else_if2, ":\n"
                };
@@ -1078,16 +1080,16 @@ else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
 
                freeRecord($1);
                freeRecord($4);
-               freeRecord($7);
+               freeRecord($8);
                free(s);
           }
-          | ELSE_IF '(' expression ')' '{' stmt_list '}'
+          | ELSE_IF '(' expression ')' '{' {push(&stack, "else_ifff");} stmt_list {pop(&stack);} '}'
           {
                //OK
                char* label_out_else_if = new_label("out_else_if");
                char * str_list[] = {
                     "if (!", $3->code/*expression*/, ") goto ", label_out_else_if, ";\n",
-                    $6->code, "\n",//stmt_list
+                    $7->code, "\n",//stmt_list
                     "_PLACEHOLDER_OUT_;\n",
                     label_out_else_if, ":\n"
                };
@@ -1097,7 +1099,7 @@ else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
                $$ = createRecord(s, EUNTYPED);
 
                freeRecord($3);
-               freeRecord($6);
+               freeRecord($7);
                free(s);
           } 
 
