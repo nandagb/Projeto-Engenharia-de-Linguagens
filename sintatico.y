@@ -633,15 +633,15 @@ var_assign : ID '=' expression
                //TODO: verify if ID exists in symbol table
                table_entry* entry = table_get_entry_object(sym_table, $1);
                if (entry == NULL) {
-                    //variable was not initialized
+                    // Variable was not initialized
                     printf("Erro! A variável %s não foi declarada!\n", $1);
                }
 
                //TODO: type checking of expression
 
-               type expression_type = $3->type;
-               if (expression_type == EUNTYPED && $3->code != NULL) {
-                    expression_type = table_get_type(sym_table, $3->code);
+               if (entry->type != $3->type){
+                    // Type error!
+                    printf("Erro! A variável %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", $1, type_to_string(entry->type), type_to_string($3->type));
                }
                // =============
 

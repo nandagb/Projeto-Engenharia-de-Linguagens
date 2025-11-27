@@ -15,5 +15,6 @@ typedef struct record record;
 void freeRecord(record *);
 record * createRecord(char *, type);
 record * setRecord(char* str_list[], int list_size);
+char * type_to_string(type t);
 
 #endif
