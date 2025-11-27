@@ -330,6 +330,7 @@ var_initialization  : primitive_type ID '=' expression
                               yyerror((char*)("Erro de tipo! a variável %s possui tipo %s, não pode receber valor do tipo %s", $2, $1->type, $4->type)); 
                          } */
 
+                         printf("INITIALIZING %s, with type %d", $2, $1->type);
                          table_set(sym_table, $2, $1->type, EPRIMARY, NULL);
 
                          $$ = createRecord(s, $1->type);
@@ -910,7 +911,13 @@ unary : ID UNARY_SUM
       {
           //TODO: Como saber o tipo do ID, se ID não tem tipo?
           // Talvez seja necessário verificar na tabela de símbolos;
-          $$ = createRecord($1, EUNTYPED);
+          type var_type = EUNTYPED;
+
+          type looked_up_type = table_get_type(sym_table, $1);
+          printf("LOOKED_UP_TYPE OF %s : %d\n", $1, looked_up_type);
+          var_type = looked_up_type;
+
+          $$ = createRecord($1, var_type);
           free($1);
       }
       | int_literal
@@ -1138,8 +1145,10 @@ type_conversion : primitive_type '(' expression ')'
                     printf("INSIDE TYPE CONVERSION\n");
                     // printf("A5: %s -> %d\n", $3->code, $3->type);
                     type expression_type = $3->type;
+                    printf("TYPE OF %s FROM EXPRESSION: %d\n", $3->code, $3->type);
                     if (expression_type == EUNTYPED && $3->code != NULL) {
                          type looked_up_type = table_get_type(sym_table, $3->code);
+                         printf("LOOKED_UP_TYPE OF %s : %d\n", $3->code, looked_up_type);
                          if (looked_up_type != UNDEFINED_TYPE) {
                               expression_type = looked_up_type;
                          }
@@ -1154,6 +1163,7 @@ type_conversion : primitive_type '(' expression ')'
                          char *buffer = NULL;
 
                          if (expression_type == EINTEGER) {
+                              printf("ENTERING INTEGER CONVERSION");
                               buffer = malloc(200);
                               sprintf(buffer, "({ char* tmp = malloc(32); sprintf(tmp, \"%%d\", %s); tmp; })", $3->code);
                          } else if (expression_type == EFLOAT) {
