@@ -252,7 +252,18 @@ stmt : general_stmt ';'
      | while
      | do_while ';'
      | for
-     | expression ';'         
+     | expression ';'
+     {
+          char * str_list[] = {$1->code, ";\n"};
+
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+
+          $$ = createRecord(s, $1->type);
+
+          freeRecord($1);
+          free(s);
+     }
      | read ';' 
      | write ';'
      {
