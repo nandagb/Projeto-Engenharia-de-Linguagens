@@ -1,11 +1,15 @@
 vazio func main(){
    logico teste1 = falso;
-   logico teste2 = verdadeiro;
+   logico teste2 = falso;
+   logico teste3 = verdadeiro;
    se (teste1) {
       saida("entrou no if\n");
    }
    senao se (teste2){
-      saida("entrou no else if\n");
+      saida("entrou no else if 1\n");
+   }
+   senao se (teste3){
+      saida("entrou no else if 2\n");
    }
    senao {
       saida("entrou no senao\n");

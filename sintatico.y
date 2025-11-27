@@ -1063,15 +1063,22 @@ if_complement : ELSE '{' stmt_list '}'
 
 else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
           {
-               char * str_list[] = {$1->code, " else if (", $4->code, ") {\n", $7->code, "}\n"};
-               int list_size = 6;
+               char* label_out_else_if2 = new_label("out_else_if");
+               char * str_list[] = {
+                    $1->code,
+                    "if (!", $4->code/*expression*/, ") goto ", label_out_else_if2, ";\n",
+                    $7->code, "\n",//stmt_list
+                    "_PLACEHOLDER_OUT_;\n",
+                    label_out_else_if2, ":\n"
+               };
+               int list_size = 11;
                char * s = cat(str_list, list_size);
+
+               $$ = createRecord(s, EUNTYPED);
 
                freeRecord($1);
                freeRecord($4);
                freeRecord($7);
-
-               $$ = createRecord(s, EUNTYPED);
                free(s);
           }
           | ELSE_IF '(' expression ')' '{' stmt_list '}'
@@ -1087,10 +1094,10 @@ else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
                int list_size = 10;
                char * s = cat(str_list, list_size);
 
+               $$ = createRecord(s, EUNTYPED);
+
                freeRecord($3);
                freeRecord($6);
-
-               $$ = createRecord(s, EUNTYPED);
                free(s);
           } 
 
