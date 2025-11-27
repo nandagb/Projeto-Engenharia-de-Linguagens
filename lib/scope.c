@@ -53,7 +53,7 @@ void push(Stack *stack, char* value) {
     char* scope = new_label(new_value);
     
     stack->arr[++stack->top] = scope;
-    printf("Pushed %s onto the stack\n", scope);
+    // printf("Pushed %s onto the stack\n", scope);
 }
 
 // Function to pop an element from the stack
@@ -65,7 +65,7 @@ char* pop(Stack *stack) {
 
     char* popped = stack->arr[stack->top];
     stack->top--;
-    printf("Popped %s from the stack\n", popped);
+    // printf("Popped %s from the stack\n", popped);
     return popped;
 }
 

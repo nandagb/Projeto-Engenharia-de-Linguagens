@@ -266,7 +266,6 @@ stmt : general_stmt ';'
           freeRecord($1);
           free(s);
      }
-     | read ';' 
      | write ';'
      {
           char * str_list[] = {$1->code, ";\n"};
@@ -318,7 +317,7 @@ params_list :
 //TODO: EXPRESSIONS
 var_initialization  : primitive_type ID '=' expression
                     {
-                         printf("A3: %s %s = %s\n", $1->code, $2, $4->code);
+                         // printf("A3: %s %s = %s\n", $1->code, $2, $4->code);
                          //primitive_type ID = expression;
                          //int exemplo = 2;
                          //int exemplo = 2;
@@ -331,7 +330,7 @@ var_initialization  : primitive_type ID '=' expression
                               yyerror((char*)("Erro de tipo! a variável %s possui tipo %s, não pode receber valor do tipo %s", $2, $1->type, $4->type)); 
                          } */
 
-                         printf("INITIALIZING %s, with type %d", $2, $1->type);
+                         // printf("INITIALIZING %s, with type %d", $2, $1->type);
                          table_set(sym_table, $2, $1->type, EPRIMARY, NULL);
 
                          $$ = createRecord(s, $1->type);
@@ -915,7 +914,7 @@ unary : ID UNARY_SUM
           type var_type = EUNTYPED;
 
           type looked_up_type = table_get_type(sym_table, $1);
-          printf("LOOKED_UP_TYPE OF %s : %d\n", $1, looked_up_type);
+          // printf("LOOKED_UP_TYPE OF %s : %d\n", $1, looked_up_type);
           var_type = looked_up_type;
 
           $$ = createRecord($1, var_type);
@@ -1177,13 +1176,13 @@ read : INPUT '(' input_args ')'
 
 type_conversion : primitive_type '(' expression ')'
                {
-                    printf("INSIDE TYPE CONVERSION\n");
+                    // printf("INSIDE TYPE CONVERSION\n");
                     // printf("A5: %s -> %d\n", $3->code, $3->type);
                     type expression_type = $3->type;
-                    printf("TYPE OF %s FROM EXPRESSION: %d\n", $3->code, $3->type);
+                    // printf("TYPE OF %s FROM EXPRESSION: %d\n", $3->code, $3->type);
                     if (expression_type == EUNTYPED && $3->code != NULL) {
                          type looked_up_type = table_get_type(sym_table, $3->code);
-                         printf("LOOKED_UP_TYPE OF %s : %d\n", $3->code, looked_up_type);
+                         // printf("LOOKED_UP_TYPE OF %s : %d\n", $3->code, looked_up_type);
                          if (looked_up_type != UNDEFINED_TYPE) {
                               expression_type = looked_up_type;
                          }
