@@ -1,0 +1,41 @@
+vazio func main() {
+   int c1 = 0;
+   int c2 = 0;
+   int c3 = 0;
+   int c4 = 0;
+   
+   int num = 0;
+
+   saida("Digite um número: \n");
+
+   entrada(num);
+
+   saida("Para sair do programa, digite um valor negativo: \n");
+
+   enquanto (num >= 0) {
+
+      saida("digite outro número: \n");
+      
+      # Verifica os intervalos
+      se (num <= 25) {
+         c1++;
+      } 
+      senao se (num <= 50) {
+         c2++;
+      } 
+      senao se (num <= 75) {
+         c3++;
+      } 
+      senao se (num <= 100) {
+         c4++;
+      }
+
+      entrada(num);
+   }
+
+   saida(texto(c1));
+   saida(texto(c2));
+   # ta dando erro na tabela de simbolos ao recuperar o tipo de c3 por alguma razão...
+   saida(texto(c3));
+   saida(texto(c4));
+}
