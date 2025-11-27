@@ -68,10 +68,21 @@ table_entry* get_table_entry(table_entry* entries, int capacity, const char* key
 }
 
 type table_get_type(table* table, const char* key) {
+    printf("\nA1: GETTING ENTRY FROM KEY: %s\n", key);
+
     uint64_t hash = hash_key(key);
     int index = hash % table->capacity;
 
     table_entry* entry = get_table_entry(table->entries, table->capacity, key, hash, index);
+
+    printf("\nENTRY KEY: %s\n", entry->key);
+    printf("ENTRY HASH: %ld\n", hash);
+    printf("ENTRY INDEX: %d\n", index);
+    printf("ENTRY TYPE: %d\n", entry->type);
+    printf("ENTRY STRUCTURE: %d\n", entry->structure);
+    // printf("ENTRY VALUE: %d\n", entry->value);
+
+    printf("\n");
 
     if (entry == NULL) {
         return UNDEFINED_TYPE;

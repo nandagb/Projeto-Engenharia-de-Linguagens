@@ -10,13 +10,21 @@ typedef enum {
 	ELIST, ESTRUCT, EPRIMARY, UNDEFINED_STRUCTURE
 } structure;
 
-typedef struct {
+typedef struct entry_item{
     const char* key;     /* variable's name */
     type type;           /* variable's primitive type */
     structure structure; /* variable's structure type: primary or user defined */
     void* value;         /* variable's value*/
-} table_entry;
+} ;
 
+typedef struct table_entry{
+    // const char* key;     /* variable's name */
+    // type type;           /* variable's primitive type */
+    // structure structure; /* variable's structure type: primary or user defined */
+    // void* value;         /* variable's value*/
+    struct table_entry *next;
+    entry_item next;
+} ;
 
 typedef struct {
     table_entry* entries;  /* array of table entries */

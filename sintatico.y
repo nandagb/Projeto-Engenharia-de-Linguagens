@@ -317,7 +317,7 @@ params_list :
 //TODO: EXPRESSIONS
 var_initialization  : primitive_type ID '=' expression
                     {
-                         printf("A3: %s %s = %s\n", $1->code, $2, $4->code);
+                         // printf("\nA3: %s %s = %s\n", $1->code, $2, $4->code);
                          //primitive_type ID = expression;
                          //int exemplo = 2;
                          //int exemplo = 2;
@@ -329,9 +329,11 @@ var_initialization  : primitive_type ID '=' expression
                          /* if ($4-> type != $1->type) {
                               yyerror((char*)("Erro de tipo! a variável %s possui tipo %s, não pode receber valor do tipo %s", $2, $1->type, $4->type)); 
                          } */
-
-                         printf("INITIALIZING %s, with type %d", $2, $1->type);
+                         printf("INITIALIZING %s, with type %d\n", $2, $1->type);
+                         printf("SETTING %s, with type %d, to %s\n\n", $4->code, $4->type, $1->code);
                          table_set(sym_table, $2, $1->type, EPRIMARY, NULL);
+
+                         table_get_type(sym_table, $2);
 
                          $$ = createRecord(s, $1->type);
 
@@ -524,11 +526,13 @@ access_suffix : '[' expression ']'
 
 int_literal : INT_LITERAL
             {
+               // printf("\n\nA5: %s\n\n", $1);
                $$ = createRecord($1, EINTEGER);
                free($1);
             }
             | '-' INT_LITERAL             
             {
+               // printf("\n\nA6: %s\n\n", $2);
                char * str_list[] = {"-", $2};
                int list_size = 2;
                char * s = cat(str_list, list_size);
@@ -937,6 +941,7 @@ unary : ID UNARY_SUM
       }
       | STRING_LITERAL
       {
+          printf("\n\nA4: %s\n\n", $1);
           $$ = createRecord($1, ESTRING);
           free($1);
       }
