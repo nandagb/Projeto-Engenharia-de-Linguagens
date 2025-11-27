@@ -234,7 +234,7 @@ stmt : general_stmt ';'
      }
      | list_assign ';'                                                                            {/*printf("ID\n");*/}
      | func_declaration
-     | if
+     | if 
      | return ';'
      {
           char * str_list[] = {$1->code, ";\n"};
@@ -1005,7 +1005,7 @@ if_complement : ELSE '{' stmt_list '}'
               | else_if ELSE '{' stmt_list '}'                                                      
               {
                     char * str_list[] = {$1->code, " else {\n", $4->code, "}\n"};
-                    int list_size = 3;
+                    int list_size = 4;
                     char * s = cat(str_list, list_size);
 
                     freeRecord($1);
@@ -1022,7 +1022,7 @@ if_complement : ELSE '{' stmt_list '}'
 else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
           {
                char * str_list[] = {$1->code, " else if (", $4->code, ") {\n", $7->code, "}\n"};
-               int list_size = 5;
+               int list_size = 6;
                char * s = cat(str_list, list_size);
 
                freeRecord($1);
@@ -1035,7 +1035,7 @@ else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
           | ELSE_IF '(' expression ')' '{' stmt_list '}'
           {
                char * str_list[] = {" else if (", $3->code, ") {\n", $6->code, "}\n"};
-               int list_size = 4;
+               int list_size = 5;
                char * s = cat(str_list, list_size);
 
                freeRecord($3);
