@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "./../lib/record.h"
 #include "./../lib/cat.h"
 #include "./../lib/file_gen.h"
@@ -316,6 +317,8 @@ var_initialization  : primitive_type ID '=' expression
                               yyerror((char*)("Erro de tipo! a variável %s possui tipo %s, não pode receber valor do tipo %s", $2, $1->type, $4->type)); 
                          } */
 
+                         table_set(sym_table, $2, $1->type, EPRIMARY, NULL);
+
                          $$ = createRecord(s, $1->type);
 
                          freeRecord($1);
@@ -333,6 +336,8 @@ var_declaration  : primitive_type ID
                          int list_size = 2;
                          char * s = cat(str_list, list_size);
                          
+                         table_set(sym_table, $2, $1->type, EPRIMARY, NULL);
+
                          $$ = createRecord(s, $1->type);
 
                          freeRecord($1);
@@ -1083,48 +1088,56 @@ type_conversion : primitive_type '(' expression ')'
                {
                     printf("INSIDE TYPE CONVERSION\n");
                     // printf("A5: %s -> %d\n", $3->code, $3->type);
+                    type expression_type = $3->type;
+                    if (expression_type == EUNTYPED && $3->code != NULL) {
+                         type looked_up_type = table_get_type(sym_table, $3->code);
+                         if (looked_up_type != UNDEFINED_TYPE) {
+                              expression_type = looked_up_type;
+                         }
+                    }
+
+                    record *result_record = NULL;
+
                     if ($1->type == ESTRING) {
                          printf("PRIMITIVE TYPE IS A STRING\n");
-                         printf("EXPRESSION IS A %d\n", $3->type);
-                         // if ($3->type == EINTEGER) {
-                         //      s = malloc(200);
+                         printf("EXPRESSION IS A %d\n", expression_type);
 
-                         //      sprintf(s, "({ char* tmp = malloc(32); sprintf(tmp, \"%%d\", %s); tmp; })", $3->code);
-                         // }
-                         // if ($3->type == EFLOAT) {
-                              printf("EXPRESSION IS A FLOAT\n");
-                              char *s = NULL;
-                              s = malloc(200);
+                         char *buffer = NULL;
 
-                              sprintf(s, "({ char* tmp = malloc(32); sprintf(tmp, \"%%f\", %s); tmp; })", $3->code);
-                              $$ = createRecord(strdup(s), $1->type);
+                         if (expression_type == EINTEGER) {
+                              buffer = malloc(200);
+                              sprintf(buffer, "({ char* tmp = malloc(32); sprintf(tmp, \"%%d\", %s); tmp; })", $3->code);
+                         } else if (expression_type == EFLOAT) {
+                              buffer = malloc(200);
+                              sprintf(buffer, "({ char* tmp = malloc(32); sprintf(tmp, \"%%f\", %s); tmp; })", $3->code);
+                         } else if (expression_type == EBOOL) {
+                              buffer = malloc(200);
+                              sprintf(buffer, "({ char* tmp = malloc(8); sprintf(tmp, \"%%s\", (%s) ? \"true\" : \"false\"); tmp; })", $3->code);
+                         } else {
+                              result_record = createRecord($3->code, $1->type);
+                         }
 
-                              freeRecord($1);
-                              freeRecord($3);
-                              free(s);
-                         // }
-                         // else if ($3->type == EBOOL) {
-                         // }
-                         // else if ($3->type == ESTRING) {
-                         //      // if its already a string, do nothing
-                         //      char * str_list[] = {$3->code};
-                         //      int list_size = 1;
-                         //      s = cat(str_list, list_size);
-                         // }
+                         if (buffer != NULL) {
+                              result_record = createRecord(buffer, $1->type);
+                              free(buffer);
+                         }
+                    } else {
+                         char * str_list[] = {"(", $1->code, ") ", $3->code};
+                         int list_size = 4;
+                         char * s = cat(str_list, list_size);
+
+                         result_record = createRecord(s, $1->type);
+                         free(s);
                     }
-                    // else {
-                    //      //TODO: check if conversions from texto to number work
-                    //      char * str_list[] = {"(", $1->code, ") ", $3->code};
-                    //      int list_size = 4;
-                    //      s = cat(str_list, list_size);
-                    // }
 
-                    //TODO: check types
-                    // $$ = createRecord(strdup(s), $1->type);
+                    if (result_record == NULL) {
+                         result_record = createRecord($3->code, $1->type);
+                    }
 
-                    // freeRecord($1);
-                    // freeRecord($3);
-                    // if (s != NULL) free(s);
+                    $$ = result_record;
+
+                    freeRecord($1);
+                    freeRecord($3);
                }
 ;
 
