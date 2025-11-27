@@ -43,7 +43,7 @@ Stack stack;
 %type <rec> arithmatic_expression factor unary int_literal float_literal func_call args
 %type <rec> var_assign write
 
-%type <rec> if if_complement else_if
+%type <rec> if if_complement else_if while read input_args
 
 %start prog
  
@@ -253,7 +253,7 @@ stmt : general_stmt ';'
      | do_while ';'
      | for
      | expression ';'         
-     /* | read ';' */
+     | read ';' 
      | write ';'
      {
           char * str_list[] = {$1->code, ";\n"};
@@ -1015,9 +1015,9 @@ if_complement : ELSE '{' stmt_list '}'
                     free(s);
               }
               |
-              /* {
+              {
                     $$ = createRecord("",EUNTYPED);
-              } */
+              }
 
 else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
           {
@@ -1060,17 +1060,17 @@ case : CASE expression ':' stmt_list                                            
 ;
 
 while : WHILE '(' expression ')' '{' stmt_list '}'                                                  
-// {
-//      char * str_list[] = {"while (", $3->code, ") {\n", $6->code, "}\n"};
-//      int list_size = 5;
-//      char * s = cat(str_list, list_size);
+{
+     char * str_list[] = {"while (", $3->code, ") {\n", $6->code, "}\n"};
+     int list_size = 5;
+     char * s = cat(str_list, list_size);
      
-//      freeRecord($3);
-//      freeRecord($6);
+     freeRecord($3);
+     freeRecord($6);
      
-//      $$ = createRecord(s, EUNTYPED);
-//      free(s);
-// }
+     $$ = createRecord(s, EUNTYPED);
+     free(s);
+}
 
 
 do_while : DO '{' stmt_list '}' WHILE '(' expression ')'                                            {/*printf("DO WHILE\n");*/}
@@ -1104,20 +1104,17 @@ for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '
           free(s);
      } */
 
-read : INPUT '(' input_args ')'
-          /* {
-               char * str_list[] = {"scanf", "(", $3->code, ")"};
-               int list_size = 4;
+read : INPUT '(' input_args ')' 
+          {
+               char * str_list[] = {"scanf(\"%d\", &", $3->code, ");"};
+               int list_size = 3;
                char * s = cat(str_list, list_size);
                
-               for(int i = 0; i < list_size; i++){
-                    free(str_list[i]);
-               }
                freeRecord($3);
-
+               
                $$ = createRecord(s, EUNTYPED);
                free(s);
-          } */
+          } 
 ;
 
 type_conversion : primitive_type '(' expression ')'
@@ -1182,15 +1179,16 @@ write : OUTPUT '(' expression ')'
           }
 ;
 
-input_args :
-           /* {
-               $$ = createRecord("",EUNTYPED);
-           } */
-           | STRING_LITERAL
-           /* {
-               $$ = createRecord($1,STRING);
-               free($1);
-           } */
+input_args : ID
+{
+     $$ = createRecord($1, EUNTYPED);
+     
+}
+| STRING_LITERAL
+{
+     $$ = createRecord($1, EUNTYPED);
+     free($1);
+}
 ;
 
 /* type_declaration : STRUCT ID '{' var_declaration_list '}' */

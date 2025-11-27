@@ -17,4 +17,4 @@ clean:
 	# Dica: use rm -rf ./output/* para limpar tudo dentro da pasta
 
 parse: all
-	./output/parser < ./input/teste.txt
+	./output/parser < ./input/prob2.txt
