@@ -1,0 +1,50 @@
+vazio func main() {
+    Lista<Lista<int>> matA = novo Lista<>();
+    Lista<Lista<int>> matB = novo Lista<>();
+    Lista<Lista<int>> matSoma = novo Lista<>();
+
+    int i = 0;
+    int j = 0;
+    
+    Lista<int> linhaA1 = novo Lista<>();
+    linhaA1.adicionar(1);
+    linhaA1.adicionar(2);
+    matA.adicionar(linhaA1);
+
+    Lista<int> linhaA2 = novo Lista<>();
+    linhaA2.adicionar(3);
+    linhaA2.adicionar(4);
+    matA.adicionar(linhaA2);
+
+    Lista<int> linhaB1 = novo Lista<>();
+    linhaB1.adicionar(10);
+    linhaB1.adicionar(20);
+    matB.adicionar(linhaB1);
+
+    Lista<int> linhaB2 = novo Lista<>();
+    linhaB2.adicionar(30);
+    linhaB2.adicionar(40);
+    matB.adicionar(linhaB2);
+    
+    repita (i = 0, i < 2, i++) {
+        Lista<int> linhaSoma = novo Lista<>();
+        
+        repita (j = 0, j < 2, j++) {
+            int valA = matA[i][j];
+            int valB = matB[i][j];
+            int soma = valA + valB;
+            
+            linhaSoma.adicionar(soma);
+        }
+        matSoma.adicionar(linhaSoma);
+    }
+
+    saida("Matriz Resultante:");
+    repita (i = 0, i < 2, i++) {
+        repita (j = 0, j < 2, j++) {
+            int res = matSoma[i][j];
+            saida(res);
+        }
+        saida("--- fim de linha ---");
+    }
+}

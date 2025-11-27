@@ -367,7 +367,10 @@ var_declaration_list     : var_declaration
 
 
 list_declaration : LIST '<' list_types '>' ID
-                    {
+                    {    printf("DEBUG: Entrou em list_declaration\n");
+                         printf("DEBUG: Tipo da lista: %s\n", $3->code);
+                         printf("DEBUG: ID da lista: %s\n", $5);
+                         
                          //list_types ID[]
                          //int exemplo[]
                          char * str_list[] = {$3->code, $5, "[]"};
