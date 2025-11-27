@@ -35,6 +35,7 @@ vazio func main() {
 
    saida(texto(c1));
    saida(texto(c2));
+   # ta dando erro na tabela de simbolos ao recuperar o tipo de c3 por alguma razão...
    saida(texto(c3));
    saida(texto(c4));
 }

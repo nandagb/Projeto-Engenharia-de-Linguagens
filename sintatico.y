@@ -7,6 +7,7 @@
 #include "./../lib/file_gen.h"
 #include "./../lib/symbol_table.h"
 #include "./../lib/scope.h"
+#include "./../lib/labels.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -999,8 +1000,37 @@ args : args ',' expression
 
 if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          
      {
-          char * str_list[] = {"if (", $3->code, ") {\n", $6->code, "}\n", $8->code};
-          int list_size = 6;
+          // if (expression1){
+          //   stmt_list1
+          // }
+          // else if (expression2) {
+          //   stmt_list2
+          // }
+          // else{
+          //   stmt_list3
+          // }
+          // after_if
+
+          // precisa virar
+          // if (!expression1) goto L1
+          // stmt_list1
+          // goto OUT
+          // L1:
+          // if (!expression2) goto L3
+          // stmt_list2
+          // goto OUT
+          // L3: 
+          // stmt_list3
+          // OUT:
+          // after_if
+
+          // if (!expression1) goto OUT
+          // stmt_list1
+          // OUT
+          // after_if
+          char* label_out = newLabel("out");
+          char * str_list[] = {"if (!", $3->code, ") goto ", label_out, ";\n", $6->code, "\n", $8->code, label_out, ":\n"};
+          int list_size = 10;
           char * s = cat(str_list, list_size);
           
           freeRecord($3);
@@ -1014,6 +1044,8 @@ if : IF '(' expression ')' '{' stmt_list '}' if_complement
 
 if_complement : ELSE '{' stmt_list '}'                                                              
                {
+                    // precisa virar
+                    // traduz pra stmt list sem os {}
                     char * str_list[] = {" else {\n", $3->code, "}\n"};
                     int list_size = 3;
                     char * s = cat(str_list, list_size);
