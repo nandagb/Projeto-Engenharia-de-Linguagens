@@ -1024,13 +1024,17 @@ if : IF '(' expression ')' '{' stmt_list '}' if_complement
           // OUT:
           // after_if
 
-          // if (!expression1) goto OUT
+          // if (!expression1) goto ELSE
           // stmt_list1
+          // goto OUT
+          // ELSE:
+          // else_stmt
           // OUT
           // after_if
           char* label_out = newLabel("out");
-          char * str_list[] = {"if (!", $3->code, ") goto ", label_out, ";\n", $6->code, "\n", $8->code, label_out, ":\n"};
-          int list_size = 10;
+          char* label_else = newLabel("else");
+          char * str_list[] = {"if (!", $3->code, ") goto ", label_else, ";\n", $6->code, "goto ", label_out, ";\n", label_else, ":\n", $8->code, label_out, ":\n"};
+          int list_size = 14;
           char * s = cat(str_list, list_size);
           
           freeRecord($3);
@@ -1046,14 +1050,9 @@ if_complement : ELSE '{' stmt_list '}'
                {
                     // precisa virar
                     // traduz pra stmt list sem os {}
-                    char * str_list[] = {" else {\n", $3->code, "}\n"};
-                    int list_size = 3;
-                    char * s = cat(str_list, list_size);
+                    $$ = createRecord($3->code, EUNTYPED);
 
                     freeRecord($3);
-
-                    $$ = createRecord(s, EUNTYPED);
-                    free(s);
                } 
               | else_if                                                                             
               {$$ = $1;}
