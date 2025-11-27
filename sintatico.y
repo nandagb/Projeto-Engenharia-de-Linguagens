@@ -43,6 +43,8 @@ Stack stack;
 %type <rec> arithmatic_expression factor unary int_literal float_literal func_call args
 %type <rec> var_assign write
 
+%type <rec> if if_complement else_if while read input_args
+
 %start prog
  
 %%
@@ -232,7 +234,7 @@ stmt : general_stmt ';'
      }
      | list_assign ';'                                                                            {/*printf("ID\n");*/}
      | func_declaration
-     | if
+     | if 
      | return ';'
      {
           char * str_list[] = {$1->code, ";\n"};
@@ -250,8 +252,19 @@ stmt : general_stmt ';'
      | while
      | do_while ';'
      | for
-     | expression ';'         
-     /* | read ';' */
+     | expression ';'
+     {
+          char * str_list[] = {$1->code, ";\n"};
+
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+
+          $$ = createRecord(s, $1->type);
+
+          freeRecord($1);
+          free(s);
+     }
+     | read ';' 
      | write ';'
      {
           char * str_list[] = {$1->code, ";\n"};
@@ -339,10 +352,18 @@ var_declaration  : primitive_type ID
                          free($2);
                          free(s);
                     }
-                    | list_declaration                                                                {/*printf("LIST DECLARATION\n");*/}
+                    | list_declaration     {$$ = $1;}
                     | ID ID
                     {
-                         // printf("A9");
+                         char * str_list[] = {"struct ", $1, " * ", $2};
+                         int list_size = 4;
+                         char * s = cat(str_list, list_size);
+                         
+                         $$ = createRecord(s, EUNTYPED);
+                         
+                         free($1);
+                         free($2);
+                         free(s);
                     }
 ;
 
@@ -368,9 +389,7 @@ var_declaration_list     : var_declaration
 
 list_declaration : LIST '<' list_types '>' ID
                     {
-                         //list_types ID[]
-                         //int exemplo[]
-                         char * str_list[] = {$3->code, $5, "[]"};
+                         char * str_list[] = {$3->code, " *", $5};
                          int list_size = 3;
                          char * s = cat(str_list, list_size);
                          
@@ -391,10 +410,10 @@ list_types     : primitive_type
                     free($1);
                     
                }
-               | ID                                                                                   {}
+               | ID {$$ = createRecord($1, EUNTYPED);}
                | LIST '<' list_types '>'                                                              
                {
-                    char * str_list[] = {$3->code,"[]"};
+                    char * str_list[] = {$3->code, " *"}; 
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
                     
@@ -966,54 +985,76 @@ args : args ',' expression
      }
 ;
 
-if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          {/*printf("IF \n");*/} 
-;
-
-if_complement : ELSE '{' stmt_list '}'                                                              {/*printf("ELSE \n");*/} 
-              | else_if                                                                             {/*printf("ELSE IF \n")*/;}
-              | else_if ELSE '{' stmt_list '}'                                                      {/*printf("ELSE IF COM ELSE \n")*/;}
-              |
-              /* {
-                    $$ = createRecord("",EUNTYPED);
-              } */
-
-else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
-        /* {
-          // NÃO É PERMITIDO USAR ELSE
-          // Verificar como fazer o else usando goto | Confirmar no documento da atividade
-          char * str_list[] = {$1->code, "else if" "(", $4->code, ")", "{", $7->code, "}"};
-          int list_size = 7;
-          char * s = cat(str_list, list_size);
-          
-          //TODO: Colocar freeRecord em todos os records
-          for(int i = 0; i < list_size; i++){
-               free(str_list[i]);
-          }
-          freeRecord($1);
-          freeRecord($4);
-          freeRecord($7);
-          
-          $$ = createRecord(s, EUNTYPED);
-          free(s);
-        } */
-        | ELSE_IF '(' expression ')' '{' stmt_list '}'
-        /* {
-          // NÃO É PERMITIDO USAR ELSE
-          // Verificar como fazer o else usando goto | Confirmar no documento da atividade
-          char * str_list[] = {"else if" "(", $3->code, ")", "{", $6->code, "}"};
+if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          
+     {
+          char * str_list[] = {"if (", $3->code, ") {\n", $6->code, "}\n", $8->code};
           int list_size = 6;
           char * s = cat(str_list, list_size);
           
-          //TODO: Colocar freeRecord em todos os records
-          for(int i = 0; i < list_size; i++){
-               free(str_list[i]);
-          }
           freeRecord($3);
           freeRecord($6);
+          freeRecord($8);
           
           $$ = createRecord(s, EUNTYPED);
           free(s);
-        } */
+     } 
+;
+
+if_complement : ELSE '{' stmt_list '}'                                                              
+               {
+                    char * str_list[] = {" else {\n", $3->code, "}\n"};
+                    int list_size = 3;
+                    char * s = cat(str_list, list_size);
+
+                    freeRecord($3);
+
+                    $$ = createRecord(s, EUNTYPED);
+                    free(s);
+               } 
+              | else_if                                                                             
+              {$$ = $1;}
+              | else_if ELSE '{' stmt_list '}'                                                      
+              {
+                    char * str_list[] = {$1->code, " else {\n", $4->code, "}\n"};
+                    int list_size = 4;
+                    char * s = cat(str_list, list_size);
+
+                    freeRecord($1);
+                    freeRecord($4);
+
+                    $$ = createRecord(s, EUNTYPED);
+                    free(s);
+              }
+              |
+              {
+                    $$ = createRecord("",EUNTYPED);
+              }
+
+else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
+          {
+               char * str_list[] = {$1->code, " else if (", $4->code, ") {\n", $7->code, "}\n"};
+               int list_size = 6;
+               char * s = cat(str_list, list_size);
+
+               freeRecord($1);
+               freeRecord($4);
+               freeRecord($7);
+
+               $$ = createRecord(s, EUNTYPED);
+               free(s);
+          }
+          | ELSE_IF '(' expression ')' '{' stmt_list '}'
+          {
+               char * str_list[] = {" else if (", $3->code, ") {\n", $6->code, "}\n"};
+               int list_size = 5;
+               char * s = cat(str_list, list_size);
+
+               freeRecord($3);
+               freeRecord($6);
+
+               $$ = createRecord(s, EUNTYPED);
+               free(s);
+          } 
 
 switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'                                      {/*printf("SWITCH COM DEFAULT \n");*/}
        | SWITCH '(' ID ')' '{' cases '}'                                                            {/*printf("SWITCH SEM DEFAULT \n");*/}
@@ -1029,7 +1070,18 @@ cases : cases case
 case : CASE expression ':' stmt_list                                                                {/*printf("CASE \n");*/}
 ;
 
-while : WHILE '(' expression ')' '{' stmt_list '}'                                                  {/*printf("WHILE\n");*/}
+while : WHILE '(' expression ')' '{' stmt_list '}'                                                  
+{
+     char * str_list[] = {"while (", $3->code, ") {\n", $6->code, "}\n"};
+     int list_size = 5;
+     char * s = cat(str_list, list_size);
+     
+     freeRecord($3);
+     freeRecord($6);
+     
+     $$ = createRecord(s, EUNTYPED);
+     free(s);
+}
 
 
 do_while : DO '{' stmt_list '}' WHILE '(' expression ')'                                            {/*printf("DO WHILE\n");*/}
@@ -1063,20 +1115,17 @@ for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '
           free(s);
      } */
 
-read : INPUT '(' input_args ')'
-          /* {
-               char * str_list[] = {"scanf", "(", $3->code, ")"};
-               int list_size = 4;
+read : INPUT '(' input_args ')' 
+          {
+               char * str_list[] = {"scanf(\"%d\", &", $3->code, ");"};
+               int list_size = 3;
                char * s = cat(str_list, list_size);
                
-               for(int i = 0; i < list_size; i++){
-                    free(str_list[i]);
-               }
                freeRecord($3);
-
+               
                $$ = createRecord(s, EUNTYPED);
                free(s);
-          } */
+          } 
 ;
 
 type_conversion : primitive_type '(' expression ')'
@@ -1141,15 +1190,16 @@ write : OUTPUT '(' expression ')'
           }
 ;
 
-input_args :
-           /* {
-               $$ = createRecord("",EUNTYPED);
-           } */
-           | STRING_LITERAL
-           /* {
-               $$ = createRecord($1,STRING);
-               free($1);
-           } */
+input_args : ID
+{
+     $$ = createRecord($1, EUNTYPED);
+     
+}
+| STRING_LITERAL
+{
+     $$ = createRecord($1, EUNTYPED);
+     free($1);
+}
 ;
 
 /* type_declaration : STRUCT ID '{' var_declaration_list '}' */
