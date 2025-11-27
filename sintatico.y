@@ -629,11 +629,26 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
 
 var_assign : ID '=' expression
            {
+               // VERIFICATIONS
+               //TODO: verify if ID exists in symbol table
+               table_entry* entry = table_get_entry_object(sym_table, $1);
+               if (entry == NULL) {
+                    //variable was not initialized
+                    printf("Erro! A variável %s não foi declarada!\n", $1);
+               }
+
+               //TODO: type checking of expression
+
+               type expression_type = $3->type;
+               if (expression_type == EUNTYPED && $3->code != NULL) {
+                    expression_type = table_get_type(sym_table, $3->code);
+               }
+               // =============
+
                char * str_list[] = {$1, " = ", $3->code};
                int list_size = 3;
                char * s = cat(str_list, list_size);
 
-               // TODO: pegar tipo do var assign pela tabela de simbolos do ID
                $$ = createRecord(s, EUNTYPED);
 
                free($3);
@@ -1176,13 +1191,9 @@ read : INPUT '(' input_args ')'
 
 type_conversion : primitive_type '(' expression ')'
                {
-                    // printf("INSIDE TYPE CONVERSION\n");
-                    // printf("A5: %s -> %d\n", $3->code, $3->type);
                     type expression_type = $3->type;
-                    // printf("TYPE OF %s FROM EXPRESSION: %d\n", $3->code, $3->type);
                     if (expression_type == EUNTYPED && $3->code != NULL) {
                          type looked_up_type = table_get_type(sym_table, $3->code);
-                         // printf("LOOKED_UP_TYPE OF %s : %d\n", $3->code, looked_up_type);
                          if (looked_up_type != UNDEFINED_TYPE) {
                               expression_type = looked_up_type;
                          }
