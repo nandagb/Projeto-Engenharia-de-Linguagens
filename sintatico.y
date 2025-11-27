@@ -998,42 +998,26 @@ args : args ',' expression
      }
 ;
 
-if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          
+if : IF '(' expression ')' '{' stmt_list '}' if_complement
      {
-          // if (expression1){
-          //   stmt_list1
-          // }
-          // else if (expression2) {
-          //   stmt_list2
-          // }
-          // else{
-          //   stmt_list3
-          // }
-          // after_if
-
-          // precisa virar
-          // if (!expression1) goto L1
-          // stmt_list1
-          // goto OUT
-          // L1:
-          // if (!expression2) goto L3
-          // stmt_list2
-          // goto OUT
-          // L3: 
-          // stmt_list3
-          // OUT:
-          // after_if
-
-          // if (!expression1) goto ELSE
-          // stmt_list1
-          // goto OUT
-          // ELSE:
-          // else_stmt
-          // OUT
-          // after_if
           char* label_out = newLabel("out");
           char* label_else = newLabel("else");
-          char * str_list[] = {"if (!", $3->code, ") goto ", label_else, ";\n", $6->code, "goto ", label_out, ";\n", label_else, ":\n", $8->code, label_out, ":\n"};
+
+          // in case there is an else_if
+          char * replacement_list[] = {"goto ", label_out};
+          char * replacement_string = cat(replacement_list, 2);
+          $8->code = replace($8->code, "_PLACEHOLDER_OUT_", replacement_string);
+          //
+
+          char * str_list[] = {
+               "if (!", $3->code /*expression*/, ") goto ", label_else, ";\n",
+               $6->code, //stmt_list
+               "goto ", label_out, ";\n",
+               label_else, ":\n",
+               $8->code,//if_complement
+               label_out, ":\n"
+          };
+
           int list_size = 14;
           char * s = cat(str_list, list_size);
           
@@ -1046,20 +1030,18 @@ if : IF '(' expression ')' '{' stmt_list '}' if_complement
      } 
 ;
 
-if_complement : ELSE '{' stmt_list '}'                                                              
+if_complement : ELSE '{' stmt_list '}'
                {
-                    // precisa virar
-                    // traduz pra stmt list sem os {}
                     $$ = createRecord($3->code, EUNTYPED);
 
                     freeRecord($3);
                } 
               | else_if                                                                             
               {$$ = $1;}
-              | else_if ELSE '{' stmt_list '}'                                                      
+              | else_if ELSE '{' stmt_list '}'
               {
-                    char * str_list[] = {$1->code, " else {\n", $4->code, "}\n"};
-                    int list_size = 4;
+                    char * str_list[] = {$1->code, $4->code, "\n"};
+                    int list_size = 3;
                     char * s = cat(str_list, list_size);
 
                     freeRecord($1);
@@ -1088,8 +1070,14 @@ else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
           }
           | ELSE_IF '(' expression ')' '{' stmt_list '}'
           {
-               char * str_list[] = {" else if (", $3->code, ") {\n", $6->code, "}\n"};
-               int list_size = 5;
+               char* label_out_else_if = newLabel("out_else_if");
+               char * str_list[] = {
+                    "if (!", $3->code/*expression*/, ") goto ", label_out_else_if, ";\n",
+                    $6->code, "\n",//stmt_list
+                    "_PLACEHOLDER_OUT_;\n",
+                    label_out_else_if, ":\n"
+               };
+               int list_size = 10;
                char * s = cat(str_list, list_size);
 
                freeRecord($3);
