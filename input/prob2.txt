@@ -6,9 +6,15 @@ vazio func main() {
    
    int num = 0;
 
+   saida("Digite um número: \n");
+
    entrada(num);
 
+   saida("Para sair do programa, digite um valor negativo: \n");
+
    enquanto (num >= 0) {
+
+      saida("digite outro número: \n");
       
       # Verifica os intervalos
       se (num <= 25) {
@@ -27,8 +33,8 @@ vazio func main() {
       entrada(num);
    }
 
-   saida(c1);
-   saida(c2);
-   saida(c3);
-   saida(c4);
+   saida(texto(c1));
+   saida(texto(c2));
+   saida(texto(c3));
+   saida(texto(c4));
 }
