@@ -1,7 +1,7 @@
 #ifndef LABELS
 #define LABELS
 
-char *newLabel();
-char *replace(const char *str, const char *placeholder, const char *replacement);
+char *new_label(char* label);
+char* replace_all(const char* str, const char* sub, const char* rep);
 
 #endif

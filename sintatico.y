@@ -1000,13 +1000,14 @@ args : args ',' expression
 
 if : IF '(' expression ')' '{' stmt_list '}' if_complement
      {
-          char* label_out = newLabel("out");
-          char* label_else = newLabel("else");
+          //OK
+          char* label_out = new_label("out");
+          char* label_else = new_label("else");
 
-          // in case there is an else_if
+          // in case there are else_if
           char * replacement_list[] = {"goto ", label_out};
           char * replacement_string = cat(replacement_list, 2);
-          $8->code = replace($8->code, "_PLACEHOLDER_OUT_", replacement_string);
+          $8->code = replace_all($8->code, "_PLACEHOLDER_OUT_", replacement_string);
           //
 
           char * str_list[] = {
@@ -1027,19 +1028,23 @@ if : IF '(' expression ')' '{' stmt_list '}' if_complement
           
           $$ = createRecord(s, EUNTYPED);
           free(s);
+          free(replacement_string);
      } 
 ;
 
 if_complement : ELSE '{' stmt_list '}'
                {
+                    //OK
                     $$ = createRecord($3->code, EUNTYPED);
 
                     freeRecord($3);
                } 
-              | else_if                                                                             
+              | else_if
+              //OK
               {$$ = $1;}
               | else_if ELSE '{' stmt_list '}'
               {
+                    //OK
                     char * str_list[] = {$1->code, $4->code, "\n"};
                     int list_size = 3;
                     char * s = cat(str_list, list_size);
@@ -1052,6 +1057,7 @@ if_complement : ELSE '{' stmt_list '}'
               }
               |
               {
+                    //OK
                     $$ = createRecord("",EUNTYPED);
               }
 
@@ -1070,7 +1076,8 @@ else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
           }
           | ELSE_IF '(' expression ')' '{' stmt_list '}'
           {
-               char* label_out_else_if = newLabel("out_else_if");
+               //OK
+               char* label_out_else_if = new_label("out_else_if");
                char * str_list[] = {
                     "if (!", $3->code/*expression*/, ") goto ", label_out_else_if, ";\n",
                     $6->code, "\n",//stmt_list

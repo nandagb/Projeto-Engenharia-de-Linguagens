@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-char *newLabel(char* label) {
+char *new_label(char* label) {
     static int labelCount = 0;
     char *buf = malloc(20*sizeof(char));
     if (!buf) {
@@ -12,39 +12,48 @@ char *newLabel(char* label) {
     return buf;
 }
 
-// find a substring whithin a string and replace it by another string
-char *replace(const char *str, const char *placeholder, const char *replacement) {
-    if (!str || !placeholder || !replacement)
-        return strdup(str ? str : "");
+// find a substring whithin a string and replace all occurrences by another string
+char* replace_all(const char* str, const char* sub, const char* rep) {
+    const char* pos;
+    int count = 0;
+    int sub_len = strlen(sub);
+    int rep_len = strlen(rep);
 
-    const char *p = str;
-    size_t count = 0;
-    size_t len_ph = strlen(placeholder);
-
-    while ((p = strstr(p, placeholder)) != NULL) {
+    // counts how many times the substring occurs
+    pos = str;
+    while ((pos = strstr(pos, sub)) != NULL) {
         count++;
-        p += len_ph;
+        pos += sub_len;
     }
 
-    if (count == 0)
-        return strdup(str);
-
-    size_t len_rep = strlen(replacement);
-    size_t len = strlen(str) + count * (len_rep - len_ph);
-    char *result = malloc(len + 1);
-
-    char *dst = result;
-    const char *src = str;
-
-    while ((p = strstr(src, placeholder)) != NULL) {
-        size_t chunk = p - src;
-        memcpy(dst, src, chunk);
-        dst += chunk;
-        memcpy(dst, replacement, len_rep);
-        dst += len_rep;
-        src = p + len_ph;
+    // if there are no occurrences, return as it is (IMPORTANT!)
+    if (count == 0) {
+        char* copy = malloc(strlen(str) + 1);
+        strcpy(copy, str);
+        return copy;
     }
 
-    strcpy(dst, src);
+    // calculate new size
+    int new_len = strlen(str) + count * (rep_len - sub_len);
+    char* result = malloc(new_len + 1);
+
+    char* r = result;
+    const char* p = str;
+
+    while ((pos = strstr(p, sub)) != NULL) {
+        // copies before
+        memcpy(r, p, pos - p);
+        r += pos - p;
+
+        // copies substitution
+        memcpy(r, rep, rep_len);
+        r += rep_len;
+
+        p = pos + sub_len;
+    }
+
+    // copia the rest
+    strcpy(r, p);
+
     return result;
 }

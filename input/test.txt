@@ -1,6 +1,6 @@
 vazio func main(){
    logico teste1 = falso;
-   logico teste2 = falso;
+   logico teste2 = verdadeiro;
    se (teste1) {
       saida("entrou no if\n");
    }
