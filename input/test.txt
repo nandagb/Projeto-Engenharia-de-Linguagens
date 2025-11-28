@@ -1,4 +1,5 @@
 vazio func main(){
-   int x = "teste";
-   int x = 5;
+   repita(int i=0, i<10, i++){
+      saida("estou contando " + texto(i) + "\n");
+   }
 }

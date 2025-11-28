@@ -46,7 +46,7 @@ Stack stack;
 %type <rec> arithmatic_expression factor unary int_literal float_literal func_call args
 %type <rec> var_assign write
 
-%type <rec> if if_complement else_if while read input_args /*for*/ for_initialization
+%type <rec> if if_complement else_if while read input_args for for_initialization for_step
 
 %start prog
  
@@ -947,6 +947,19 @@ factor    : factor '*' unary
  
 unary : ID UNARY_SUM
       {
+          // VERIFICATIONS
+          table_entry* entry = table_get_entry_object(sym_table, $1);
+          type entry_type = UNDEFINED_TYPE;
+          if (entry == NULL) {
+               // Variable was not initialized
+               printf("Erro! A variável %s não foi declarada!\n", $1);
+          }
+          else{
+               entry_type = entry->type;
+          }
+
+          // =============
+
           // TODO: checar o escopo (não pode usar em escopo global)
           char * str_list[] = {$1,"++"};
           int list_size = 2;
@@ -954,7 +967,7 @@ unary : ID UNARY_SUM
 
           free($1);
 
-          $$ = createRecord(s,EUNTYPED);
+          $$ = createRecord(s, entry_type);
           free(s);
       }
       | ID UNARY_SUBTRACTION
@@ -1202,13 +1215,10 @@ while : WHILE '(' expression ')' '{' {push(&stack, "while");} stmt_list {pop(&st
 {
      // VERIFICATIONS
      //only boolean expressions are allowed in while statements
-     printf("VERIFYING WHILE EXPRESSION: %s\n", type_to_string($3->type));
      if ($3->type != EBOOL){
-          printf("ENTERING TYPE ERROR IF\n");
           // Type error!
           char * error_list[] = {"Erro! A expressão utilizada é do tipo ", type_to_string($3->type), "! Enquanto só aceita expressões do tipo lógico!\n"};
           char * error_string = cat(error_list, 3);
-          printf("ERROR STRING %s", error_string);
           report_error(error_string);
           free(error_string);
      }
@@ -1238,6 +1248,10 @@ while : WHILE '(' expression ')' '{' {push(&stack, "while");} stmt_list {pop(&st
 do_while : DO '{' stmt_list '}' WHILE '(' expression ')'                                            {/*printf("DO WHILE\n");*/}
 
 for_initialization : var_initialization
+                   {
+                    $$ = createRecord($1->code, $1->type);
+                    freeRecord($1);
+                   }
                    | var_assign
                    {
                     $$ = createRecord($1->code, $1->type);
@@ -1246,34 +1260,54 @@ for_initialization : var_initialization
                    ;
 
 for_step : var_assign
+         {
+          $$ = createRecord($1->code, $1->type);
+          freeRecord($1);
+         }
          | expression
+         {
+          // VERIFICATIONS
+          //only integer expressions are allowed in for step
+          if ($1->type != EINTEGER){
+               // Type error!
+               char * error_list[] = {"Erro! A expressão utilizada é do tipo ", type_to_string($1->type), "! O passo do repita só aceita expressões do tipo inteiro!\n"};
+               char * error_string = cat(error_list, 3);
+               report_error(error_string);
+               free(error_string);
+          }
+          //TODO: verify if $1->code ends in ++ or --
+          // =============
+
+          $$ = createRecord($1->code, $1->type);
+          freeRecord($1);
+         }
          ;
 
 for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' {push(&stack, "for");} stmt_list {pop(&stack);} '}'
-     //{
-          // char* label_start = new_label("for_start");
-          // char* label_out = new_label("for_out");
+     {
+          char* label_start = new_label("for_start");
+          char* label_out = new_label("for_out");
 
-          // char * str_list[] = {
-          //      $3->code, ";\n",//for_initialization
-          //      label_start, ":\n",
-          //      "if (!(", $5->code/*expression*/, ")) goto ", label_out, ";\n",
-          //      $11->code, "\n",//stmt_list
-          //      $7->code, ";\n",//for_step
-          //      "goto ", label_start,
-          //      label_out, ":\n"
-          // };
-          // int list_size = 17;
-          // char * s = cat(str_list, list_size);
+          char * str_list[] = {
+               $3->code, ";\n",//for_initialization
+               label_start, ":\n",
+               "if (!(", $5->code/*expression*/, ")) goto ", label_out, ";\n",
+               $11->code, "\n",//stmt_list
+               $7->code, ";\n",//for_step
+               "goto ", label_start, ";\n",
+               label_out, ":\n"
+          };
+          int list_size = 18;
+          char * s = cat(str_list, list_size);
           
-          // $$ = createRecord(s, EUNTYPED);
+          $$ = createRecord(s, EUNTYPED);
 
-          // freeRecord($3);
-          // freeRecord($5);
-          // freeRecord($7);
-          // freeRecord($11);
-          // free(s);
-     //}
+          freeRecord($3);
+          freeRecord($5);
+          freeRecord($7);
+          freeRecord($11);
+          free(s);
+     }
 
 read : INPUT '(' input_args ')' 
           {
