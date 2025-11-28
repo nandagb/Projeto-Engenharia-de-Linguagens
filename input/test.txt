@@ -1,3 +1,4 @@
 vazio func main() {
    Lista<int> linha = novo Lista<>()(3);
+   linha[0] = 1;
 }

@@ -42,7 +42,7 @@ Stack labels_stack;
 
 %type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list type_conversion
 %type <rec> func_declaration func_declaration_list general_stmt_list type list_types return
-%type <rec> list_declaration list_initialization struct_declaration var_declaration_list /*list_push*/
+%type <rec> list_declaration list_initialization struct_declaration var_declaration_list /*list_push*/ access_suffix access_suffix_list access_assign
 %type <rec> var_initialization expression comparison_expression relation_expression
 %type <rec> arithmatic_expression factor unary int_literal float_literal func_call args
 %type <rec> var_assign write
@@ -232,16 +232,16 @@ stmt : general_stmt ';'
           free(s);
      }
      | access_assign ';'
-     /* {
+     {
           char * str_list[] = {$1->code, ";"};
           int list_size = 2;
           char * s = cat(str_list, list_size);
-          
+
+          $$ = createRecord(s, $1->type);
+
           freeRecord($1);
-          
-          $$ = createRecord(s, EUNTYPED);
           free(s);
-     } */
+     }
      | var_assign ';'
      {
           char * str_list[] = {$1->code, ";\n"};
@@ -542,50 +542,55 @@ list_remove: ID access_suffix_list '.' REMOVE '(' ')'                           
            | ID '.' REMOVE '(' ')'                                                                {}
 ;
 
-access_assign : access '=' expression
-              /* {
-                    char * str_list[] = {$1->code, "=", $3->code};
-                    int list_size = 3;
+access_assign : ID access_suffix_list '=' expression
+              {
+                    char * str_list[] = {$1, $2->code, "=", $4->code};
+                    int list_size = 4;
                     char * s = cat(str_list, list_size);
 
-                    freeRecord($1);
-                    freeRecord($3);
+                    $$ = createRecord(s, $4->type);
 
-                    $$ = createRecord(s, EUNTYPED);
+                    freeRecord($2);
+                    freeRecord($4);
                     free(s);
-              } */
+              }
 ;
 
-access : ID access_suffix_list
-       /* {
+/* access : ID access_suffix_list
+       {
           char * str_list[] = {$1, $2->code};
           int list_size = 2;
           char * s = cat(str_list, list_size);
 
+          //TODO: GET TYPE FROM SYMBOL TABEL
+          $$ = createRecord(s, EUNTYPED);
+
           free($1);
           freeRecord($2);
-
-          $$ = createRecord(s, EUNTYPED);
           free(s);
-       } */
-;
+       }
+; */
 
 access_suffix_list : access_suffix
+                   {
+                    $$ = createRecord($1->code, $1->type);
+                    freeRecord($1);
+                   }
                    | access_suffix_list access_suffix
 ;
 
 // TODO: Verficação do tipo
 access_suffix : '[' expression ']'
-               /* { 
+               { 
                     char * str_list[] = {"[", $2->code, "]"};
                     int list_size = 3;
                     char * s = cat(str_list, list_size);
+                    
+                    $$ = createRecord(s, $2->type);
 
                     freeRecord($2);
-                    
-                    $$ = createRecord(s, EUNTYPED);
                     free(s);
-               } */
+               }
               | '.' ID                                                                            
               /* { 
                     char * str_list[] = {".", $2, "]"};
@@ -1099,7 +1104,7 @@ unary : ID UNARY_SUM
       /* {
          $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
       } */
-      | access
+      | ID access_suffix_list
       /* {
          $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
       } */
