@@ -1,5 +1,4 @@
 vazio func main(){
-   int x;
-   #x = verdadeiro;
-   x = x + y;
+   int x = "teste";
+   int x = 5;
 }
