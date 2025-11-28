@@ -1,21 +1,15 @@
-vazio main() {
-   int l1;
-   int c1;
-   int l2;
-   int c2;
-
-   // Leitura das dimensões
-   saida("Digite a largura da primeira matriz: \n");
-   entrada(l1);
-   saida("Digite a altura da primeira matriz: \n");
-   entrada(c1);
-   saida("Digite a largura da segunda matriz: \n");
-   entrada(l2);
-   saida("Digite a altura da segunda matriz: \n");
-   entrada(c2);
-
-   saida("l1: " + texto(l1) + "\n");
-   saida("c1: " + texto(c1) + "\n");
-   saida("l2: " + texto(l2) + "\n");
-   saida("c2: " + texto(c2) + "\n");
+vazio func main() {
+   se (verdadeiro) {
+      saida("antes do if interno, dentro do externo\n");
+      se(verdadeiro){
+         saida("dentro do if interno\n");
+      }
+      senao {
+         saida("dentro do senao interno\n");
+      }
+      saida("depois do if interno, dentro do externo\n");
+   }
+   senao {
+      saida("dentro do senao externo\n");
+   }
 }

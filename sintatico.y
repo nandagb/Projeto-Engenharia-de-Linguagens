@@ -16,6 +16,7 @@ extern int yylineno;
 extern char * yytext;
 table* sym_table;
 Stack stack;
+Stack labels_stack;
 
 %}
 
@@ -56,6 +57,7 @@ prog :
           /* creates symbol table for the program*/
           sym_table = table_create();
           initialize(&stack);
+          initialize(&labels_stack);
           push(&stack, "global");
      }
      prog_options
@@ -1092,12 +1094,15 @@ args : args ',' expression
      }
 ;
 
-if : IF '(' expression ')' '{' {push(&stack, "if");} stmt_list {pop(&stack);} '}' if_complement
+if : IF '(' expression ')' '{' {push(&stack, "if"); push(&labels_stack, "out_if_label");} stmt_list {pop(&stack);} '}' if_complement
      {
           //OK
-          //may need to implement a dictionary, but for now the out label will be the scope of the if
-          char* label_out = peek(&stack);
+          // may need to implement a dictionary, but for now the out label will be the scope of the if
+          // char* label_out = peek(&stack);
           // char* label_out = new_label("out");
+
+          char* label_out = peek(&labels_stack);
+          pop(&labels_stack);
           char* label_else = new_label("else");
 
           // in case there are else_if
