@@ -16,5 +16,6 @@ void freeRecord(record *);
 record * createRecord(char *, type);
 record * setRecord(char* str_list[], int list_size);
 char * type_to_string(type t);
+char * type_to_string_in_C(type t);
 
 #endif

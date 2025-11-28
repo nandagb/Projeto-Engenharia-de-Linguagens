@@ -15,6 +15,7 @@ typedef struct {
     type type;           /* variable's primitive type */
     structure structure; /* variable's structure type: primary or user defined */
     void* value;         /* variable's value*/
+    int size;           /* size of list (if its a list)*/
 } table_entry;
 
 

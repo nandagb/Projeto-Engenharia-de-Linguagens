@@ -44,3 +44,24 @@ char * type_to_string(type t){
     return "indefinido";
   }
 }
+
+char * type_to_string_in_C(type t){
+  if (t == EINTEGER){
+    return "int";
+  }
+  else if (t == EFLOAT){
+    return "float";
+  }
+  // else if(t == ESTRING){
+  //   return "texto";
+  // }
+  else if(t == EBOOL){
+    return "bool";
+  }
+  else if(t == EVOID){
+    return "void";
+  }
+  // else if(t == EUNTYPED || t == UNDEFINED_TYPE){
+  //   return "indefinido";
+  // }
+}

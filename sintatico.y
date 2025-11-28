@@ -42,7 +42,7 @@ Stack labels_stack;
 
 %type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list type_conversion
 %type <rec> func_declaration func_declaration_list general_stmt_list type list_types return
-%type <rec> list_declaration list_initialization struct_declaration var_declaration_list
+%type <rec> list_declaration list_initialization struct_declaration var_declaration_list /*list_push*/
 %type <rec> var_initialization expression comparison_expression relation_expression
 %type <rec> arithmatic_expression factor unary int_literal float_literal func_call args
 %type <rec> var_assign write
@@ -428,6 +428,11 @@ list_declaration : LIST '<' list_types '>' ID
                          
                          // $1 has no type declared, does it need one?
                          // free($1);
+
+                         table_set(sym_table, $5, $3->type, ELIST, NULL);
+                         table_entry* entry = table_get_entry_object(sym_table, $5);
+                         entry->size = 0;
+
                          
                          $$ = createRecord(s, $3->type);
 
@@ -458,12 +463,12 @@ list_types     : primitive_type
 ;
 
 //TODO
-list_initialization : list_declaration '=' NEW LIST '<' '>' '(' ')'
+list_initialization : /*list_declaration '=' NEW LIST '<' '>' '(' ')'
                     {
                          //list_types ID[] = novo Lista<>()
                          //int exemplo[] = {}
-                         char * str_list[] = {$1->code, "=", "{}"};
-                         int list_size = 3;
+                         char * str_list[] = {$1->code, " = NULL"};
+                         int list_size = 2;
                          char * s = cat(str_list, list_size);
 
                          // free($3);
@@ -473,15 +478,63 @@ list_initialization : list_declaration '=' NEW LIST '<' '>' '(' ')'
 
                          free($1);
                          free(s);
+                    }*/
+                    //| list_declaration '=' NEW LIST '<' '>' '(' ID ')'                            { /* printf("LIST INITIALIZATION FROM ANOTHER LIST (NEW COPY)\n"); */ }
+                    /*|*/ LIST '<' list_types '>' ID '=' NEW LIST '<' '>' '(' ')' '(' expression ')'
+                    {
+                         table_set(sym_table, $5, $3->type, ELIST, NULL);
+                         // table_entry* entry = table_get_entry_object(sym_table, $5);
+                         // entry->size = 0;
+
+                         char * str_list[] = {
+                              type_to_string_in_C($3->type)/*list_types*/, "*", $5/*ID*/, " = malloc(sizeof(", type_to_string_in_C($3->type), ") * (", $14->code, "));\n"
+                         };
+                         int list_size = 8;
+                         char * s = cat(str_list, list_size);
+                         
+                         $$ = createRecord(s, $3->type);
+
+                         free($3);
+                         free($14);
+                         free(s);    
                     }
-                    | list_declaration '=' NEW LIST '<' '>' '(' ID ')'                            { /* printf("LIST INITIALIZATION FROM ANOTHER LIST (NEW COPY)\n"); */ }
 ;
 
 list_assign : ID '=' NEW LIST '<' '>' '(' ')'                                                     { /* printf("LIST ASSIGN\n"); */ }
             | ID '=' NEW LIST '<' '>' '(' ID ')'                                                  { /* printf("LIST ASSIGN FROM ANOTHER LIST (NEW COPY)\n"); */ }
 ;
 
-list_push: ID access_suffix_list '.' ADD '(' expression ')'                                       {}
+list_push: ID access_suffix_list '.' ADD '(' expression ')'
+         /*{
+          // VERIFICATIONS
+          table_entry* entry = table_get_entry_object(sym_table, $1);
+          if (entry == NULL) {
+               // Variable was not initialized
+               printf("Erro! A lista %s não foi declarada!\n", $1);
+          }
+
+          if (entry->type != $6->type){
+               // Type error!
+               printf("Erro! A lista %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", $1, type_to_string(entry->type), type_to_string($6->type));
+          }
+          // =============
+          // monta algo como:
+          // lista = realloc(lista, sizeof(TYPE)*(lista_size+1));
+          // lista[lista_size++] = expr;
+          char * str_list[] = {
+               $1, $2->code, " = realloc(", $1, $2->code, ", sizeof(", type_to_string_in_C(entry->type), ")*(", entry->size, "+1));\n",
+               $1, $2->code, "[", $1, $2->code, entry->size, "++] = ", $6->code, ";\n"
+          };
+          int list_size = 19;
+          char * s = cat(str_list, list_size);
+
+          $$ = createRecord(s, entry->type);
+          entry->size = entry->size + 1;
+
+          freeRecord($2);
+          freeRecord($6);
+          free(s);
+         }*/
          | ID '.' ADD '(' expression ')'                                                          {}
 ;
 

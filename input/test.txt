@@ -1,15 +1,3 @@
 vazio func main() {
-   se (verdadeiro) {
-      saida("antes do if interno, dentro do externo\n");
-      se(verdadeiro){
-         saida("dentro do if interno\n");
-      }
-      senao {
-         saida("dentro do senao interno\n");
-      }
-      saida("depois do if interno, dentro do externo\n");
-   }
-   senao {
-      saida("dentro do senao externo\n");
-   }
+   Lista<int> linha = novo Lista<>()(3);
 }
