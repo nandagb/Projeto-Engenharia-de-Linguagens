@@ -8,6 +8,7 @@
 #include "./../lib/symbol_table.h"
 #include "./../lib/scope.h"
 #include "./../lib/labels.h"
+#include "./../lib/errors.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -92,6 +93,20 @@ prog_options : func_declaration_list
 
           freeRecord($1);
           freeRecord($2);
+          int error_count = get_error_count();
+          char** errors = get_errors();
+
+          if (error_count > 0) {
+               printf("Foram encontrados %d erros:\n", error_count);
+
+               for (int i = 0; i < error_count; i++) {
+                    printf("%s\n", errors[i]);
+                    free(errors[i]);
+               }
+
+               printf("\nCompilação abortada.\n");
+               exit(1);
+          }
      }
 ;
 
@@ -782,21 +797,51 @@ relation_expression : relation_expression '>' arithmatic_expression
 
 arithmatic_expression    : arithmatic_expression '+' factor
                          {
-                              // VERIFICATIONS
-                              if ($1->type != $3->type){
-                                   // Type error!
-                                   printf("Erro! A expressão %s e é do tipo %s, e não podem ser somada a um valor do tipo %s!\n", $1->code, type_to_string($1->type), type_to_string($3->type));
-                              }
-                              // =============
-
                               char * str_list[] = {$1->code," + ", $3->code};
                               int list_size = 3;
                               char * s = cat(str_list, list_size);
 
-                              type expression_type = EINTEGER;
+                              type expression_type = UNDEFINED_TYPE;
+                              // VERIFICATIONS
+                              if ($1->type != $3->type){
+                                   // Type error!
+                                   printf("Erro! A expressão %s e é do tipo %s, e não podem ser somada a um valor do tipo %s!\n", $1->code, type_to_string($1->type), type_to_string($3->type));
+                                   char buffer[256];
+                                   sprintf(buffer, "Erro! A expressão %s e é do tipo %s, e não podem ser somada a um valor do tipo %s!\n", $1->code, type_to_string($1->type), type_to_string($3->type));
+                                   report_error(buffer);
+
+                                   $$ = createRecord(s,expression_type);
+
+                                   free($1);
+                                   free($3);
+                                   free(s);
+                                   return -1;
+                              }
+                              // =============
+                              // past this point, we know both expressions are of the same type
+
                               //TODO: FAZER ALTERAÇÃO DO TIPO COM BASE NO VALORES INSERIDOS
-                              if($1->type == EFLOAT || $3->type == EFLOAT){
+                              if($1->type == EFLOAT){
                                    expression_type = EFLOAT;
+                              }
+                              else if($1->type == EINTEGER){
+                                   expression_type = EINTEGER;
+                              }
+                              else if($1->type == EBOOL){
+                                   expression_type = EBOOL;
+                              }
+                              else if($1->type == ESTRING){
+                                   expression_type = ESTRING;
+                                   // char buffer[1024];
+
+                                   // sprintf(buffer,
+                                   // "({ char *tmp = malloc(strlen(%s) + strlen(%s) + 1); "
+                                   // "strcpy(tmp, %s); "
+                                   // "strcat(tmp, %s); "
+                                   // "tmp; })",
+                                   // $1->code, $3->code,
+                                   // $1->code, $3->code
+                                   // );
                               }
 
                               $$ = createRecord(s,expression_type);
