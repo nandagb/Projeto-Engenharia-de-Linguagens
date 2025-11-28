@@ -6,11 +6,10 @@ vazio func main() {
    
    int num = 0;
 
+   saida("Para sair do programa, digite um valor negativo: \n");
    saida("Digite um número: \n");
 
    entrada(num);
-
-   saida("Para sair do programa, digite um valor negativo: \n");
 
    enquanto (num >= 0) {
 

@@ -1084,7 +1084,7 @@ if : IF '(' expression ')' '{' {push(&stack, "if");} stmt_list {pop(&stack);} '}
           //
 
           char * str_list[] = {
-               "if (!", $3->code /*expression*/, ") goto ", label_else, ";\n",
+               "if (!(", $3->code /*expression*/, ")) goto ", label_else, ";\n",
                $7->code, //stmt_list
                "goto ", label_out, ";\n",
                label_else, ":\n",
@@ -1139,7 +1139,7 @@ else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stm
                char* label_out_else_if2 = new_label("out_else_if");
                char * str_list[] = {
                     $1->code,
-                    "if (!", $4->code/*expression*/, ") goto ", label_out_else_if2, ";\n",
+                    "if (!(", $4->code/*expression*/, ")) goto ", label_out_else_if2, ";\n",
                     $8->code, "\n",//stmt_list
                     "_PLACEHOLDER_OUT_;\n",
                     label_out_else_if2, ":\n"
@@ -1159,7 +1159,7 @@ else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stm
                //OK
                char* label_out_else_if = new_label("out_else_if");
                char * str_list[] = {
-                    "if (!", $3->code/*expression*/, ") goto ", label_out_else_if, ";\n",
+                    "if (!(", $3->code/*expression*/, ")) goto ", label_out_else_if, ";\n",
                     $7->code, "\n",//stmt_list
                     "_PLACEHOLDER_OUT_;\n",
                     label_out_else_if, ":\n"
@@ -1190,6 +1190,7 @@ case : CASE expression ':' stmt_list                                            
 
 while : WHILE '(' expression ')' '{' stmt_list '}'                                                  
 {
+     //TODO: traduzir usando goto, não while diretamente
      char * str_list[] = {"while (", $3->code, ") {\n", $6->code, "}\n"};
      int list_size = 5;
      char * s = cat(str_list, list_size);
@@ -1235,7 +1236,7 @@ for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '
 
 read : INPUT '(' input_args ')' 
           {
-               char * str_list[] = {"scanf(\"%d\", &", $3->code, ");"};
+               char * str_list[] = {"scanf(\"%d\", &", $3->code, ")"};
                int list_size = 3;
                char * s = cat(str_list, list_size);
                
