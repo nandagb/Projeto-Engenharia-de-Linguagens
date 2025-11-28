@@ -68,8 +68,8 @@ prog :
 
 prog_options : func_declaration_list
      {
-          char * include_list[] = {"#include <stdbool.h>", "\n", "#include <stdlib.h>", "\n", "#include <stdio.h>", "\n"};
-          char * include_str = cat(include_list, 6);
+          char * include_list[] = {"#include <stdbool.h>", "\n", "#include <stdlib.h>", "\n", "#include <stdio.h>", "\n", "#include <string.h>", "\n"};
+          char * include_str = cat(include_list, 8);
 
           char * str_list[] = {include_str, $1->code};
           int list_size = 2;
@@ -797,15 +797,14 @@ relation_expression : relation_expression '>' arithmatic_expression
 
 arithmatic_expression    : arithmatic_expression '+' factor
                          {
-                              char * str_list[] = {$1->code," + ", $3->code};
-                              int list_size = 3;
-                              char * s = cat(str_list, list_size);
-
                               type expression_type = UNDEFINED_TYPE;
                               // VERIFICATIONS
                               if ($1->type != $3->type){
                                    // Type error!
-                                   printf("Erro! A expressão %s e é do tipo %s, e não podem ser somada a um valor do tipo %s!\n", $1->code, type_to_string($1->type), type_to_string($3->type));
+                                   char * str_list[] = {$1->code," + ", $3->code};
+                                   int list_size = 3;
+                                   char * s = cat(str_list, list_size);
+
                                    char buffer[256];
                                    sprintf(buffer, "Erro! A expressão %s e é do tipo %s, e não podem ser somada a um valor do tipo %s!\n", $1->code, type_to_string($1->type), type_to_string($3->type));
                                    report_error(buffer);
@@ -821,27 +820,30 @@ arithmatic_expression    : arithmatic_expression '+' factor
                               // past this point, we know both expressions are of the same type
 
                               //TODO: FAZER ALTERAÇÃO DO TIPO COM BASE NO VALORES INSERIDOS
+                              char * s;
                               if($1->type == EFLOAT){
                                    expression_type = EFLOAT;
+
+                                   char * str_list[] = {$1->code," + ", $3->code};
+                                   int list_size = 3;
+                                   s = cat(str_list, list_size);
                               }
                               else if($1->type == EINTEGER){
                                    expression_type = EINTEGER;
-                              }
-                              else if($1->type == EBOOL){
-                                   expression_type = EBOOL;
-                              }
-                              else if($1->type == ESTRING){
-                                   expression_type = ESTRING;
-                                   // char buffer[1024];
 
-                                   // sprintf(buffer,
-                                   // "({ char *tmp = malloc(strlen(%s) + strlen(%s) + 1); "
-                                   // "strcpy(tmp, %s); "
-                                   // "strcat(tmp, %s); "
-                                   // "tmp; })",
-                                   // $1->code, $3->code,
-                                   // $1->code, $3->code
-                                   // );
+                                   char * str_list[] = {$1->code," + ", $3->code};
+                                   int list_size = 3;
+                                   s = cat(str_list, list_size);
+                              }
+                              // else if($1->type == EBOOL){
+                              //      expression_type = EBOOL;
+                              // }
+                              else if($1->type == ESTRING){
+                                   char * str_list[] = {"({ char *tmp = malloc(strlen(", $1->code, ") + strlen(", $3->code, ") + 1); strcpy(tmp, ", $1->code, "); strcat(tmp, ", $3->code, "); tmp; })"};
+                                   int list_size = 9;
+                                   s = cat(str_list, list_size);
+
+                                   expression_type = ESTRING;
                               }
 
                               $$ = createRecord(s,expression_type);
