@@ -630,15 +630,13 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
 var_assign : ID '=' expression
            {
                // VERIFICATIONS
-               //TODO: verify if ID exists in symbol table
                table_entry* entry = table_get_entry_object(sym_table, $1);
                if (entry == NULL) {
                     // Variable was not initialized
                     printf("Erro! A variável %s não foi declarada!\n", $1);
                }
 
-               //TODO: type checking of expression
-
+               //TODO: permitir coersão de inteiro para real?
                if (entry->type != $3->type){
                     // Type error!
                     printf("Erro! A variável %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", $1, type_to_string(entry->type), type_to_string($3->type));
@@ -784,6 +782,13 @@ relation_expression : relation_expression '>' arithmatic_expression
 
 arithmatic_expression    : arithmatic_expression '+' factor
                          {
+                              // VERIFICATIONS
+                              if ($1->type != $3->type){
+                                   // Type error!
+                                   printf("Erro! A expressão %s e é do tipo %s, e não podem ser somada a um valor do tipo %s!\n", $1->code, type_to_string($1->type), type_to_string($3->type));
+                              }
+                              // =============
+
                               char * str_list[] = {$1->code," + ", $3->code};
                               int list_size = 3;
                               char * s = cat(str_list, list_size);
@@ -924,15 +929,20 @@ unary : ID UNARY_SUM
       }
       | ID
       {
-          //TODO: Como saber o tipo do ID, se ID não tem tipo?
-          // Talvez seja necessário verificar na tabela de símbolos;
-          type var_type = EUNTYPED;
+          // VERIFICATIONS
+          table_entry* entry = table_get_entry_object(sym_table, $1);
+          type entry_type = UNDEFINED_TYPE;
+          if (entry == NULL) {
+               // Variable was not initialized
+               printf("Erro! A variável %s não foi declarada!\n", $1);
+          }
+          else{
+               entry_type = entry->type;
+          }
 
-          type looked_up_type = table_get_type(sym_table, $1);
-          // printf("LOOKED_UP_TYPE OF %s : %d\n", $1, looked_up_type);
-          var_type = looked_up_type;
+          // =============
 
-          $$ = createRecord($1, var_type);
+          $$ = createRecord($1, entry_type);
           free($1);
       }
       | int_literal
