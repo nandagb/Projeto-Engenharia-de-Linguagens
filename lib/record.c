@@ -23,3 +23,24 @@ record * createRecord(char * c1, type c2){
 
   return r;
 }
+
+char * type_to_string(type t){
+  if (t == EINTEGER){
+    return "inteiro";
+  }
+  else if (t == EFLOAT){
+    return "real";
+  }
+  else if(t == ESTRING){
+    return "texto";
+  }
+  else if(t == EBOOL){
+    return "lógico";
+  }
+  else if(t == EVOID){
+    return "vazio";
+  }
+  else if(t == EUNTYPED || t == UNDEFINED_TYPE){
+    return "indefinido";
+  }
+}

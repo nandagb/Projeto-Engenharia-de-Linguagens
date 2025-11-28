@@ -8,6 +8,7 @@
 #include "./../lib/symbol_table.h"
 #include "./../lib/scope.h"
 #include "./../lib/labels.h"
+#include "./../lib/errors.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -45,7 +46,7 @@ Stack stack;
 %type <rec> arithmatic_expression factor unary int_literal float_literal func_call args
 %type <rec> var_assign write
 
-%type <rec> if if_complement else_if while read input_args
+%type <rec> if if_complement else_if while read input_args for for_initialization for_step
 
 %start prog
  
@@ -61,14 +62,31 @@ prog :
      {
           table_destroy(sym_table);
           pop(&stack);
+
+          // PRINT ALL ERRORS FOUND
+          int error_count = get_error_count();
+          char** errors = get_errors();
+
+          if (error_count > 0) {
+               printf("Foram encontrados %d erros:\n", error_count);
+
+               for (int i = 0; i < error_count; i++) {
+                    printf("%s\n", errors[i]);
+                    free(errors[i]);
+               }
+
+               printf("\nCompilação abortada.\n");
+               exit(1);
+          }
+          // ====================================
      }
      
 ;
 
 prog_options : func_declaration_list
      {
-          char * include_list[] = {"#include <stdbool.h>", "\n", "#include <stdlib.h>", "\n", "#include <stdio.h>", "\n"};
-          char * include_str = cat(include_list, 6);
+          char * include_list[] = {"#include <stdbool.h>", "\n", "#include <stdlib.h>", "\n", "#include <stdio.h>", "\n", "#include <string.h>", "\n"};
+          char * include_str = cat(include_list, 8);
 
           char * str_list[] = {include_str, $1->code};
           int list_size = 2;
@@ -266,7 +284,6 @@ stmt : general_stmt ';'
           freeRecord($1);
           free(s);
      }
-     | read ';' 
      | write ';'
      {
           char * str_list[] = {$1->code, ";\n"};
@@ -318,21 +335,28 @@ params_list :
 //TODO: EXPRESSIONS
 var_initialization  : primitive_type ID '=' expression
                     {
-                         printf("A3: %s %s = %s\n", $1->code, $2, $4->code);
-                         //primitive_type ID = expression;
-                         //int exemplo = 2;
-                         //int exemplo = 2;
+                         // VERIFICATIONS
+                         table_entry* entry = table_get_entry_object(sym_table, $2);
+                         if (entry != NULL) {
+                              // Variable was already initialized
+                              printf("Erro! A variável %s já foi declarada!\n", $2);
+                         }
+                         else {
+                              // initilize variable
+                              table_set(sym_table, $2, $1->type, EPRIMARY, NULL);
+                              entry = table_get_entry_object(sym_table, $2);
+                         }
+
+                         //TODO: permitir coersão de inteiro para real?
+                         if (entry->type != $4->type){
+                              // Type error!
+                              printf("Erro! A variável %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", $2, type_to_string(entry->type), type_to_string($4->type));
+                         }
+                         // =============
+
                          char * str_list[] = {$1->code, $2, " = ", $4->code};
                          int list_size = 4;
                          char * s = cat(str_list, list_size);
-                         
-                         //type checking
-                         /* if ($4-> type != $1->type) {
-                              yyerror((char*)("Erro de tipo! a variável %s possui tipo %s, não pode receber valor do tipo %s", $2, $1->type, $4->type)); 
-                         } */
-
-                         printf("INITIALIZING %s, with type %d", $2, $1->type);
-                         table_set(sym_table, $2, $1->type, EPRIMARY, NULL);
 
                          $$ = createRecord(s, $1->type);
 
@@ -633,11 +657,24 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
 
 var_assign : ID '=' expression
            {
+               // VERIFICATIONS
+               table_entry* entry = table_get_entry_object(sym_table, $1);
+               if (entry == NULL) {
+                    // Variable was not initialized
+                    printf("Erro! A variável %s não foi declarada!\n", $1);
+               }
+
+               //TODO: permitir coersão de inteiro para real?
+               if (entry->type != $3->type){
+                    // Type error!
+                    printf("Erro! A variável %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", $1, type_to_string(entry->type), type_to_string($3->type));
+               }
+               // =============
+
                char * str_list[] = {$1, " = ", $3->code};
                int list_size = 3;
                char * s = cat(str_list, list_size);
 
-               // TODO: pegar tipo do var assign pela tabela de simbolos do ID
                $$ = createRecord(s, EUNTYPED);
 
                free($3);
@@ -773,14 +810,53 @@ relation_expression : relation_expression '>' arithmatic_expression
 
 arithmatic_expression    : arithmatic_expression '+' factor
                          {
-                              char * str_list[] = {$1->code," + ", $3->code};
-                              int list_size = 3;
-                              char * s = cat(str_list, list_size);
+                              type expression_type = UNDEFINED_TYPE;
+                              // VERIFICATIONS
+                              if ($1->type != $3->type){
+                                   // Type error!
+                                   char * str_list[] = {$1->code," + ", $3->code};
+                                   int list_size = 3;
+                                   char * s = cat(str_list, list_size);
 
-                              type expression_type = EINTEGER;
+                                   char buffer[256];
+                                   sprintf(buffer, "Erro! A expressão %s e é do tipo %s, e não podem ser somada a um valor do tipo %s!\n", $1->code, type_to_string($1->type), type_to_string($3->type));
+                                   report_error(buffer);
+
+                                   $$ = createRecord(s,expression_type);
+
+                                   free($1);
+                                   free($3);
+                                   free(s);
+                                   return -1;
+                              }
+                              // =============
+                              // past this point, we know both expressions are of the same type
+
                               //TODO: FAZER ALTERAÇÃO DO TIPO COM BASE NO VALORES INSERIDOS
-                              if($1->type == EFLOAT || $3->type == EFLOAT){
+                              char * s;
+                              if($1->type == EFLOAT){
                                    expression_type = EFLOAT;
+
+                                   char * str_list[] = {$1->code," + ", $3->code};
+                                   int list_size = 3;
+                                   s = cat(str_list, list_size);
+                              }
+                              else if($1->type == EINTEGER){
+                                   expression_type = EINTEGER;
+
+                                   char * str_list[] = {$1->code," + ", $3->code};
+                                   int list_size = 3;
+                                   s = cat(str_list, list_size);
+                              }
+                              // else if($1->type == EBOOL){
+                              //      expression_type = EBOOL;
+                              // }
+                              else if($1->type == ESTRING){
+                                   char * str_list[] = {"({ char *tmp = malloc(strlen(", $1->code, ") + strlen(", $3->code, ") + 1); strcpy(tmp, ", $1->code, "); strcat(tmp, ", $3->code, "); tmp; })"};
+                                   int list_size = 9;
+                                   s = cat(str_list, list_size);
+
+                                   expression_type = ESTRING;
                               }
 
                               $$ = createRecord(s,expression_type);
@@ -874,6 +950,19 @@ factor    : factor '*' unary
  
 unary : ID UNARY_SUM
       {
+          // VERIFICATIONS
+          table_entry* entry = table_get_entry_object(sym_table, $1);
+          type entry_type = UNDEFINED_TYPE;
+          if (entry == NULL) {
+               // Variable was not initialized
+               printf("Erro! A variável %s não foi declarada!\n", $1);
+          }
+          else{
+               entry_type = entry->type;
+          }
+
+          // =============
+
           // TODO: checar o escopo (não pode usar em escopo global)
           char * str_list[] = {$1,"++"};
           int list_size = 2;
@@ -881,7 +970,7 @@ unary : ID UNARY_SUM
 
           free($1);
 
-          $$ = createRecord(s,EUNTYPED);
+          $$ = createRecord(s, entry_type);
           free(s);
       }
       | ID UNARY_SUBTRACTION
@@ -913,15 +1002,20 @@ unary : ID UNARY_SUM
       }
       | ID
       {
-          //TODO: Como saber o tipo do ID, se ID não tem tipo?
-          // Talvez seja necessário verificar na tabela de símbolos;
-          type var_type = EUNTYPED;
+          // VERIFICATIONS
+          table_entry* entry = table_get_entry_object(sym_table, $1);
+          type entry_type = UNDEFINED_TYPE;
+          if (entry == NULL) {
+               // Variable was not initialized
+               printf("Erro! A variável %s não foi declarada!\n", $1);
+          }
+          else{
+               entry_type = entry->type;
+          }
 
-          type looked_up_type = table_get_type(sym_table, $1);
-          printf("LOOKED_UP_TYPE OF %s : %d\n", $1, looked_up_type);
-          var_type = looked_up_type;
+          // =============
 
-          $$ = createRecord($1, var_type);
+          $$ = createRecord($1, entry_type);
           free($1);
       }
       | int_literal
@@ -1016,7 +1110,7 @@ if : IF '(' expression ')' '{' {push(&stack, "if");} stmt_list {pop(&stack);} '}
           //
 
           char * str_list[] = {
-               "if (!", $3->code /*expression*/, ") goto ", label_else, ";\n",
+               "if (!(", $3->code /*expression*/, ")) goto ", label_else, ";\n",
                $7->code, //stmt_list
                "goto ", label_out, ";\n",
                label_else, ":\n",
@@ -1071,7 +1165,7 @@ else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stm
                char* label_out_else_if2 = new_label("out_else_if");
                char * str_list[] = {
                     $1->code,
-                    "if (!", $4->code/*expression*/, ") goto ", label_out_else_if2, ";\n",
+                    "if (!(", $4->code/*expression*/, ")) goto ", label_out_else_if2, ";\n",
                     $8->code, "\n",//stmt_list
                     "_PLACEHOLDER_OUT_;\n",
                     label_out_else_if2, ":\n"
@@ -1091,7 +1185,7 @@ else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stm
                //OK
                char* label_out_else_if = new_label("out_else_if");
                char * str_list[] = {
-                    "if (!", $3->code/*expression*/, ") goto ", label_out_else_if, ";\n",
+                    "if (!(", $3->code/*expression*/, ")) goto ", label_out_else_if, ";\n",
                     $7->code, "\n",//stmt_list
                     "_PLACEHOLDER_OUT_;\n",
                     label_out_else_if, ":\n"
@@ -1120,14 +1214,34 @@ cases : cases case
 case : CASE expression ':' stmt_list                                                                {/*printf("CASE \n");*/}
 ;
 
-while : WHILE '(' expression ')' '{' stmt_list '}'                                                  
+while : WHILE '(' expression ')' '{' {push(&stack, "while");} stmt_list {pop(&stack);} '}'
 {
-     char * str_list[] = {"while (", $3->code, ") {\n", $6->code, "}\n"};
-     int list_size = 5;
+     // VERIFICATIONS
+     //only boolean expressions are allowed in while statements
+     if ($3->type != EBOOL){
+          // Type error!
+          char * error_list[] = {"Erro! A expressão utilizada é do tipo ", type_to_string($3->type), "! Enquanto só aceita expressões do tipo lógico!\n"};
+          char * error_string = cat(error_list, 3);
+          report_error(error_string);
+          free(error_string);
+     }
+     // =============
+
+     char* label_start = new_label("start_while");
+     char* label_end = new_label("end_while");
+
+     char * str_list[] = {
+          label_start, ":\n",
+          "if (!(", $3->code/*expression*/, ")) goto ", label_end, ";\n",
+          $7->code, "\n",//stmt_list
+          "goto ", label_start, ";\n",
+          label_end, ":\n"
+          };
+     int list_size = 14;
      char * s = cat(str_list, list_size);
      
      freeRecord($3);
-     freeRecord($6);
+     freeRecord($7);
      
      $$ = createRecord(s, EUNTYPED);
      free(s);
@@ -1137,37 +1251,70 @@ while : WHILE '(' expression ')' '{' stmt_list '}'
 do_while : DO '{' stmt_list '}' WHILE '(' expression ')'                                            {/*printf("DO WHILE\n");*/}
 
 for_initialization : var_initialization
+                   {
+                    $$ = createRecord($1->code, $1->type);
+                    freeRecord($1);
+                   }
                    | var_assign
+                   {
+                    $$ = createRecord($1->code, $1->type);
+                    freeRecord($1);
+                   }
                    ;
 
 for_step : var_assign
+         {
+          $$ = createRecord($1->code, $1->type);
+          freeRecord($1);
+         }
          | expression
+         {
+          // VERIFICATIONS
+          //only integer expressions are allowed in for step
+          if ($1->type != EINTEGER){
+               // Type error!
+               char * error_list[] = {"Erro! A expressão utilizada é do tipo ", type_to_string($1->type), "! O passo do repita só aceita expressões do tipo inteiro!\n"};
+               char * error_string = cat(error_list, 3);
+               report_error(error_string);
+               free(error_string);
+          }
+          //TODO: verify if $1->code ends in ++ or --
+          // =============
+
+          $$ = createRecord($1->code, $1->type);
+          freeRecord($1);
+         }
          ;
 
-for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list '}'                  
-     /* {
-          //VERIFICAR SE É PERTMITIDO USAR O FOR DO C
-          //SE NÃO FOR, ENCONTRAR OUTRA MANEIRA
-          char * str_list[] = {"for" "(", $3->code, ",", $5->code, ",", $7->code, ")", "{", $10->code , "}"};
-          int list_size = 11;
+for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' {push(&stack, "for");} stmt_list {pop(&stack);} '}'
+     {
+          char* label_start = new_label("for_start");
+          char* label_out = new_label("for_out");
+
+          char * str_list[] = {
+               $3->code, ";\n",//for_initialization
+               label_start, ":\n",
+               "if (!(", $5->code/*expression*/, ")) goto ", label_out, ";\n",
+               $11->code, "\n",//stmt_list
+               $7->code, ";\n",//for_step
+               "goto ", label_start, ";\n",
+               label_out, ":\n"
+          };
+          int list_size = 18;
           char * s = cat(str_list, list_size);
           
-          //TODO: Colocar freeRecord em todos os records
-          for(int i = 0; i < list_size; i++){
-               free(str_list[i]);
-          }
+          $$ = createRecord(s, EUNTYPED);
+
           freeRecord($3);
           freeRecord($5);
           freeRecord($7);
-          freeRecord($10);
-          
-          $$ = createRecord(s, EUNTYPED);
+          freeRecord($11);
           free(s);
-     } */
+     }
 
 read : INPUT '(' input_args ')' 
           {
-               char * str_list[] = {"scanf(\"%d\", &", $3->code, ");"};
+               char * str_list[] = {"scanf(\"%d\", &", $3->code, ")"};
                int list_size = 3;
                char * s = cat(str_list, list_size);
                
@@ -1180,13 +1327,9 @@ read : INPUT '(' input_args ')'
 
 type_conversion : primitive_type '(' expression ')'
                {
-                    printf("INSIDE TYPE CONVERSION\n");
-                    // printf("A5: %s -> %d\n", $3->code, $3->type);
                     type expression_type = $3->type;
-                    printf("TYPE OF %s FROM EXPRESSION: %d\n", $3->code, $3->type);
                     if (expression_type == EUNTYPED && $3->code != NULL) {
                          type looked_up_type = table_get_type(sym_table, $3->code);
-                         printf("LOOKED_UP_TYPE OF %s : %d\n", $3->code, looked_up_type);
                          if (looked_up_type != UNDEFINED_TYPE) {
                               expression_type = looked_up_type;
                          }

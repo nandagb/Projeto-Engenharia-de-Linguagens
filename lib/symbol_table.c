@@ -112,10 +112,6 @@ table_entry* table_get_entry_object(table* table, const char* key) {
 
     table_entry* entry = get_table_entry(table->entries, table->capacity, key, hash, index);
 
-    if (entry == NULL) {
-        return NULL;
-    }
-
     return entry;
 }
 
