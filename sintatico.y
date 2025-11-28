@@ -1188,15 +1188,23 @@ cases : cases case
 case : CASE expression ':' stmt_list                                                                {/*printf("CASE \n");*/}
 ;
 
-while : WHILE '(' expression ')' '{' stmt_list '}'                                                  
+while : WHILE '(' expression ')' '{' {push(&stack, "while");} stmt_list {pop(&stack);} '}'
 {
-     //TODO: traduzir usando goto, não while diretamente
-     char * str_list[] = {"while (", $3->code, ") {\n", $6->code, "}\n"};
-     int list_size = 5;
+     char* label_start = new_label("start_while");
+     char* label_end = new_label("end_while");
+
+     char * str_list[] = {
+          label_start, ":\n",
+          "if (!(", $3->code/*expression*/, ")) goto ", label_end, ";\n",
+          $7->code, "\n",//stmt_list
+          "goto ", label_start, ";\n",
+          label_end, ":\n"
+          };
+     int list_size = 14;
      char * s = cat(str_list, list_size);
      
      freeRecord($3);
-     freeRecord($6);
+     freeRecord($7);
      
      $$ = createRecord(s, EUNTYPED);
      free(s);
