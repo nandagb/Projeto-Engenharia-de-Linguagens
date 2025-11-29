@@ -1,50 +1,86 @@
 vazio func main() {
-    Lista<Lista<int>> matA = novo Lista<>();
-    Lista<Lista<int>> matB = novo Lista<>();
-    Lista<Lista<int>> matSoma = novo Lista<>();
+   int l1;
+   int c1;
+   int l2;
+   int c2;
 
-    int i = 0;
-    int j = 0;
-    
-    Lista<int> linhaA1 = novo Lista<>();
-    linhaA1.adicionar(1);
-    linhaA1.adicionar(2);
-    matA.adicionar(linhaA1);
+   #Leitura das dimensões
+   saida("Digite a largura da primeira matriz: \n");
+   entrada(l1);
+   saida("Digite a altura da primeira matriz: \n");
+   entrada(c1);
+   saida("Digite a largura da segunda matriz: \n");
+   entrada(l2);
+   saida("Digite a altura da segunda matriz: \n");
+   entrada(c2);
 
-    Lista<int> linhaA2 = novo Lista<>();
-    linhaA2.adicionar(3);
-    linhaA2.adicionar(4);
-    matA.adicionar(linhaA2);
+   Lista<Lista<int>> matriz1 = novo Lista<>()(l1);
+   Lista<Lista<int>> matriz2 = novo Lista<>()(l2);
 
-    Lista<int> linhaB1 = novo Lista<>();
-    linhaB1.adicionar(10);
-    linhaB1.adicionar(20);
-    matB.adicionar(linhaB1);
-
-    Lista<int> linhaB2 = novo Lista<>();
-    linhaB2.adicionar(30);
-    linhaB2.adicionar(40);
-    matB.adicionar(linhaB2);
-    
-    repita (i = 0, i < 2, i++) {
-        Lista<int> linhaSoma = novo Lista<>();
-        
-        repita (j = 0, j < 2, j++) {
-            int valA = matA[i][j];
-            int valB = matB[i][j];
-            int soma = valA + valB;
-            
-            linhaSoma.adicionar(soma);
+    repita (int i = 0, i < c1, i++) {
+        Lista<int> linha1 = novo Lista<>()(4);
+        repita (int j=0, j<l1, j++) {
+            int k;
+            saida("Digite o valor da posição (" + texto(i) + ", " + texto(j) + ") da matriz 1: \n");
+            entrada(k);
+            linha1[j] = k;
         }
-        matSoma.adicionar(linhaSoma);
+
+      matriz1[i] = linha1;
     }
 
-    saida("Matriz Resultante:");
-    repita (i = 0, i < 2, i++) {
-        repita (j = 0, j < 2, j++) {
-            int res = matSoma[i][j];
-            saida(res);
+    repita (int n = 0, n < c2, n++) {
+        Lista<int> linha2 = novo Lista<>()(4);
+        repita (int o=0, o<l2, o++) {
+            int x;
+            saida("Digite o valor da posição (" + texto(n) + ", " + texto(o) + ") da matriz 2: \n");
+            entrada(x);
+            linha2[o] = x;
         }
-        saida("--- fim de linha ---");
+
+      matriz2[n] = linha2;
     }
+
+    saida("Matriz1: " + "\n");
+    repita (int l = 0, l < c1, l++) {
+        repita (int m=0, m < l1, m++) {
+            saida(texto(matriz1[l][m]) + " ");
+        }
+        saida("\n");
+    }
+
+    saida("Matriz2: " + "\n");
+    repita (int y = 0, y < c2, y++) {
+        repita (int z=0, z < l2, z++) {
+            saida(texto(matriz2[y][z]) + " ");
+        }
+        saida("\n");
+    }
+
+   logico somaveis = falso;
+   logico multiplicaveis = falso;
+
+    se (l1 == l2 && c1 == c2) {
+        somaveis = verdadeiro;
+    }
+
+    se (c1 == l2) {
+        multiplicaveis = verdadeiro;
+    }
+
+    se (somaveis){
+        saida("irei somar as matrizes mais tarde...\n");
+    }
+    senao {
+        saida("Não foi possível somar as matrizes!\n");
+    }
+
+    se (multiplicaveis){
+        saida("irei multiplicar as matrizes mais tarde...\n");
+    }
+    senao {
+        saida("Não foi possível fazer o produto das matrizes!\n");
+    }
+
+
 }
