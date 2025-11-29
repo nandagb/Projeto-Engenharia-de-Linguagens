@@ -1,0 +1,86 @@
+vazio func main() {
+   int l1;
+   int c1;
+   int l2;
+   int c2;
+
+   #Leitura das dimensões
+   saida("Digite a largura da primeira matriz: \n");
+   entrada(l1);
+   saida("Digite a altura da primeira matriz: \n");
+   entrada(c1);
+   saida("Digite a largura da segunda matriz: \n");
+   entrada(l2);
+   saida("Digite a altura da segunda matriz: \n");
+   entrada(c2);
+
+   Lista<Lista<int>> matriz1 = novo Lista<>()(l1);
+   Lista<Lista<int>> matriz2 = novo Lista<>()(l2);
+
+    repita (int i = 0, i < c1, i++) {
+        Lista<int> linha1 = novo Lista<>()(4);
+        repita (int j=0, j<l1, j++) {
+            int k;
+            saida("Digite o valor da posição (" + texto(i) + ", " + texto(j) + ") da matriz 1: \n");
+            entrada(k);
+            linha1[j] = k;
+        }
+
+      matriz1[i] = linha1;
+    }
+
+    repita (int n = 0, n < c2, n++) {
+        Lista<int> linha2 = novo Lista<>()(4);
+        repita (int o=0, o<l2, o++) {
+            int x;
+            saida("Digite o valor da posição (" + texto(n) + ", " + texto(o) + ") da matriz 2: \n");
+            entrada(x);
+            linha2[o] = x;
+        }
+
+      matriz2[n] = linha2;
+    }
+
+    saida("Matriz1: " + "\n");
+    repita (int l = 0, l < c1, l++) {
+        repita (int m=0, m < l1, m++) {
+            saida(texto(matriz1[l][m]) + " ");
+        }
+        saida("\n");
+    }
+
+    saida("Matriz2: " + "\n");
+    repita (int y = 0, y < c2, y++) {
+        repita (int z=0, z < l2, z++) {
+            saida(texto(matriz2[y][z]) + " ");
+        }
+        saida("\n");
+    }
+
+   logico somaveis = falso;
+   logico multiplicaveis = falso;
+
+    se (l1 == l2 && c1 == c2) {
+        somaveis = verdadeiro;
+    }
+
+    se (c1 == l2) {
+        multiplicaveis = verdadeiro;
+    }
+
+    se (somaveis){
+        saida("irei somar as matrizes mais tarde...\n");
+    }
+    senao {
+        saida("Não foi possível somar as matrizes!\n");
+    }
+
+    se (multiplicaveis){
+        saida("irei multiplicar as matrizes mais tarde...\n");
+    }
+    senao {
+        saida("Não foi possível fazer o produto das matrizes!\n");
+    }
+
+
+}
