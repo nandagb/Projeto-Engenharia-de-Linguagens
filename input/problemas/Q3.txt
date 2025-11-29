@@ -67,16 +67,19 @@ vazio func main() {
     }
 
     se (linhas1 == linhas2 && colunas1 == colunas2) {
-        #Lista<Lista<int>> soma = novo Lista<>()(l1);
+        Lista<Lista<int>> soma = novo Lista<>()(colunas1);
 
-        saida("irei somar as matrizes mais tarde...\n");
-        #repita (int ic = 0, ic < l1, ic++) {
-        #    Lista<int> linha_soma = novo Lista<>()(4);
-        #    repita (int jl = 0, jl < c1, jl++) {
-        #        printf("%.2f ", m1[ic][jl] + m2[ic][jl]);
-        #    }
-        #    printf("\n");
-        #}
+        saida("Somando matrizes...\n");
+        repita (int ic = 0, ic < colunas1, ic++) {
+            Lista<int> linha_soma = novo Lista<>()(linhas1);
+            repita (int jl = 0, jl < linhas1, jl++) {
+                int result_soma = matriz1[ic][jl] + matriz2[ic][jl];
+                linha_soma[jl] = result_soma;
+                saida(texto(result_soma) + " ");
+            }
+            printf("\n");
+            soma[n] = linha_soma;
+        }
     }
     senao {
         saida("Não foi possível somar as matrizes!\n");
