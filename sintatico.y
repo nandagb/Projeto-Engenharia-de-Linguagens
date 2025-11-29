@@ -422,12 +422,9 @@ var_declaration_list     : var_declaration
 
 list_declaration : LIST '<' list_types '>' ID
                     {
-                         char * str_list[] = {$3->code, " *", $5};
-                         int list_size = 3;
+                         char * str_list[] = {$3->code, $5};
+                         int list_size = 2;
                          char * s = cat(str_list, list_size);
-                         
-                         // $1 has no type declared, does it need one?
-                         // free($1);
 
                          table_set(sym_table, $5, $3->type, ELIST, NULL);
                          table_entry* entry = table_get_entry_object(sym_table, $5);
@@ -435,6 +432,8 @@ list_declaration : LIST '<' list_types '>' ID
 
                          
                          $$ = createRecord(s, $3->type);
+                         $$->structure = $3->structure;
+                         $$->type_string = strdup($3->type_string);
 
                          freeRecord($3);
                          free($5);
@@ -444,18 +443,34 @@ list_declaration : LIST '<' list_types '>' ID
 
 list_types     : primitive_type
                {
-                    $$ = createRecord($1->code, $1->type);
+                    //one dimension list
+                    char * str_list[] = {string_to_type_in_C($1->code), " *"};
+                    int list_size = 2;
+                    char * s = cat(str_list, list_size);
+
+                    $$ = createRecord(s, $1->type);
+                    $$->structure = EPRIMARY;
+                    $$->type_string = strdup($1->code);
+
                     free($1);
+                    free(s);
                     
                }
-               | ID {$$ = createRecord($1, EUNTYPED);}
-               | LIST '<' list_types '>'                                                              
+               | ID
                {
-                    char * str_list[] = {$3->code, " *"}; 
+                    //list of struct
+                    $$ = createRecord($1, EUNTYPED);
+               }
+               | LIST '<' list_types '>'
+               {
+                    //list of list
+                    char * str_list[] = {$3->code, " *"};
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
                     
                     $$ = createRecord(s, $3->type);
+                    $$->structure = ELIST;
+                    $$->type_string = strdup($3->code);
 
                     free(s);
                     freeRecord($3);
@@ -463,40 +478,42 @@ list_types     : primitive_type
 ;
 
 //TODO
-list_initialization : /*list_declaration '=' NEW LIST '<' '>' '(' ')'
+list_initialization : list_declaration '=' NEW LIST '<' '>' '(' ')'
                     {
                          //list_types ID[] = novo Lista<>()
                          //int exemplo[] = {}
-                         char * str_list[] = {$1->code, " = NULL"};
-                         int list_size = 2;
-                         char * s = cat(str_list, list_size);
+                         // char * str_list[] = {$1->code, " = NULL"};
+                         // int list_size = 2;
+                         // char * s = cat(str_list, list_size);
 
-                         // free($3);
-                         // free($4);
+                         // // free($3);
+                         // // free($4);
                          
-                         $$ = createRecord(s, $1->type);
+                         // $$ = createRecord(s, $1->type);
 
-                         free($1);
-                         free(s);
-                    }*/
+                         // free($1);
+                         // free(s);
+                    }
                     //| list_declaration '=' NEW LIST '<' '>' '(' ID ')'                            { /* printf("LIST INITIALIZATION FROM ANOTHER LIST (NEW COPY)\n"); */ }
-                    /*|*/ LIST '<' list_types '>' ID '=' NEW LIST '<' '>' '(' ')' '(' expression ')'
+                    | list_declaration '=' NEW LIST '<' '>' '(' ')' '(' expression ')'
+                    //| LIST '<' list_types '>' ID '=' NEW LIST '<' '>' '(' ')' '(' expression ')'
                     {
-                         table_set(sym_table, $5, $3->type, ELIST, NULL);
+                         //table_set(sym_table, $5, $3->type, ELIST, NULL);
                          // table_entry* entry = table_get_entry_object(sym_table, $5);
                          // entry->size = 0;
 
                          char * str_list[] = {
-                              type_to_string_in_C($3->type)/*list_types*/, "*", $5/*ID*/, " = malloc(sizeof(", type_to_string_in_C($3->type), ") * (", $14->code, "));\n"
+                              $1->code, " = malloc(sizeof(", $1->type_string, ") * (", $10->code, "));\n"
                          };
-                         int list_size = 8;
+                         int list_size = 6;
                          char * s = cat(str_list, list_size);
                          
-                         $$ = createRecord(s, $3->type);
+                         $$ = createRecord(s, $1->type);
+                         $$->structure = $1->structure;
 
-                         free($3);
-                         free($14);
-                         free(s);    
+                         free($1);
+                         free($10);
+                         free(s);
                     }
 ;
 

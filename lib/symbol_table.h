@@ -6,10 +6,6 @@
 #include <stddef.h>   /* size_t */
 #include <stdbool.h>  /* bool */
 
-typedef enum { 
-	ELIST, ESTRUCT, EPRIMARY, UNDEFINED_STRUCTURE
-} structure;
-
 typedef struct {
     const char* key;     /* variable's name */
     type type;           /* variable's primitive type */

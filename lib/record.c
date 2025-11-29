@@ -65,3 +65,24 @@ char * type_to_string_in_C(type t){
   //   return "indefinido";
   // }
 }
+
+char * string_to_type_in_C(char* str){
+  if (strcmp(str, "int ") == 0){
+    return "int ";
+  }
+  else if (strcmp(str, "real ") == 0){
+    return "float ";
+  }
+  else if(strcmp(str, "texto ") == 0){
+    return "char* ";
+  }
+  else if(strcmp(str, "logico ") == 0){
+    return "bool ";
+  }
+  else if(strcmp(str, "vazio ") == 0){
+    return "void ";
+  }
+  // else if(t == EUNTYPED || t == UNDEFINED_TYPE){
+  //   return "indefinido";
+  // }
+}
