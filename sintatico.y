@@ -385,7 +385,14 @@ var_declaration  : primitive_type ID
                          free($2);
                          free(s);
                     }
-                    | list_declaration     {$$ = $1;}
+                    | list_declaration
+                    {
+                         $$ = createRecord($1->code, $1->type);
+                         $$->structure = $1->structure;
+                         $$->type_string = strdup($1->type_string);
+
+                         freeRecord($1);
+                    }
                     | ID ID
                     {
                          char * str_list[] = {"struct ", $1, " * ", $2};
@@ -671,13 +678,21 @@ float_literal  : FLOAT_LITERAL
                }
 ;
 
- type: primitive_type
+ type: /*primitive_type*/
      /* {
           printf("A10");
           $$ = createRecord($1->code,$1->type);
        free($1);
      } */
-     | LIST '<' list_types '>'
+     | list_types
+     {
+          $$ = createRecord($1->code, $1->type);
+          $$->structure = $1->structure;
+          $$->type_string = strdup($1->type_string);
+
+          freeRecord($1);
+     }
+     //| LIST '<' list_types '>'
      /* {
           ESTA DECLARAÇÃO NÃO VAI FUNCIONAR
           TODO: Verficar como faz lista em C
