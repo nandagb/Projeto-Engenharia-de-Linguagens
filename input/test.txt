@@ -1,33 +1,25 @@
-int teste5 = teste++;
-int teste6 = teste--;
-int teste = 2;
-int teste = -2;
-int teste = 2.1;
-int teste = -2.1;
-int teste = (2.1 + 4);
-int teste = (2.1 - 4);
-int teste = (2.1 * 4);
-int teste = 2.1 / (4 +1)  *5;
-int teste = 2.1 // 2;
-
-int teste = 2.1 > 2;
-int teste = 2.1 >= 2;
-int teste = 2.1 <= 2;
-int teste = 2.1 < 2;
-
-int teste = 2.1 == 2;
-int teste = 2.1 != 2;
-
-int teste = 2.1 && 2;
-int teste = (2.1 || 2);
-
-int teste = teste;
-
-int teste = verdadeiro;
-int teste = falso;
-
-int teste = "verdadeiro";
-
 vazio func main(){
-   int teste7;
+   logico teste1 = verdadeiro;
+   logico teste2 = verdadeiro;
+   logico teste3 = verdadeiro;
+   se (teste1) {
+      saida("entrou no if\n");
+      se (teste2){
+         saida("entrou no if do if interno\n");
+      }
+      senao {
+         saida("entrou no else do if interno\n");
+      }
+      saida("dentro do primeiro if, depois do if externo\n");
+   }
+   senao se (teste2){
+      saida("entrou no else if 1\n");
+   }
+   senao se (teste3){
+      saida("entrou no else if 2\n");
+   }
+   senao {
+      saida("entrou no senao\n");
+   }
+   saida("fora do if\n");
 }

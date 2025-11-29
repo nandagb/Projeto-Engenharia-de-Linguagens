@@ -7,6 +7,7 @@
 #include "./../lib/file_gen.h"
 #include "./../lib/symbol_table.h"
 #include "./../lib/scope.h"
+#include "./../lib/labels.h"
 
 int yylex(void);
 int yyerror(char *s);
@@ -1002,74 +1003,108 @@ args : args ',' expression
      }
 ;
 
-if : IF '(' expression ')' '{' stmt_list '}' if_complement                                          
+if : IF '(' expression ')' '{' {push(&stack, "if");} stmt_list {pop(&stack);} '}' if_complement
      {
-          char * str_list[] = {"if (", $3->code, ") {\n", $6->code, "}\n", $8->code};
-          int list_size = 6;
+          //OK
+          //may need to implement a dictionary, but for now the out label will be the scope of the if
+          char* label_out = peek(&stack);
+          // char* label_out = new_label("out");
+          char* label_else = new_label("else");
+
+          // in case there are else_if
+          char * replacement_list[] = {"goto ", label_out};
+          char * replacement_string = cat(replacement_list, 2);
+          $10->code = replace_all($10->code, "_PLACEHOLDER_OUT_", replacement_string);
+          //
+
+          char * str_list[] = {
+               "if (!", $3->code /*expression*/, ") goto ", label_else, ";\n",
+               $7->code, //stmt_list
+               "goto ", label_out, ";\n",
+               label_else, ":\n",
+               $10->code,//if_complement
+               label_out, ":\n"
+          };
+
+          int list_size = 14;
           char * s = cat(str_list, list_size);
           
           freeRecord($3);
-          freeRecord($6);
-          freeRecord($8);
+          freeRecord($7);
+          freeRecord($10);
           
           $$ = createRecord(s, EUNTYPED);
           free(s);
+          free(replacement_string);
      } 
 ;
 
-if_complement : ELSE '{' stmt_list '}'                                                              
+if_complement : ELSE '{' {push(&stack, "else");} stmt_list {pop(&stack);} '}'
                {
-                    char * str_list[] = {" else {\n", $3->code, "}\n"};
+                    //OK
+                    $$ = createRecord($4->code, EUNTYPED);
+
+                    freeRecord($4);
+               } 
+              | else_if
+              //OK
+              {$$ = $1;}
+              | else_if ELSE '{' {push(&stack, "else_if");} stmt_list {pop(&stack);} '}'
+              {
+                    //OK
+                    char * str_list[] = {$1->code, $5->code, "\n"};
                     int list_size = 3;
                     char * s = cat(str_list, list_size);
 
-                    freeRecord($3);
-
-                    $$ = createRecord(s, EUNTYPED);
-                    free(s);
-               } 
-              | else_if                                                                             
-              {$$ = $1;}
-              | else_if ELSE '{' stmt_list '}'                                                      
-              {
-                    char * str_list[] = {$1->code, " else {\n", $4->code, "}\n"};
-                    int list_size = 4;
-                    char * s = cat(str_list, list_size);
-
                     freeRecord($1);
-                    freeRecord($4);
+                    freeRecord($5);
 
                     $$ = createRecord(s, EUNTYPED);
                     free(s);
               }
               |
               {
+                    //OK
                     $$ = createRecord("",EUNTYPED);
               }
 
-else_if : else_if ELSE_IF '(' expression ')' '{' stmt_list '}'
+else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stmt_list {pop(&stack);} '}'
           {
-               char * str_list[] = {$1->code, " else if (", $4->code, ") {\n", $7->code, "}\n"};
-               int list_size = 6;
+               char* label_out_else_if2 = new_label("out_else_if");
+               char * str_list[] = {
+                    $1->code,
+                    "if (!", $4->code/*expression*/, ") goto ", label_out_else_if2, ";\n",
+                    $8->code, "\n",//stmt_list
+                    "_PLACEHOLDER_OUT_;\n",
+                    label_out_else_if2, ":\n"
+               };
+               int list_size = 11;
                char * s = cat(str_list, list_size);
+
+               $$ = createRecord(s, EUNTYPED);
 
                freeRecord($1);
                freeRecord($4);
-               freeRecord($7);
-
-               $$ = createRecord(s, EUNTYPED);
+               freeRecord($8);
                free(s);
           }
-          | ELSE_IF '(' expression ')' '{' stmt_list '}'
+          | ELSE_IF '(' expression ')' '{' {push(&stack, "else_ifff");} stmt_list {pop(&stack);} '}'
           {
-               char * str_list[] = {" else if (", $3->code, ") {\n", $6->code, "}\n"};
-               int list_size = 5;
+               //OK
+               char* label_out_else_if = new_label("out_else_if");
+               char * str_list[] = {
+                    "if (!", $3->code/*expression*/, ") goto ", label_out_else_if, ";\n",
+                    $7->code, "\n",//stmt_list
+                    "_PLACEHOLDER_OUT_;\n",
+                    label_out_else_if, ":\n"
+               };
+               int list_size = 10;
                char * s = cat(str_list, list_size);
 
-               freeRecord($3);
-               freeRecord($6);
-
                $$ = createRecord(s, EUNTYPED);
+
+               freeRecord($3);
+               freeRecord($7);
                free(s);
           } 
 

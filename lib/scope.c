@@ -1,4 +1,5 @@
 #include "scope.h"
+#include "labels.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -37,13 +38,9 @@ void push(Stack *stack, char* value) {
         return;
     }
 
-    char str[20];
-    do{
-        int random = rand();
-        sprintf(str, "%d", random);
-    } while (find(stack, str));
+    char* str = "scope";
 
-    size_t len = strlen(value) + strlen(str) + 1;
+    size_t len = strlen(str) + strlen(value) + 1;
     char *new_value = malloc(len);
     if (!new_value) {
         printf("Erro de alocacao\n");
@@ -52,9 +49,11 @@ void push(Stack *stack, char* value) {
 
     strcpy(new_value, value);
     strcat(new_value, str);
+
+    char* scope = new_label(new_value);
     
-    stack->arr[++stack->top] = new_value;
-    printf("Pushed %s onto the stack\n", new_value);
+    stack->arr[++stack->top] = scope;
+    printf("Pushed %s onto the stack\n", scope);
 }
 
 // Function to pop an element from the stack
