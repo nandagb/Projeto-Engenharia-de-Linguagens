@@ -24,6 +24,6 @@ q1: all
 
 q2: all
 	./output/parser < ./input/problemas/Q2.txt
-	
+
 q3: all
 	./output/parser < ./input/problemas/Q3.txt

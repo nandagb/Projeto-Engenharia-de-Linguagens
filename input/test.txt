@@ -1,5 +1,11 @@
-vazio func main(){
-   repita(int i=0, i<10, i++){
-      saida("estou contando " + texto(i) + "\n");
+vazio func main() {
+   Lista<Lista<int>> matriz = novo Lista<>()(3);
+
+   repita (int j = 0, j<3, j++){
+      Lista<int> coluna = novo Lista<>()(4);
+      repita (int i=0, i<4, i++){
+         coluna[i] = i;
+      }
+      matriz[j] = coluna;
    }
 }
