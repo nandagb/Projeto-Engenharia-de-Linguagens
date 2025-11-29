@@ -27,7 +27,17 @@ table* table_create(void) {
 
 void table_destroy(table* table) {
     for (int i = 0; i < table->capacity; i++) {
-        free((void*)table->entries[i].key);
+        table_entry* curr = table->entries[i].next;
+        while(curr!=NULL){
+            table_entry* aux = curr->next;
+
+            free(curr->key);
+            free(curr);
+            
+            curr = aux;
+        }
+
+        free(table->entries[i].key);
     }
 
     free(table->entries);
@@ -50,43 +60,36 @@ static uint64_t hash_key(const char* key) {
 
 table_entry* get_table_entry(table_entry* entries, int capacity, const char* key, uint64_t hash, int index) {
     /* if null then key is not in the table */
-    while (entries[index].key != NULL) {
-        if (strcmp(key, entries[index].key) == 0) {
-            /* Found key, return value. */
-            return &entries[index];
-        }
-
-        /* either a collision or key isnt in the table */
-        index++;
-
-        if (index >= capacity) {
-            /* reset index */
-            index = 0;
-        }
+    table_entry *curr = &entries[index];
+    if (entries[index].key != NULL) {
+        while (curr->next != NULL){
+            if(!strcmp(key, curr->key)){
+                /* Found key, return value. */
+                return curr;
+            }
+            curr = curr->next;
+        } ;
+        // Return the last item at the collision list
+        return curr;
     }
     return NULL;
 }
 
 type table_get_type(table* table, const char* key) {
-    printf("\nA1: GETTING ENTRY FROM KEY: %s\n", key);
-
     uint64_t hash = hash_key(key);
     int index = hash % table->capacity;
 
     table_entry* entry = get_table_entry(table->entries, table->capacity, key, hash, index);
 
-    printf("\nENTRY KEY: %s\n", entry->key);
-    printf("ENTRY HASH: %ld\n", hash);
-    printf("ENTRY INDEX: %d\n", index);
-    printf("ENTRY TYPE: %d\n", entry->type);
-    printf("ENTRY STRUCTURE: %d\n", entry->structure);
-    // printf("ENTRY VALUE: %d\n", entry->value);
-
-    printf("\n");
-
-    if (entry == NULL) {
+    if (entry == NULL || !!strcmp(entry->key, key)) {
         return UNDEFINED_TYPE;
     }
+    
+    // printf("\nENTRY KEY: %s\n", entry->key);
+    // printf("ENTRY HASH: %ld\n", hash);
+    // printf("ENTRY INDEX: %d\n", index);
+    // printf("ENTRY TYPE: %d\n", entry->type);
+    // printf("ENTRY STRUCTURE: %d\n", entry->structure);
 
     return entry->type;
 }
@@ -97,7 +100,7 @@ structure table_get_structure(table* table, const char* key) {
 
     table_entry* entry = get_table_entry(table->entries, table->capacity, key, hash, index);
 
-    if (entry == NULL) {
+    if (entry == NULL || !!strcmp(entry->key, key)) {
         return UNDEFINED_STRUCTURE;
     }
 
@@ -110,7 +113,7 @@ void* table_get_value(table* table, const char* key) {
 
     table_entry* entry = get_table_entry(table->entries, table->capacity, key, hash, index);
 
-    if (entry == NULL) {
+    if (entry == NULL || !!strcmp(entry->key, key)) {
         return NULL;
     }
 
@@ -123,7 +126,7 @@ table_entry* table_get_entry_object(table* table, const char* key) {
 
     table_entry* entry = get_table_entry(table->entries, table->capacity, key, hash, index);
 
-    if (entry == NULL) {
+    if (entry == NULL || !!strcmp(entry->key, key)) {
         return NULL;
     }
 
@@ -134,32 +137,35 @@ static const char* table_set_entry(table_entry* entries, int capacity, const cha
     // AND hash with capacity-1 to ensure it's within entries array.
     uint64_t hash = hash_key(key);
     int index = hash % capacity;
-
     table_entry* entry = get_table_entry(entries, capacity, key, hash, index);
     if (entry != NULL) {
-        entry->type = type;
-        entry->structure = structure;
-        entry->value = value;
+        if(!!strcmp(key, entry->key)){
+            table_entry* new_entry = malloc(sizeof (*new_entry));
+            new_entry->key = strdup(key);
+            new_entry->type = type;
+            new_entry->structure = structure;
+            new_entry->value = value;
+            new_entry->next = NULL;
+            
+            entry->next = new_entry;
+            entry = entry->next;
+
+            if (plength) (*plength)++;
+        };
+        
         return entry->key;
+    }else{
+        /* key doesnt exists yet, allocate and if needed, then insert it. */
+        if (plength) (*plength)++;
+        
+        entries[index].key = strdup(key);
+        entries[index].type = type;
+        entries[index].structure = structure;
+        entries[index].value = value;
+        
+
+        return key;
     }
-
-    /* key doesnt exists yet, allocate and if needed, then insert it. */
-    if (plength != NULL) {
-        key = strdup(key);
-
-        if (key == NULL) {
-            return NULL;
-        }
-
-        (*plength)++;
-    }
-
-    entries[index].key = (char*)key;
-    entries[index].type = type;
-    entries[index].structure = structure;
-    entries[index].value = value;
-
-    return key;
 }
 
 const char* table_set(table* table, const char* key, type type, structure structure, void* value) {
