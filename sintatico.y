@@ -594,6 +594,17 @@ access_suffix_list : access_suffix
                     freeRecord($1);
                    }
                    | access_suffix_list access_suffix
+                   {
+                    char * str_list[] = {$1->code, $2->code};
+                    int list_size = 2;
+                    char * s = cat(str_list, list_size);
+
+                    $$ = createRecord(s, $2->type);
+
+                    freeRecord($1);
+                    freeRecord($2);
+                    free(s);
+                   }
 ;
 
 // TODO: Verficação do tipo
@@ -1122,9 +1133,23 @@ unary : ID UNARY_SUM
          $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
       } */
       | ID access_suffix_list
-      /* {
-         $$ = createRecord($1->code, EUNTYPED); freeRecord($1);
-      } */
+      {
+          // VERIFICATIONS
+          table_entry* entry = table_get_entry_object(sym_table, $1);
+          if (entry == NULL) {
+               // Variable was already initialized
+               printf("Erro! A variável %s não foi declarada!\n", $1);
+          }
+          // =============
+
+          char * str_list[] = {$1, $2->code};
+          int list_size = 2;
+          char * s = cat(str_list, list_size);
+
+          $$ = createRecord(s, entry->type);
+          freeRecord($2);
+          free(s);
+      }
       | type_conversion
       {
          $$ = createRecord($1->code, $1->type);

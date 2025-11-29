@@ -8,4 +8,12 @@ vazio func main() {
       }
       matriz[j] = coluna;
    }
+
+   saida("Matriz: \n");
+    repita (int l = 0, l < 3, l++) {
+        repita (int m=0, m < 4, m++) {
+            saida(texto(matriz[l][m]) + " ");
+        }
+        saida("\n");
+    }
 }
