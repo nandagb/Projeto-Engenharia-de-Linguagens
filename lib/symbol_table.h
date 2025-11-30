@@ -16,6 +16,7 @@ typedef struct table_entry{
     structure structure; /* variable's structure type: primary or user defined */
     void* value;         /* variable's value*/
     struct table_entry *next;
+     int size;
 } table_entry;
 
 typedef struct {

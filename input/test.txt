@@ -1,25 +1,19 @@
-vazio func main(){
-   logico teste1 = verdadeiro;
-   logico teste2 = verdadeiro;
-   logico teste3 = verdadeiro;
-   se (teste1) {
-      saida("entrou no if\n");
-      se (teste2){
-         saida("entrou no if do if interno\n");
+vazio func main() {
+   Lista<Lista<int>> matriz = novo Lista<>()(3);
+
+   repita (int j = 0, j<3, j++){
+      Lista<int> coluna = novo Lista<>()(4);
+      repita (int i=0, i<4, i++){
+         coluna[i] = i;
       }
-      senao {
-         saida("entrou no else do if interno\n");
-      }
-      saida("dentro do primeiro if, depois do if externo\n");
+      matriz[j] = coluna;
    }
-   senao se (teste2){
-      saida("entrou no else if 1\n");
-   }
-   senao se (teste3){
-      saida("entrou no else if 2\n");
-   }
-   senao {
-      saida("entrou no senao\n");
-   }
-   saida("fora do if\n");
+
+   saida("Matriz: \n");
+    repita (int l = 0, l < 3, l++) {
+        repita (int m=0, m < 4, m++) {
+            saida(texto(matriz[l][m]) + " ");
+        }
+        saida("\n");
+    }
 }

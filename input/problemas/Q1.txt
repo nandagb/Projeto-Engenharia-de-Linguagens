@@ -1,6 +1,5 @@
 real func expressao(real x, real y, int c){
-#    retorne x;
-    retorne x * x - y + c;
+    retorne x * x - y + real(c);
 }
 
 vazio func main(){
@@ -9,5 +8,5 @@ vazio func main(){
    int c = 4;
 
    real resultado = expressao(x, y, c);
-   saida(texto(resultado));
+   saida("resultado da expressão: " + texto(resultado) + "\n");
 }
