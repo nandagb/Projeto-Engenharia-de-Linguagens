@@ -31,7 +31,7 @@ Stack labels_stack;
 %token <sValue> ID STRING_LITERAL FLOAT_LITERAL INT_LITERAL BOOL_LITERAL
 /* %token <fValue>  */
 /* %token <iValue>  */
-%token INTEGER LIST STRUCT CONTINUE WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT ADD REMOVE
+%token INTEGER LIST STRUCT CONTINUE WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION DIV_LEFTOVER UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT ADD REMOVE
 
 /* %type <rec> access_assign 
 %type <rec> var_assign list_assign if return while do_while for expression write switch list_push list_remove 
@@ -1035,6 +1035,19 @@ factor    : factor '*' unary
           | factor INT_DIVISION unary
           {
                char * str_list[] = {$1->code," / ", $3->code};
+               int list_size = 3;
+               char * s = cat(str_list, list_size);
+
+               //TODO: FAZER ALTERAÇÃO DO TIPO COM BASE NO VALORES INSERIDOS
+               $$ = createRecord(s,EINTEGER);
+               
+               free($1);
+               free($3);
+               free(s);
+          }
+          | factor DIV_LEFTOVER unary
+          {
+               char * str_list[] = {$1->code," % ", $3->code};
                int list_size = 3;
                char * s = cat(str_list, list_size);
 

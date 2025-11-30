@@ -1,0 +1,37 @@
+vazio func mdc(int n, int m, Lista<int> r) {
+    se ((m %% n) == 0) {
+        r[0] = n;
+    }
+    senao se ((n %% m) == 0) {
+        r[0] = m;
+    }
+    senao {
+        se (m > n) {
+            mdc(n, (m %% n), r);
+        } senao {
+            mdc(m, (n %% m), r);
+        }
+    }
+}
+
+int func main() {
+    int n;
+    int m;
+    
+    Lista<int> resultado = novo Lista<>()(1);
+    resultado[0] = 0; 
+
+    saida("Digite n: ");
+    entrada(n); 
+    
+    saida("Digite m: ");
+    entrada(m);
+
+    mdc(n, m, resultado); 
+
+    saida("O MDC e: ");
+    
+    saida(texto(resultado[0])+ "\n");
+
+    retorne 0;
+}

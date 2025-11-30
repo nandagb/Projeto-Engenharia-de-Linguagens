@@ -27,3 +27,14 @@ q2: all
 
 q3: all
 	./output/parser < ./input/problemas/Q3.txt
+
+q5: all
+	./output/parser < ./input/problemas/Q5.txt
+
+run: 
+	# 1. Compila o arquivo C gerado pelo seu compilador
+	gcc ./output/output.c -o ./output/programa_final
+	
+	# 2. Executa o programa
+	@echo "--- Executando o Programa ---"
+	./output/programa_final
