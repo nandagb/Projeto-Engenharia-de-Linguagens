@@ -35,6 +35,6 @@ vazio func main() {
    saida("quantidade de números no primeiro intervalo: " + texto(c1) + "\n");
    saida("quantidade de números no segundo intervalo: " + texto(c2) + "\n");
    # ta dando erro na tabela de simbolos ao recuperar o tipo de c3 por alguma razão...
-   #saida("quantidade de números no terceiro intervalo: " + texto(c3) + "\n");
+   saida("quantidade de números no terceiro intervalo: " + texto(c3) + "\n");
    saida("quantidade de números no quarto intervalo: " + texto(c4) + "\n");
 }
