@@ -684,7 +684,7 @@ float_literal  : FLOAT_LITERAL
 
  type: primitive_type
      {
-          printf("A10");
+          //printf("A10");
           $$ = createRecord($1->code,$1->type);
           free($1);
      }
@@ -1460,13 +1460,10 @@ type_conversion : primitive_type '(' expression ')'
                     record *result_record = NULL;
 
                     if ($1->type == ESTRING) {
-                         printf("PRIMITIVE TYPE IS A STRING\n");
-                         printf("EXPRESSION IS A %d\n", expression_type);
 
                          char *buffer = NULL;
 
                          if (expression_type == EINTEGER) {
-                              printf("ENTERING INTEGER CONVERSION");
                               buffer = malloc(200);
                               sprintf(buffer, "({ char* tmp = malloc(32); sprintf(tmp, \"%%d\", %s); tmp; })", $3->code);
                          } else if (expression_type == EFLOAT) {
