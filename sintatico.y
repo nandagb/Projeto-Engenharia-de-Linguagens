@@ -42,7 +42,7 @@ Stack labels_stack;
 
 %type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list type_conversion
 %type <rec> func_declaration func_declaration_list general_stmt_list type list_types return
-%type <rec> list_declaration list_initialization struct_declaration var_declaration_list /*list_push*/ access_suffix access_suffix_list access_assign
+%type <rec> list_declaration list_initialization struct_declaration struct_var_declaration_list var_declaration_list /*list_push*/ access_suffix access_suffix_list access_assign
 %type <rec> var_initialization expression comparison_expression relation_expression
 %type <rec> arithmatic_expression factor unary int_literal float_literal func_call args
 %type <rec> var_assign write
@@ -395,7 +395,7 @@ var_declaration  : primitive_type ID
                     }
                     | ID ID
                     {
-                         char * str_list[] = {"struct ", $1, " * ", $2};
+                         char * str_list[] = {"struct ", $1, " ", $2};
                          int list_size = 4;
                          char * s = cat(str_list, list_size);
                          
@@ -450,37 +450,48 @@ list_declaration : LIST '<' list_types '>' ID
 
 list_types     : primitive_type
                {
-                    //one dimension list
-                    char * str_list[] = {string_to_type_in_C($1->code), " *"};
+                    // one dimension list, ex: Lista<int>
+                    char * str_list[] = { string_to_type_in_C($1->code), " *" };
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
 
                     $$ = createRecord(s, $1->type);
                     $$->structure = EPRIMARY;
-                    $$->type_string = strdup($1->code);
+                    $$->type_string = strdup(string_to_type_in_C($1->code));
 
-                    free($1);
+                    freeRecord($1);
                     free(s);
-                    
                }
                | ID
                {
-                    //list of struct
-                    $$ = createRecord($1, EUNTYPED);
+                    char * code_list[] = { "struct ", $1, " *" };
+                    int code_sz = 3;
+                    char * code_s = cat(code_list, code_sz);
+
+                    char * type_list[] = { "struct ", $1 };
+                    int type_sz = 2;
+                    char * type_s = cat(type_list, type_sz);
+
+                    $$ = createRecord(code_s, EUNTYPED);
+                    $$->structure = EPRIMARY;
+                    $$->type_string = strdup(type_s);
+
+                    free($1);
+                    free(code_s);
+                    free(type_s);
                }
                | LIST '<' list_types '>'
                {
-                    //list of list
-                    char * str_list[] = {$3->code, " *"};
+                    char * str_list[] = { $3->code, " *" };
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
-                    
+
                     $$ = createRecord(s, $3->type);
                     $$->structure = ELIST;
                     $$->type_string = strdup($3->code);
 
-                    free(s);
                     freeRecord($3);
+                    free(s);
                }
 ;
 
@@ -626,20 +637,17 @@ access_suffix : '[' expression ']'
                     freeRecord($2);
                     free(s);
                }
-              | '.' ID                                                                            
-              /* { 
-                    char * str_list[] = {".", $2, "]"};
+               | '.' ID
+               {
+                    char * str_list[] = {".", $2};
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
 
-                    for(int i = 0; i < list_size; i++){
-                         free(str_list[i]);
-                    }
-                    free($2);
-
                     $$ = createRecord(s, EUNTYPED);
+
+                    free($2);
                     free(s);
-               } */
+               }
 ;
 
 int_literal : INT_LITERAL
@@ -736,16 +744,11 @@ primitive_type : INTEGER
                }
 ;
 
-struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
+struct_declaration  : STRUCT ID '=' '{' struct_var_declaration_list '}'
                     {
-                         //Registro ID = { var_declaration_list }
-                         //Registro ID = { int exemplo, int exemplo2 }
-                         //struct exemplo{int exemplo; int exemplo2;}
-                         char * str_list[] = {"struct ", $2, "{\n\t", $5->code, "\n}"};
+                         char * str_list[] = {"struct ", $2, "{\n\t", $5->code, ";\n}"};
                          int list_size = 5;
                          char * s = cat(str_list, list_size);
-
-                         // free($1);
 
                          $$ = createRecord(s, EUNTYPED);
 
@@ -753,7 +756,32 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
                          free($5);
                          free(s);
                     }
-;	
+; 
+
+struct_var_declaration_list : var_declaration
+                            {
+                                char *str_list[] = { $1->code };
+                                int list_size = 1;
+                                char *s = cat(str_list, list_size);
+
+                                $$ = createRecord(s, EUNTYPED);
+
+                                freeRecord($1);
+                                free(s);
+                            }
+                            | struct_var_declaration_list ',' var_declaration
+                            {
+                                char *str_list[] = { $1->code, ";\n\t", $3->code };
+                                int list_size = 3;
+                                char *s = cat(str_list, list_size);
+
+                                $$ = createRecord(s, EUNTYPED);
+
+                                freeRecord($1);
+                                freeRecord($3);
+                                free(s);
+                            }
+;
 
 var_assign : ID '=' expression
            {

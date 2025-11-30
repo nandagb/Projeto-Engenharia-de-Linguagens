@@ -1,19 +1,11 @@
+Registro Pessoa = {
+    int idade,
+    texto nome
+};
+
 vazio func main() {
-   Lista<Lista<int>> matriz = novo Lista<>()(3);
+    Lista<Pessoa> pessoas = novo Lista<>()(3);
 
-   repita (int j = 0, j<3, j++){
-      Lista<int> coluna = novo Lista<>()(4);
-      repita (int i=0, i<4, i++){
-         coluna[i] = i;
-      }
-      matriz[j] = coluna;
-   }
-
-   saida("Matriz: \n");
-    repita (int l = 0, l < 3, l++) {
-        repita (int m=0, m < 4, m++) {
-            saida(texto(matriz[l][m]) + " ");
-        }
-        saida("\n");
-    }
+    pessoas[0].idade = 20;
+    pessoas[0].nome = "Ana";
 }
