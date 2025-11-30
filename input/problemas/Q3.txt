@@ -23,62 +23,62 @@ vazio func main() {
    saida("Digite a altura da segunda matriz: \n");
    entrada(colunas2);
 
-   Lista<Lista<int>> matriz1 = novo Lista<>()(colunas1);
-   Lista<Lista<int>> matriz2 = novo Lista<>()(colunas2);
+   Lista<Lista<int>> matriz1 = novo Lista<>()(linhas1);
+   Lista<Lista<int>> matriz2 = novo Lista<>()(linhas2);
 
-    repita (int i = 0, i < colunas1, i++) {
-        Lista<int> linha1 = novo Lista<>()(linhas1);
-        repita (int j=0, j<linhas1, j++) {
+    repita (int i = 0, i < linhas1, i++) {
+        Lista<int> coluna1 = novo Lista<>()(colunas1);
+        repita (int j=0, j<colunas1, j++) {
             int k;
             saida("Digite o valor da posição (" + texto(i) + ", " + texto(j) + ") da matriz 1: \n");
             entrada(k);
-            linha1[j] = k;
+            coluna1[j] = k;
         }
 
-      matriz1[i] = linha1;
+      matriz1[i] = coluna1;
     }
 
-    repita (int n = 0, n < colunas2, n++) {
-        Lista<int> linha2 = novo Lista<>()(linhas2);
-        repita (int o=0, o<linhas2, o++) {
+    repita (int n = 0, n < linhas2, n++) {
+        Lista<int> coluna2 = novo Lista<>()(colunas2);
+        repita (int o=0, o<colunas2, o++) {
             int x;
             saida("Digite o valor da posição (" + texto(n) + ", " + texto(o) + ") da matriz 2: \n");
             entrada(x);
-            linha2[o] = x;
+            coluna2[o] = x;
         }
 
-      matriz2[n] = linha2;
+      matriz2[n] = coluna2;
     }
 
     saida("Matriz1: " + "\n");
-    repita (int l = 0, l < colunas1, l++) {
-        repita (int m=0, m < linhas1, m++) {
+    repita (int l = 0, l < linhas1, l++) {
+        repita (int m=0, m < colunas1, m++) {
             saida(texto(matriz1[l][m]) + " ");
         }
         saida("\n");
     }
 
     saida("Matriz2: " + "\n");
-    repita (int y = 0, y < colunas2, y++) {
-        repita (int z=0, z < linhas2, z++) {
+    repita (int y = 0, y < linhas2, y++) {
+        repita (int z=0, z < colunas2, z++) {
             saida(texto(matriz2[y][z]) + " ");
         }
         saida("\n");
     }
 
     se (linhas1 == linhas2 && colunas1 == colunas2) {
-        Lista<Lista<int>> soma = novo Lista<>()(colunas1);
+        Lista<Lista<int>> soma = novo Lista<>()(linhas1);
 
         saida("Somando matrizes...\n");
-        repita (int ic = 0, ic < colunas1, ic++) {
-            Lista<int> linha_soma = novo Lista<>()(linhas1);
-            repita (int jl = 0, jl < linhas1, jl++) {
+        repita (int ic = 0, ic < linhas1, ic++) {
+            Lista<int> coluna_soma = novo Lista<>()(colunas1);
+            repita (int jl = 0, jl < colunas1, jl++) {
                 int result_soma = matriz1[ic][jl] + matriz2[ic][jl];
-                linha_soma[jl] = result_soma;
+                coluna_soma[jl] = result_soma;
                 saida(texto(result_soma) + " ");
             }
             printf("\n");
-            soma[n] = linha_soma;
+            soma[n] = coluna_soma;
         }
     }
     senao {
@@ -86,7 +86,35 @@ vazio func main() {
     }
 
     se (colunas1 == linhas2) {
-        saida("irei multiplicar as matrizes mais tarde...\n");
+        saida("Multipliando as matrizes...\n");
+        Lista<Lista<int>> prod = novo Lista<>()(linhas1);
+        # float prod[l1][c2];
+
+        # Inicializa resultado
+        repita (int a = 0, a < linhas1, a++){
+            Lista<int> linha_prod = novo Lista<>()(colunas2);
+            repita (int b = 0, b < colunas2, b++){
+                linha_prod[b] = 0;
+            }
+            prod[a] = linha_prod;
+        }
+
+        # Multiplicação
+        repita (int c = 0, c < linhas1, c++) {
+            repita (int d = 0, d < colunas2, d++) {
+                repita (int e = 0, e < colunas1, e++) {
+                    prod[c][d] = prod[c][d] + matriz1[c][e] * matriz2[e][d];
+                }
+            }
+        }
+
+        saida("\nProduto das matrizes:\n");
+        repita (int f = 0, f < linhas1, f++) {
+            repita (int g = 0, g < colunas2, g++) {
+                saida(texto(prod[f][g]) + " ");
+            }
+            saida("\n");
+        }
     }
     senao {
         saida("Não foi possível fazer o produto das matrizes!\n");
