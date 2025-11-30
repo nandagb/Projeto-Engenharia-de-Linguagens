@@ -11,40 +11,42 @@ vazio func main() {
     int proximoIndice = 7;
 
     # Montando a árvore binária
-    arvore[0].chave = 50;
-    arvore[0].esquerda = 1;
-    arvore[0].direita = 2;
-    arvore[0].nivel = 0;
 
-    arvore[1].chave = 30;
-    arvore[1].esquerda = 3;
-    arvore[1].direita = 4;
-    arvore[1].nivel = 1;
+    arvore[0].chave = 80;
+    arvore[0].esquerda = -1;
+    arvore[0].direita = -1;
+    arvore[0].nivel = 2;
+    
+    arvore[1].chave = 60;
+    arvore[1].esquerda = -1;
+    arvore[1].direita = -1;
+    arvore[1].nivel = 2;
+    
+    arvore[2].chave = 50;
+    arvore[2].esquerda = 1;
+    arvore[2].direita = 2;
+    arvore[2].nivel = 0;
 
-    arvore[2].chave = 70;
-    arvore[2].esquerda = 5;
-    arvore[2].direita = 6;
-    arvore[2].nivel = 1;
+    arvore[3].chave = 30;
+    arvore[3].esquerda = 3;
+    arvore[3].direita = 4;
+    arvore[3].nivel = 1;
 
-    arvore[3].chave = 20;
-    arvore[3].esquerda = -1;
-    arvore[3].direita = -1;
-    arvore[3].nivel = 2;
-
-    arvore[4].chave = 40;
+    arvore[4].chave = 20;
     arvore[4].esquerda = -1;
     arvore[4].direita = -1;
     arvore[4].nivel = 2;
 
-    arvore[5].chave = 60;
-    arvore[5].esquerda = -1;
-    arvore[5].direita = -1;
-    arvore[5].nivel = 2;
+    arvore[5].chave = 70;
+    arvore[5].esquerda = 5;
+    arvore[5].direita = 6;
+    arvore[5].nivel = 1;
 
-    arvore[6].chave = 80;
+    arvore[6].chave = 40;
     arvore[6].esquerda = -1;
     arvore[6].direita = -1;
     arvore[6].nivel = 2;
+
 
     # Encontrar máximo (indo todo pra direita)
     int indiceMax = raiz;
@@ -73,5 +75,57 @@ vazio func main() {
     saida(texto(chaveMax));
     saida(" no nivel ");
     saida(texto(nivelMax));
+    saida("\n");
+
+    # ===============================
+    # (D) Imprimir a árvore nível a nível
+    # ===============================
+
+    Lista<int> fila = novo Lista<>()(7);
+    Lista<int> niveis = novo Lista<>()(7);
+
+    int frente = 0;
+    int tras = 0;
+
+    # coloca a raiz na fila, nível 0
+    fila[tras] = raiz;
+    niveis[tras] = 0;
+    tras = tras + 1;
+
+    int nivelAtual = 0;
+
+    saida("Arvore nivel a nivel:\n");
+
+    enquanto (frente < tras) {
+        int indiceNo = fila[frente];
+        int nivelNo = niveis[frente];
+        frente = frente + 1;
+
+        # quando mudar de nível, quebra linha
+        se (nivelNo != nivelAtual) {
+            saida("\n");
+            nivelAtual = nivelNo;
+        }
+
+        # imprime a chave do nó
+        int valorAtual = arvore[indiceNo].chave;
+        saida(texto(valorAtual));
+        saida(" ");
+
+        # enfileira filho esquerdo, se existir
+        se (arvore[indiceNo].esquerda != -1) {
+            fila[tras] = arvore[indiceNo].esquerda;
+            niveis[tras] = nivelNo + 1;
+            tras = tras + 1;
+        }
+
+        # enfileira filho direito, se existir
+        se (arvore[indiceNo].direita != -1) {
+            fila[tras] = arvore[indiceNo].direita;
+            niveis[tras] = nivelNo + 1;
+            tras = tras + 1;
+        }
+    }
+
     saida("\n");
 }

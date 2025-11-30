@@ -99,8 +99,8 @@ prog_options : func_declaration_list
      }
      | general_stmt_list func_declaration_list
      {
-          printf("A0: \n%s%s\n", $1->code, $2->code);
-          char * include_list[] = {"#include <stdbool.h>", "\n"};
+          // printf("A0: \n%s%s\n", $1->code, $2->code);
+          char * include_list[] = {"#include <stdbool.h>", "\n", "#include <stdlib.h>", "\n", "#include <stdio.h>", "\n", "#include <string.h>", "\n"};
           char * include_str = cat(include_list, 2);
           
           char * str_list[] = {include_str, $1->code, $2->code};
@@ -451,7 +451,6 @@ list_declaration :  list_types ID
 
 list_types     : LIST '<' primitive_type '>'
                {
-                    //one dimension list
                     char * str_list[] = {string_to_type_in_C($3->code), " *"};
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
@@ -461,15 +460,15 @@ list_types     : LIST '<' primitive_type '>'
                     $$->type_string = strdup($3->code);
 
                     free($3);
-                    free(s);
+                    free(s);          
                }
-               /*| ID
+               | LIST '<' ID '>'
                {
-                    char * code_list[] = { "struct ", $1, " *" };
+                    char * code_list[] = {"struct ", $3, " *"};
                     int code_sz = 3;
                     char * code_s = cat(code_list, code_sz);
 
-                    char * type_list[] = { "struct ", $1 };
+                    char * type_list[] = {"struct ", $3};
                     int type_sz = 2;
                     char * type_s = cat(type_list, type_sz);
 
@@ -477,22 +476,22 @@ list_types     : LIST '<' primitive_type '>'
                     $$->structure = EPRIMARY;
                     $$->type_string = strdup(type_s);
 
-                    free($1);
+                    free($3);
                     free(code_s);
                     free(type_s);
                }
                | LIST '<' list_types '>'
                {
-                    char * str_list[] = { $3->code, " *" };
+                    char * str_list[] = {$3->code, " *"};
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
-
+                    
                     $$ = createRecord(s, $3->type);
                     $$->structure = ELIST;
                     $$->type_string = strdup($3->code);
 
-                    freeRecord($3);
                     free(s);
+                    freeRecord($3);
                }
 ;
 

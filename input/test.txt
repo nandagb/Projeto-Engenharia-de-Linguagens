@@ -1,11 +1,16 @@
-Registro Pessoa = {
-    int idade,
-    texto nome
+Registro No = {
+    int chave,
+    int esquerda,
+    int direita,
+    int nivel
 };
 
 vazio func main() {
-    Lista<Pessoa> pessoas = novo Lista<>()(3);
+    Lista<No> arvore = novo Lista<>()(3);
 
-    pessoas[0].idade = 20;
-    pessoas[0].nome = "Ana";
+    # só pra garantir que o campo existe no C gerado
+    arvore[0].nivel = 0;
+
+    # aqui é o nosso teste específico:
+    int x = arvore[0].nivel + 1;
 }
