@@ -187,7 +187,7 @@ func_declaration_list    : func_declaration
 
 func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func"); } stmt_list '}' {pop(&stack);}
                     {
-                         char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $9->code, "}"};
+                         char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $9->code, "}\n"};
                          int list_size = 8;
                          char * s = cat(str_list, list_size);
                          
@@ -429,42 +429,41 @@ var_declaration_list     : var_declaration
 ;
 
 
-list_declaration : LIST '<' list_types '>' ID
+list_declaration :  list_types ID
                     {
-                         char * str_list[] = {$3->code, $5};
+                         char * str_list[] = {$1->code, $2};
                          int list_size = 2;
                          char * s = cat(str_list, list_size);
 
-                         table_set(sym_table, $5, $3->type, ELIST, NULL);
-                         table_entry* entry = table_get_entry_object(sym_table, $5);
+                         table_set(sym_table, $2, $1->type, ELIST, NULL);
+                         table_entry* entry = table_get_entry_object(sym_table, $2);
                          entry->size = 0;
-
                          
-                         $$ = createRecord(s, $3->type);
-                         $$->structure = $3->structure;
-                         $$->type_string = strdup($3->type_string);
+                         $$ = createRecord(s, $1->type);
+                         $$->structure = $1->structure;
+                         $$->type_string = strdup($1->type_string);
 
-                         freeRecord($3);
-                         free($5);
+                         freeRecord($1);
+                         free($2);
                          free(s);
                     }
 ;
 
-list_types     : primitive_type
+list_types     : LIST '<' primitive_type '>'
                {
-                    // one dimension list, ex: Lista<int>
-                    char * str_list[] = { string_to_type_in_C($1->code), " *" };
+                    //one dimension list
+                    char * str_list[] = {string_to_type_in_C($3->code), " *"};
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
 
-                    $$ = createRecord(s, $1->type);
+                    $$ = createRecord(s, $3->type);
                     $$->structure = EPRIMARY;
-                    $$->type_string = strdup(string_to_type_in_C($1->code));
+                    $$->type_string = strdup($3->code);
 
-                    freeRecord($1);
+                    free($3);
                     free(s);
                }
-               | ID
+               /*| ID
                {
                     char * code_list[] = { "struct ", $1, " *" };
                     int code_sz = 3;
@@ -690,12 +689,12 @@ float_literal  : FLOAT_LITERAL
                }
 ;
 
- type: /*primitive_type*/
-     /* {
-          printf("A10");
+ type: primitive_type
+     {
+          //printf("A10");
           $$ = createRecord($1->code,$1->type);
-       free($1);
-     } */
+          free($1);
+     }
      | list_types
      {
           $$ = createRecord($1->code, $1->type);
@@ -1167,7 +1166,7 @@ unary : ID UNARY_SUM
       }
       | STRING_LITERAL
       {
-          printf("\n\nA4: %s\n\n", $1);
+          //printf("\n\nA4: %s\n\n", $1);
           $$ = createRecord($1, ESTRING);
           free($1);
       }
@@ -1488,13 +1487,10 @@ type_conversion : primitive_type '(' expression ')'
                     record *result_record = NULL;
 
                     if ($1->type == ESTRING) {
-                         printf("PRIMITIVE TYPE IS A STRING\n");
-                         printf("EXPRESSION IS A %d\n", expression_type);
 
                          char *buffer = NULL;
 
                          if (expression_type == EINTEGER) {
-                              printf("ENTERING INTEGER CONVERSION");
                               buffer = malloc(200);
                               sprintf(buffer, "({ char* tmp = malloc(32); sprintf(tmp, \"%%d\", %s); tmp; })", $3->code);
                          } else if (expression_type == EFLOAT) {

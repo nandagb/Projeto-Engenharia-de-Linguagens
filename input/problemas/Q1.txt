@@ -1,5 +1,5 @@
-real func expressao(real x, real y, int c){
-    retorne x * x - y + real(c);
+real func expressao(real a, real b, int z){
+    retorne a * a - b + real(z);
 }
 
 vazio func main(){

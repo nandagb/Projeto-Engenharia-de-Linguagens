@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define INITIAL_CAPACITY 16
+#define INITIAL_CAPACITY 64
 
 table* table_create(void) {
     table* table = malloc(sizeof(table));
