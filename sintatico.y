@@ -360,6 +360,8 @@ var_initialization  : primitive_type ID '=' expression
                          int list_size = 4;
                          char * s = cat(str_list, list_size);
 
+                         table_get_type(sym_table, $2);
+
                          $$ = createRecord(s, $1->type);
 
                          freeRecord($1);
@@ -644,11 +646,13 @@ access_suffix : '[' expression ']'
 
 int_literal : INT_LITERAL
             {
+               // printf("\n\nA5: %s\n\n", $1);
                $$ = createRecord($1, EINTEGER);
                free($1);
             }
             | '-' INT_LITERAL             
             {
+               // printf("\n\nA6: %s\n\n", $2);
                char * str_list[] = {"-", $2};
                int list_size = 2;
                char * s = cat(str_list, list_size);
@@ -1135,6 +1139,7 @@ unary : ID UNARY_SUM
       }
       | STRING_LITERAL
       {
+          printf("\n\nA4: %s\n\n", $1);
           $$ = createRecord($1, ESTRING);
           free($1);
       }
