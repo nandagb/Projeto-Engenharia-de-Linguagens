@@ -79,7 +79,7 @@ char * string_to_type_in_C(char* str){
   else if(strcmp(str, "logico ") == 0){
     return "bool ";
   }
-  else if(strcmp(str, "vazio ") == 0){
+  else if(strcmp(str, "vazio ") == 0 || strcmp(str, "void ") == 0){
     return "void ";
   }
   // else if(t == EUNTYPED || t == UNDEFINED_TYPE){
