@@ -502,15 +502,13 @@ var_declaration  : primitive_type ID
                               char* key = strdup(peek(&stack));
                               strcat(key, "@");
                               strcat(key, $2);
-                              table_set(sym_table, key, $2, UNDEFINED_TYPE, UNDEFINED_STRUCTURE, NULL);
+                              table_set(sym_table, key, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
                               free(key);
                          }
 
                          char * str_list[] = {"struct ", $1, " ", $2};
                          int list_size = 4;
                          char * s = cat(str_list, list_size);
-
-                         table_set(sym_table, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
 
                          $$ = createRecord(s, ESTRUCT_TYPE);
                          $$->structure = ESTRUCT;
