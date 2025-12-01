@@ -6,7 +6,7 @@ typedef enum {
 } structure;
 
 typedef enum {
-	EINTEGER, EFLOAT, ESTRING, EBOOL, EVOID, EUNTYPED, UNDEFINED_TYPE
+	EINTEGER, EFLOAT, ESTRING, EBOOL, EVOID, ESTRUCT_TYPE, EUNTYPED, UNDEFINED_TYPE
 } type;
 
 struct record {

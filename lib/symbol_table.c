@@ -31,13 +31,21 @@ void table_destroy(table* table) {
         while(curr!=NULL){
             table_entry* aux = curr->next;
 
-            free(curr->key);
-            free(curr);
+            if (curr != NULL){
+                if (curr->key != NULL){
+                    free(curr->key);
+                }
+                free(curr);
+            }
             
             curr = aux;
         }
 
-        free(table->entries[i].key);
+        if (table->entries+i != NULL){
+            if (table->entries[i].key != NULL) {
+                free(table->entries[i].key);
+            }
+        }
     }
 
     free(table->entries);
