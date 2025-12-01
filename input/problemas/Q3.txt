@@ -77,7 +77,7 @@ vazio func main() {
                 coluna_soma[j] = result_soma;
                 saida(texto(result_soma) + " ");
             }
-            printf("\n");
+            saida("\n");
             soma[i] = coluna_soma;
         }
     }
