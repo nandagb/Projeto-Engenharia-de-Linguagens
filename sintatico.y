@@ -183,9 +183,8 @@ func_declaration_list    : func_declaration
 
 func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func"); } stmt_list '}' {pop(&stack);}
                     {
-                         char* key = strdup(peek(&stack));
-                         strcat(key, "@");
-                         strcat(key, $3);
+                         char * key_list[] = {strdup(peek(&stack)), "@", $3};
+                         char * key = cat(key_list, 3);
 
                          table_entry* entry = table_get_entry_object(sym_table, key);
                           if (entry != NULL) {
@@ -440,9 +439,9 @@ var_declaration  : primitive_type ID
                          }
                          else {
                               // initilize variable
-                              char* key = strdup(peek(&stack));
-                              strcat(key, "@");
-                              strcat(key, $2);
+                              char * str_list[] = {strdup(peek(&stack)), "@", $2};
+                              int list_size = 3;
+                              char * key = cat(str_list, list_size);
                               table_set(sym_table, key, $2, $1->type, EPRIMARY, NULL);
                               free(key);
                          }
@@ -497,9 +496,9 @@ var_declaration  : primitive_type ID
                          }
                          else {
                               // initilize variable
-                              char* key = strdup(peek(&stack));
-                              strcat(key, "@");
-                              strcat(key, $2);
+                              char * str_list[] = {strdup(peek(&stack)), "@", $2};
+                              int list_size = 3;
+                              char * key = cat(str_list, list_size);
                               table_set(sym_table, key, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
                               free(key);
                          }
@@ -568,9 +567,9 @@ list_declaration :  list_types ID
                          }
                          else {
                               // initilize variable
-                              char* key = strdup(peek(&stack));
-                              strcat(key, "@");
-                              strcat(key, $2);
+                              char * str_list[] = {strdup(peek(&stack)), "@", $2};
+                              int list_size = 3;
+                              char * key = cat(str_list, list_size);
                               table_set(sym_table, key, $2, $1->type, ELIST, NULL);
                               entry = table_get_entry_object(sym_table, key);
                               entry->size = 0;
@@ -912,7 +911,7 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
                          $$->type_string = strdup($2);
 
                          char * key_list[] = {$2};
-                         char * key = cat(key_list, 2);
+                         char * key = cat(key_list, 1);
 
                          table_set(sym_table, key, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
 
