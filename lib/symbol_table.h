@@ -7,12 +7,13 @@
 #include <stdbool.h>  /* bool */
 
 typedef struct table_entry{
-    char* key;     /* variable's name */
+    char* key;     /* variable's name concatenated with the scope's name */
+    char* original_variable_name; /* variable's name */
     type type;           /* variable's primitive type */
     structure structure; /* variable's structure type: primary or user defined */
     void* value;         /* variable's value*/
     struct table_entry *next;
-     int size;
+    int size;
 } table_entry;
 
 typedef struct {
@@ -27,7 +28,7 @@ void table_destroy(table* table);
 
 void* table_get(table* table, const char* key);
 
-const char* table_set(table* table, const char* key, type type, structure structure, void* value);
+const char* table_set(table* table, const char* key, const char* original_name, type type, structure structure, void* value);
 
 static bool table_expand(table* table);
 

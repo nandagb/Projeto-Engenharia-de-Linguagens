@@ -162,13 +162,14 @@ static const char* table_set_entry(table_entry* entries, int capacity, const cha
         entries[index].type = type;
         entries[index].structure = structure;
         entries[index].value = value;
-        
+        //ERROR: If table gets expanded, it won't pass the collision list values to the new table instance
+        entries[index].next = NULL;
 
-        return key;
+        return entries[index].key;
     }
 }
 
-const char* table_set(table* table, const char* key, type type, structure structure, void* value) {
+const char* table_set(table* table, const char* key, const char* original_name, type type, structure structure, void* value) {
     /* if length will exceed half of current capacity, expand it. */
     if (table->length >= table->capacity / 2) {
         if (!table_expand(table)) {
@@ -176,6 +177,7 @@ const char* table_set(table* table, const char* key, type type, structure struct
         }
     }
 
+    table->length++;
     return table_set_entry(table->entries, table->capacity, key, type, structure, value, &table->length);
 }
 
