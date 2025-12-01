@@ -107,9 +107,19 @@ vazio func main() {
     inv = inverso_racional(r1);
 
     saida("Racionais iguais: ", eq, "\n");
-    saida("Soma: ", s.numerador, "/", s.denominador, "\n");
-    saida("Negacao: ", n.numerador, "/", n.denominador, "\n");
-    saida("Subtracao: ", d.numerador, "/", d.denominador, "\n");
-    saida("Multiplicacao: ", m.numerador, "/", m.denominador, "\n");
-    saida("Inverso: ", inv.numerador, "/", inv.denominador, "\n");
+    int snumerador = s.numerador;
+    int sdenominador = s.denominador;
+    saida("Soma: " + texto(snumerador) + "/" + texto(sdenominador) + "\n");
+    int nnumerador = n.numerador;
+    int ndenominador = n.denominador;
+    saida("Negacao: ", texto(nnumerador), "/", texto(ndenominador), "\n");
+    int dnumerador = d.numerador;
+    int ddenominador = d.denominador;
+    saida("Subtracao: " + texto(dnumerador) + "/" + texto(ddenominador) + "\n");
+    int mnumerador = m.numerador;
+    int mdenominador = m.denominador;
+    saida("Multiplicacao: " + texto(mnumerador) + "/" + texto(mdenominador) + "\n");
+    int invnumerador = inv.numerador;
+    int invdenominador = inv.denominador;
+    saida("Inverso: " + texto(invnumerador) + "/" + texto(invdenominador) + "\n");
 }
