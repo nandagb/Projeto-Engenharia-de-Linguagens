@@ -1406,12 +1406,48 @@ unary : ID UNARY_SUM
 
 func_call : ID '(' args ')'
           {
+               // VERIFICATIONS
+               table_entry* entry = NULL;
+               int index = stack.top;
+               while(index >= 0){
+                    char* strStack = strdup(peek_position(&stack, index));
+
+                    if(strStack != NULL){
+                         char * str_list[] = {strStack, "@", $1};
+                         int list_size = 3;
+                         char * key = cat(str_list, list_size);
+
+                         entry = table_get_entry_object(sym_table, key);
+
+                         if(entry != NULL){
+                              break;
+                         }
+                         free(key);
+                    }
+
+                    free(strStack);
+                    index--;
+               }
+
+               if (entry == NULL) {
+                    // Function was not initialized
+                    printf("Erro! A função %s não foi declarada!\n", $1);
+               }
+               // =============
+
                char * str_list[] = {$1, "(", $3->code, ")"};
                int list_size = 4;
                char * s = cat(str_list, list_size);
-               
-               // TODO: pegar tipo do func_call pela tabela de simbolos de ID
-               $$ = createRecord(s, EUNTYPED);
+
+               type func_type;
+               if (entry == NULL) {
+                    func_type = EUNTYPED;
+               }
+               else {
+                    func_type = entry->type;
+               }
+
+               $$ = createRecord(s, func_type);
 
                freeRecord($3);
                free(s);
