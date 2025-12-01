@@ -360,7 +360,6 @@ var_initialization  : primitive_type ID '=' expression
                                    char * str_list[] = {strStack, "@", $2};
                                    int list_size = 3;
                                    char * key = cat(str_list, list_size);
-
                                    entry = table_get_entry_object(sym_table, key);
 
                                    if(entry != NULL){
@@ -1644,28 +1643,28 @@ for_step : var_assign
          }
          ;
 
-for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' {push(&stack, "for");} stmt_list {pop(&stack);} '}'
+for : FOR {push(&stack, "for");} '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list {pop(&stack);} '}'
      {
           char* label_start = new_label("for_start");
           char* label_out = new_label("for_out");
 
           char * str_list[] = {
-               $3->code, ";\n",//for_initialization
+               "{\n\t", $4->code, ";\n",//for_initialization
                label_start, ":\n",
-               "if (!(", $5->code/*expression*/, ")) goto ", label_out, ";\n",
+               "if (!(", $6->code/*expression*/, ")) goto ", label_out, ";\n",
                "{", $11->code, "}\n",//stmt_list
-               $7->code, ";\n",//for_step
-               "goto ", label_start, ";\n",
+               $8->code, ";\n",//for_step
+               "goto ", label_start, ";\n}\n",
                label_out, ":\n"
           };
-          int list_size = 19;
+          int list_size = 20;
           char * s = cat(str_list, list_size);
           
           $$ = createRecord(s, EUNTYPED);
 
-          freeRecord($3);
-          freeRecord($5);
-          freeRecord($7);
+          freeRecord($4);
+          freeRecord($6);
+          freeRecord($8);
           freeRecord($11);
           free(s);
      }
