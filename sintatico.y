@@ -353,35 +353,41 @@ var_initialization  : primitive_type ID '=' expression
                     {
                          table_entry* entry = NULL;
                          int index = stack.top;
-                         char* key = "";
                          while(index >= 0){
-                              key = strdup(peek_position(&stack, index));
+                              char* strStack = strdup(peek_position(&stack, index));
                               
-                              if(key != NULL){
-                                   strcat(key, "@");
-                                   strcat(key, $2);
+                              if(strStack != NULL){
+                                   char * str_list[] = {strStack, "@", $2};
+                                   int list_size = 3;
+                                   char * key = cat(str_list, list_size);
+
                                    entry = table_get_entry_object(sym_table, key);
 
                                    if(entry != NULL){
                                         break;
                                    }
+
+                                   free(key);
                               }
                               
+                              free(strStack);
                               index--;
                          }
 
                          if (entry != NULL) {
-                              // printf("CHECKING KEY %s \n", key);
                               // Variable was already initialized
                               printf("Erro! A variável %s já foi declarada!\n", $2);
                          }
                          else {
                               // initilize variable
-                              key = strdup(peek(&stack));
-                              strcat(key, "@");
-                              strcat(key, $2);
+                              char * str_list[] = {strdup(peek(&stack)), "@", $2};
+                              int list_size = 3;
+                              char * key = cat(str_list, list_size);
+
                               table_set(sym_table, key, $2, $1->type, EPRIMARY, NULL);
                               entry = table_get_entry_object(sym_table, key);
+
+                              free(key);
                          }
 
                          //TODO: permitir coersão de inteiro para real?
@@ -402,7 +408,6 @@ var_initialization  : primitive_type ID '=' expression
                          freeRecord($1);
                          free($2);
                          freeRecord($4);
-                         free(key);
                          free(s);
                     }
 
@@ -411,20 +416,24 @@ var_declaration  : primitive_type ID
                     {
                          table_entry* entry = NULL;
                          int index = stack.top;
-                         char* key = "";
                          while(index >= 0){
-                              key = strdup(peek_position(&stack, index));
+                              char* strStack = strdup(peek_position(&stack, index));
                               
-                              if(key != NULL){
-                                   strcat(key, "@");
-                                   strcat(key, $2);
+                              if(strStack != NULL){
+                                   char * str_list[] = {strStack, "@", $2};
+                                   int list_size = 3;
+                                   char * key = cat(str_list, list_size);
+
                                    entry = table_get_entry_object(sym_table, key);
 
                                    if(entry != NULL){
                                         break;
                                    }
+                                   
+                                   free(key);
                               }
                               
+                              free(strStack);
                               index--;
                          }
 
@@ -434,10 +443,11 @@ var_declaration  : primitive_type ID
                          }
                          else {
                               // initilize variable
-                              key = strdup(peek(&stack));
+                              char* key = strdup(peek(&stack));
                               strcat(key, "@");
                               strcat(key, $2);
                               table_set(sym_table, key, $2, $1->type, EPRIMARY, NULL);
+                              free(key);
                          }
                          
                          //int exemplo
@@ -450,7 +460,6 @@ var_declaration  : primitive_type ID
                          freeRecord($1);
                          free($2);
                          free(s);
-                         free(key);
                     }
                     | list_declaration
                     {
@@ -464,20 +473,24 @@ var_declaration  : primitive_type ID
                     {
                          table_entry* entry = NULL;
                          int index = stack.top;
-                         char* key = "";
                          while(index >= 0){
-                              key = strdup(peek_position(&stack, index));
+                              char* strStack = strdup(peek_position(&stack, index));
                               
-                              if(key != NULL){
-                                   strcat(key, "@");
-                                   strcat(key, $2);
+                              if(strStack != NULL){
+                                   char * str_list[] = {strStack, "@", $2};
+                                   int list_size = 3;
+                                   char * key = cat(str_list, list_size);
+
                                    entry = table_get_entry_object(sym_table, key);
 
                                    if(entry != NULL){
                                         break;
                                    }
+                                   
+                                   free(key);
                               }
                               
+                              free(strStack);
                               index--;
                          }
 
@@ -487,10 +500,11 @@ var_declaration  : primitive_type ID
                          }
                          else {
                               // initilize variable
-                              key = strdup(peek(&stack));
+                              char* key = strdup(peek(&stack));
                               strcat(key, "@");
                               strcat(key, $2);
                               table_set(sym_table, key, $2, UNDEFINED_TYPE, UNDEFINED_STRUCTURE, NULL);
+                              free(key);
                          }
 
                          char * str_list[] = {"struct ", $1, " * ", $2};
@@ -502,7 +516,6 @@ var_declaration  : primitive_type ID
                          free($1);
                          free($2);
                          free(s);
-                         free(key);
                     }
 ;
 
@@ -528,24 +541,26 @@ var_declaration_list     : var_declaration
 
 list_declaration :  list_types ID
                     {
-                         printf("STACK SIZE: %d\n", stack.top);
                          // printf("TABLE SIZE: %d\n", stack.top);
                          table_entry* entry = NULL;
                          int index = stack.top;
-                         char* key = "";
                          while(index >= 0){
-                              key = strdup(peek_position(&stack, index));
+                              char* strStack = strdup(peek_position(&stack, index));
                               
-                              if(key != NULL){
-                                   strcat(key, "@");
-                                   strcat(key, $2);
+                              if(strStack != NULL){
+                                   char * str_list[] = {strStack, "@", $2};
+                                   int list_size = 3;
+                                   char * key = cat(str_list, list_size);
+
                                    entry = table_get_entry_object(sym_table, key);
 
                                    if(entry != NULL){
                                         break;
                                    }
+                                   free(key);
                               }
-                              
+
+                              free(strStack);
                               index--;
                          }
 
@@ -555,15 +570,14 @@ list_declaration :  list_types ID
                          }
                          else {
                               // initilize variable
-                              printf("A1\n");
-                              printf("CHECKING SCOPE %s AT POSITION %d\n", peek(&stack), stack.top);
-                              printf("CHECKING VALUE %s\n", $2);
-                              key = strdup(peek(&stack));
+                              char* key = strdup(peek(&stack));
                               strcat(key, "@");
                               strcat(key, $2);
                               table_set(sym_table, key, $2, $1->type, ELIST, NULL);
                               entry = table_get_entry_object(sym_table, key);
                               entry->size = 0;
+
+                              free(key);
                          }
 
                          char * str_list[] = {$1->code, $2};
@@ -577,8 +591,6 @@ list_declaration :  list_types ID
                          freeRecord($1);
                          free($2);
                          free(s);
-                         free(key);
-                         
                     }
 ;
 
@@ -852,6 +864,7 @@ float_literal  : FLOAT_LITERAL
 
 primitive_type : INTEGER
                {
+                    // printf("A3\n");
                     $$ = createRecord("int ",EINTEGER);
                }
                | FLOAT
@@ -897,11 +910,13 @@ var_assign : ID '=' expression
                table_entry* entry = NULL;
                int index = stack.top;
                while(index >= 0){
-                    char* key = strdup(peek_position(&stack, index));
+                    char* strStack = strdup(peek_position(&stack, index));
                     
-                    if(key != NULL){
-                         strcat(key, "@");
-                         strcat(key, $1);
+                    if(strStack != NULL){
+                         char * str_list[] = {strStack, "@", $1};
+                         int list_size = 3;
+                         char * key = cat(str_list, list_size);
+
                          entry = table_get_entry_object(sym_table, key);
 
                          if(entry != NULL){
@@ -910,6 +925,7 @@ var_assign : ID '=' expression
                          free(key);
                     }
                     
+                    free(strStack);
                     index--;
                }
 
@@ -1205,15 +1221,16 @@ factor    : factor '*' unary
 unary : ID UNARY_SUM
       {
           // VERIFICATIONS
-          // VERIFICATIONS
           table_entry* entry = NULL;
           int index = stack.top;
           while(index >= 0){
-               char* key = strdup(peek_position(&stack, index));
+               char* strStack = strdup(peek_position(&stack, index));
                
-               if(key != NULL){
-                    strcat(key, "@");
-                    strcat(key, $1);
+               if(strStack != NULL){
+                    char * str_list[] = {strStack, "@", $1};
+                    int list_size = 3;
+                    char * key = cat(str_list, list_size);
+
                     entry = table_get_entry_object(sym_table, key);
 
                     if(entry != NULL){
@@ -1222,6 +1239,7 @@ unary : ID UNARY_SUM
                     free(key);
                }
                
+               free(strStack);
                index--;
           }
 
@@ -1278,12 +1296,14 @@ unary : ID UNARY_SUM
           table_entry* entry = NULL;
           int index = stack.top;
           while(index >= 0){
-               char* key = strdup(peek_position(&stack, index));
+               char* strStack = strdup(peek_position(&stack, index));
                
-               if(key != NULL){
-                    strcat(key, "@");
-                    strcat(key, $1);
-                    entry = table_get_entry_object(sym_table, key);
+               if(strStack != NULL){
+               char * str_list[] = {strStack, "@", $1};
+               int list_size = 3;
+               char * key = cat(str_list, list_size);
+
+               entry = table_get_entry_object(sym_table, key);
 
                     if(entry != NULL){
                          break;
@@ -1291,6 +1311,7 @@ unary : ID UNARY_SUM
                     free(key);
                }
                
+               free(strStack);
                index--;
           }
 
@@ -1344,11 +1365,13 @@ unary : ID UNARY_SUM
           table_entry* entry = NULL;
           int index = stack.top;
           while(index >= 0){
-               char* key = strdup(peek_position(&stack, index));
+               char* strStack = strdup(peek_position(&stack, index));
                
-               if(key != NULL){
-                    strcat(key, "@");
-                    strcat(key, $1);
+               if(strStack != NULL){
+                    char * str_list[] = {strStack, "@", $1};
+                    int list_size = 3;
+                    char * key = cat(str_list, list_size);
+
                     entry = table_get_entry_object(sym_table, key);
 
                     if(entry != NULL){
@@ -1357,6 +1380,7 @@ unary : ID UNARY_SUM
                     free(key);
                }
                
+               free(strStack);
                index--;
           }
           
