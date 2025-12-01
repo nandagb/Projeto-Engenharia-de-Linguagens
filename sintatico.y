@@ -101,7 +101,7 @@ prog_options : func_declaration_list
      {
           // printf("A0: \n%s%s\n", $1->code, $2->code);
           char * include_list[] = {"#include <stdbool.h>", "\n", "#include <stdlib.h>", "\n", "#include <stdio.h>", "\n", "#include <string.h>", "\n"};
-          char * include_str = cat(include_list, 2);
+          char * include_str = cat(include_list, 8);
           
           char * str_list[] = {include_str, $1->code, $2->code};
           int list_size = 3;

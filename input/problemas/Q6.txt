@@ -6,126 +6,175 @@ Registro No = {
 };
 
 vazio func main() {
-    Lista<No> arvore = novo Lista<>()(7);
-    int raiz = 0;
-    int proximoIndice = 7;
+    int TAM = 100;
+    Lista<No> arvore = novo Lista<>()(TAM);
+    int raiz = -1;
+    int proximo_livre = 0;
 
-    # Montando a árvore binária
-
-    arvore[0].chave = 80;
-    arvore[0].esquerda = -1;
-    arvore[0].direita = -1;
-    arvore[0].nivel = 2;
-    
-    arvore[1].chave = 60;
-    arvore[1].esquerda = -1;
-    arvore[1].direita = -1;
-    arvore[1].nivel = 2;
-    
-    arvore[2].chave = 50;
-    arvore[2].esquerda = 1;
-    arvore[2].direita = 2;
-    arvore[2].nivel = 0;
-
-    arvore[3].chave = 30;
-    arvore[3].esquerda = 3;
-    arvore[3].direita = 4;
-    arvore[3].nivel = 1;
-
-    arvore[4].chave = 20;
-    arvore[4].esquerda = -1;
-    arvore[4].direita = -1;
-    arvore[4].nivel = 2;
-
-    arvore[5].chave = 70;
-    arvore[5].esquerda = 5;
-    arvore[5].direita = 6;
-    arvore[5].nivel = 1;
-
-    arvore[6].chave = 40;
-    arvore[6].esquerda = -1;
-    arvore[6].direita = -1;
-    arvore[6].nivel = 2;
-
-
-    # Encontrar máximo (indo todo pra direita)
-    int indiceMax = raiz;
-    enquanto (arvore[indiceMax].direita != -1) {
-        indiceMax = arvore[indiceMax].direita;
+    repita (int i = 0, i < TAM, i++) {
+        arvore[i].chave = 0;
+        arvore[i].esquerda = -1;
+        arvore[i].direita = -1;
+        arvore[i].nivel = -1;
     }
 
-    # Encontrar mínimo (indo todo pra esquerda)
-    int indiceMin = raiz;
-    enquanto (arvore[indiceMin].esquerda != -1) {
-        indiceMin = arvore[indiceMin].esquerda;
+    int valor;
+
+    saida("Digite os valores (negativo para parar): \n");
+    entrada(valor);
+
+    enquanto (valor >= 0 && proximo_livre < TAM) {
+        se (raiz == -1) {
+            raiz = proximo_livre;
+            arvore[raiz].chave = valor;
+            arvore[raiz].esquerda = -1;
+            arvore[raiz].direita = -1;
+            arvore[raiz].nivel = 0;
+
+            proximo_livre = proximo_livre + 1;
+        }
+        senao {
+            int atual = raiz;
+            int nivel_atual = 0;
+            logico terminou = falso;
+            int indice_novo;
+
+            enquanto (terminou == falso) {
+                se (valor < arvore[atual].chave) {
+                    se (arvore[atual].esquerda == -1) {
+                        se (proximo_livre >= TAM) {
+                            terminou = verdadeiro;
+                        }
+                        senao {
+                            indice_novo = proximo_livre;
+
+                            arvore[indice_novo].chave = valor;
+                            arvore[indice_novo].esquerda = -1;
+                            arvore[indice_novo].direita = -1;
+                            arvore[indice_novo].nivel = nivel_atual + 1;
+
+                            arvore[atual].esquerda = indice_novo;
+
+                            proximo_livre = proximo_livre + 1;
+                            terminou = verdadeiro;
+                        }
+                    }
+                    senao {
+                        atual = arvore[atual].esquerda;
+                        nivel_atual = nivel_atual + 1;
+                    }
+                }
+                senao se (valor > arvore[atual].chave) {
+                    se (arvore[atual].direita == -1) {
+                        se (proximo_livre >= TAM) {
+                            terminou = verdadeiro;
+                        }
+                        senao {
+                            indice_novo = proximo_livre;
+
+                            arvore[indice_novo].chave = valor;
+                            arvore[indice_novo].esquerda = -1;
+                            arvore[indice_novo].direita = -1;
+                            arvore[indice_novo].nivel = nivel_atual + 1;
+
+                            arvore[atual].direita = indice_novo;
+
+                            proximo_livre = proximo_livre + 1;
+                            terminou = verdadeiro;
+                        }
+                    }
+                    senao {
+                        atual = arvore[atual].direita;
+                        nivel_atual = nivel_atual + 1;
+                    }
+                }
+                senao {
+                    terminou = verdadeiro;
+                }
+            }
+        }
+        
+        entrada(valor);
     }
 
-    int chaveMax = arvore[indiceMax].chave;
-    int nivelMax = arvore[indiceMax].nivel;
-    int chaveMin = arvore[indiceMin].chave;
-    int nivelMin = arvore[indiceMin].nivel;
+    se (raiz == -1) {
+        saida("Arvore vazia!\n");
+    } senao {
+        Lista<int> fila = novo Lista<>()(TAM);
+        int inicio = 0;
+        int fim = 0;
 
-    saida("Minimo: ");
-    saida(texto(chaveMin));
-    saida(" no nivel ");
-    saida(texto(nivelMin));
-    saida("\n");
+        fila[fim] = raiz;
+        fim = fim + 1;
 
-    saida("Maximo: ");
-    saida(texto(chaveMax));
-    saida(" no nivel ");
-    saida(texto(nivelMax));
-    saida("\n");
+        saida("\n--- Impressao da arvore (nivel a nivel) ---\n");
 
-    # ===============================
-    # (D) Imprimir a árvore nível a nível
-    # ===============================
+        int i_esq;
+        int i_dir;
 
-    Lista<int> fila = novo Lista<>()(7);
-    Lista<int> niveis = novo Lista<>()(7);
+        enquanto (inicio < fim) {
+            int idx = fila[inicio];
+            inicio = inicio + 1;
 
-    int frente = 0;
-    int tras = 0;
+            i_esq = arvore[idx].esquerda;
+            i_dir = arvore[idx].direita;
 
-    # coloca a raiz na fila, nível 0
-    fila[tras] = raiz;
-    niveis[tras] = 0;
-    tras = tras + 1;
+            saida("No ");
+            saida(idx);
+            saida(" | Nivel ");
+            saida(arvore[idx].nivel);
+            saida(" | Chave: ");
+            saida(arvore[idx].chave);
 
-    int nivelAtual = 0;
+            saida(" | Esq: ");
+            se (i_esq == -1) {
+                saida(-1);
+            } senao {
+                saida(arvore[i_esq].chave);
+            }
 
-    saida("Arvore nivel a nivel:\n");
+            saida(" | Dir: ");
+            se (i_dir == -1) {
+                saida(-1);
+            } senao {
+                saida(arvore[i_dir].chave);
+            }
 
-    enquanto (frente < tras) {
-        int indiceNo = fila[frente];
-        int nivelNo = niveis[frente];
-        frente = frente + 1;
-
-        # quando mudar de nível, quebra linha
-        se (nivelNo != nivelAtual) {
             saida("\n");
-            nivelAtual = nivelNo;
+
+            se (i_esq != -1) {
+                fila[fim] = i_esq;
+                fim = fim + 1;
+            }
+
+            se (i_dir != -1) {
+                fila[fim] = i_dir;
+                fim = fim + 1;
+            }
         }
 
-        # imprime a chave do nó
-        int valorAtual = arvore[indiceNo].chave;
-        saida(texto(valorAtual));
-        saida(" ");
+        int idx_min = raiz;
 
-        # enfileira filho esquerdo, se existir
-        se (arvore[indiceNo].esquerda != -1) {
-            fila[tras] = arvore[indiceNo].esquerda;
-            niveis[tras] = nivelNo + 1;
-            tras = tras + 1;
+        enquanto (arvore[idx_min].esquerda != -1) {
+            idx_min = arvore[idx_min].esquerda;
         }
 
-        # enfileira filho direito, se existir
-        se (arvore[indiceNo].direita != -1) {
-            fila[tras] = arvore[indiceNo].direita;
-            niveis[tras] = nivelNo + 1;
-            tras = tras + 1;
+        saida("\nMenor chave da arvore: ");
+        saida(arvore[idx_min].chave);
+        saida(" (nivel ");
+        saida(arvore[idx_min].nivel);
+        saida(")\n");
+
+        int idx_max = raiz;
+
+        enquanto (arvore[idx_max].direita != -1) {
+            idx_max = arvore[idx_max].direita;
         }
+
+        saida("Maior chave da arvore: ");
+        saida(arvore[idx_max].chave);
+        saida(" (nivel ");
+        saida(arvore[idx_max].nivel);
+        saida(")\n");
     }
-
-    saida("\n");
 }
