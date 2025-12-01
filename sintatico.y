@@ -33,12 +33,10 @@ Stack labels_stack;
 /* %token <iValue>  */
 %token INTEGER LIST STRUCT CONTINUE WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT ADD REMOVE
 
-/* %type <rec> access_assign 
-%type <rec> var_assign list_assign if return while do_while for expression write switch list_push list_remove 
-%type <rec> unary access_suffix_list access access_suffix
-%type <rec> int_literal float_literal composite_assign_operator comparison_expression 
-%type <rec> relation_expression arithmatic_expression factor func_call read args if_complement else_if cases
-%type <rec> for_initialization for_step input_args */
+/*%type <rec> list_assign do_while write switch list_push list_remove 
+%type <rec> access 
+%type <rec> composite_assign_operator 
+%type <rec> cases*/
 
 %type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list type_conversion
 %type <rec> func_declaration func_declaration_list general_stmt_list type list_types return
@@ -187,6 +185,17 @@ func_declaration_list    : func_declaration
 
 func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func"); } stmt_list '}' {pop(&stack);}
                     {
+                         table_entry* entry = table_get_entry_object(sym_table, $3);
+                          if (entry != NULL) {
+                              // Variable was already initialized
+                              printf("Erro! A variável %s já foi declarada!\n", $3);
+                         }
+                         else {
+                              // initilize variable
+                              table_set(sym_table, $3, $1->type, EFUNC, NULL);
+                              entry = table_get_entry_object(sym_table, $3);
+                         }
+
                          char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $9->code, "}\n"};
                          int list_size = 8;
                          char * s = cat(str_list, list_size);
@@ -1233,14 +1242,14 @@ if : IF '(' expression ')' '{' {push(&stack, "if"); push(&labels_stack, "out_if_
 
           char * str_list[] = {
                "if (!(", $3->code /*expression*/, ")) goto ", label_else, ";\n",
-               $7->code, //stmt_list
+               "{\n\t", $7->code, "}\n", //stmt_list
                "goto ", label_out, ";\n",
                label_else, ":\n",
                $10->code,//if_complement
                label_out, ":\n"
           };
 
-          int list_size = 14;
+          int list_size = 16;
           char * s = cat(str_list, list_size);
           
           freeRecord($3);
@@ -1256,8 +1265,16 @@ if : IF '(' expression ')' '{' {push(&stack, "if"); push(&labels_stack, "out_if_
 if_complement : ELSE '{' {push(&stack, "else");} stmt_list {pop(&stack);} '}'
                {
                     //OK
-                    $$ = createRecord($4->code, EUNTYPED);
+                    char * str_list[] = {
+                         "{\n\t", $4->code, "}\n" //stmt_list
+                    };
 
+                    int list_size = 3;
+                    char * s = cat(str_list, list_size);
+
+                    $$ = createRecord(s, EUNTYPED);
+                    
+                    free(s);
                     freeRecord($4);
                } 
               | else_if
@@ -1266,8 +1283,8 @@ if_complement : ELSE '{' {push(&stack, "else");} stmt_list {pop(&stack);} '}'
               | else_if ELSE '{' {push(&stack, "else_if");} stmt_list {pop(&stack);} '}'
               {
                     //OK
-                    char * str_list[] = {$1->code, $5->code, "\n"};
-                    int list_size = 3;
+                    char * str_list[] = {$1->code, "{\n\t", $5->code, "}", "\n"};
+                    int list_size = 5;
                     char * s = cat(str_list, list_size);
 
                     freeRecord($1);
@@ -1288,11 +1305,11 @@ else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stm
                char * str_list[] = {
                     $1->code,
                     "if (!(", $4->code/*expression*/, ")) goto ", label_out_else_if2, ";\n",
-                    $8->code, "\n",//stmt_list
+                    "{\n\t", $8->code, "}\n",//stmt_list
                     "_PLACEHOLDER_OUT_;\n",
                     label_out_else_if2, ":\n"
                };
-               int list_size = 11;
+               int list_size = 12;
                char * s = cat(str_list, list_size);
 
                $$ = createRecord(s, EUNTYPED);
@@ -1308,11 +1325,11 @@ else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stm
                char* label_out_else_if = new_label("out_else_if");
                char * str_list[] = {
                     "if (!(", $3->code/*expression*/, ")) goto ", label_out_else_if, ";\n",
-                    $7->code, "\n",//stmt_list
+                    "{\n\t", $7->code, "}\n",//stmt_list
                     "_PLACEHOLDER_OUT_;\n",
                     label_out_else_if, ":\n"
                };
-               int list_size = 10;
+               int list_size = 11;
                char * s = cat(str_list, list_size);
 
                $$ = createRecord(s, EUNTYPED);
@@ -1355,11 +1372,11 @@ while : WHILE '(' expression ')' '{' {push(&stack, "while");} stmt_list {pop(&st
      char * str_list[] = {
           label_start, ":\n",
           "if (!(", $3->code/*expression*/, ")) goto ", label_end, ";\n",
-          $7->code, "\n",//stmt_list
+          "{\n\t", $7->code, "}\n",//stmt_list
           "goto ", label_start, ";\n",
           label_end, ":\n"
           };
-     int list_size = 14;
+     int list_size = 15;
      char * s = cat(str_list, list_size);
      
      freeRecord($3);
@@ -1417,12 +1434,12 @@ for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' {push(&stac
                $3->code, ";\n",//for_initialization
                label_start, ":\n",
                "if (!(", $5->code/*expression*/, ")) goto ", label_out, ";\n",
-               $11->code, "\n",//stmt_list
+               "{", $11->code, "}\n",//stmt_list
                $7->code, ";\n",//for_step
                "goto ", label_start, ";\n",
                label_out, ":\n"
           };
-          int list_size = 18;
+          int list_size = 19;
           char * s = cat(str_list, list_size);
           
           $$ = createRecord(s, EUNTYPED);
