@@ -169,7 +169,7 @@ static const char* table_set_entry(table_entry* entries, int capacity, const cha
     }
 }
 
-const char* table_set(table* table, const char* key, type type, structure structure, void* value) {
+const char* table_set(table* table, const char* key, const char* original_name, type type, structure structure, void* value) {
     /* if length will exceed half of current capacity, expand it. */
     if (table->length >= table->capacity / 2) {
         if (!table_expand(table)) {
@@ -177,6 +177,7 @@ const char* table_set(table* table, const char* key, type type, structure struct
         }
     }
 
+    table->length++;
     return table_set_entry(table->entries, table->capacity, key, type, structure, value, &table->length);
 }
 
