@@ -29,7 +29,7 @@ int func main() {
 
     mdc(n, m, resultado); 
 
-    saida("O MDC e: ");
+    saida("O MDC é: ");
     
     saida(texto(resultado[0])+ "\n");
 
