@@ -33,12 +33,10 @@ Stack labels_stack;
 /* %token <iValue>  */
 %token INTEGER LIST STRUCT CONTINUE WHILE FLOAT STRING DO BREAK RETURN FOR VOID BOOLEAN FUNCTION NEW SUM_ASSIGN SUBTRACTION_ASSIGN TIMES_ASSIGN DIVISION_ASSIGN AND OR EQUALS DIFF GTE LTE INT_DIVISION UNARY_SUM UNARY_SUBTRACTION IF ELSE ELSE_IF INPUT OUTPUT SWITCH CASE DEFAULT ADD REMOVE
 
-/* %type <rec> access_assign 
-%type <rec> var_assign list_assign if return while do_while for expression write switch list_push list_remove 
-%type <rec> unary access_suffix_list access access_suffix
-%type <rec> int_literal float_literal composite_assign_operator comparison_expression 
-%type <rec> relation_expression arithmatic_expression factor func_call read args if_complement else_if cases
-%type <rec> for_initialization for_step input_args */
+/*%type <rec> list_assign do_while write switch list_push list_remove 
+%type <rec> access 
+%type <rec> composite_assign_operator 
+%type <rec> cases*/
 
 %type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list type_conversion
 %type <rec> func_declaration func_declaration_list general_stmt_list type list_types return
@@ -187,7 +185,20 @@ func_declaration_list    : func_declaration
 
 func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func"); } stmt_list '}' {pop(&stack);}
                     {
-                         table_set(sym_table, $3, $1->type, EPRIMARY, NULL);
+                         char* key = strdup(peek(&stack));
+                         strcat(key, "@");
+                         strcat(key, $3);
+
+                         table_entry* entry = table_get_entry_object(sym_table, key);
+                          if (entry != NULL) {
+                              // Variable was already initialized
+                              printf("Erro! A função %s já foi declarada!\n", $3);
+                         }
+                         else {
+                              // initilize variable
+                              table_set(sym_table, key, $3, $1->type, EFUNC, NULL);
+                              entry = table_get_entry_object(sym_table, key);
+                         }
 
                          char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $9->code, "}\n"};
                          int list_size = 8;
@@ -199,6 +210,7 @@ func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"fu
                          
                          $$ = createRecord(s, EUNTYPED);
                          free(s);
+                         free(key);
                     }
 ;
 
@@ -339,16 +351,42 @@ params_list :
 //TODO: EXPRESSIONS
 var_initialization  : primitive_type ID '=' expression
                     {
-                         // VERIFICATIONS
-                         table_entry* entry = table_get_entry_object(sym_table, $2);
+                         table_entry* entry = NULL;
+                         int index = stack.top;
+                         while(index >= 0){
+                              char* strStack = strdup(peek_position(&stack, index));
+                              
+                              if(strStack != NULL){
+                                   char * str_list[] = {strStack, "@", $2};
+                                   int list_size = 3;
+                                   char * key = cat(str_list, list_size);
+                                   entry = table_get_entry_object(sym_table, key);
+
+                                   if(entry != NULL){
+                                        break;
+                                   }
+
+                                   free(key);
+                              }
+                              
+                              free(strStack);
+                              index--;
+                         }
+
                          if (entry != NULL) {
                               // Variable was already initialized
                               printf("Erro! A variável %s já foi declarada!\n", $2);
                          }
                          else {
                               // initilize variable
-                              table_set(sym_table, $2, $1->type, EPRIMARY, NULL);
-                              entry = table_get_entry_object(sym_table, $2);
+                              char * str_list[] = {strdup(peek(&stack)), "@", $2};
+                              int list_size = 3;
+                              char * key = cat(str_list, list_size);
+
+                              table_set(sym_table, key, $2, $1->type, EPRIMARY, NULL);
+                              entry = table_get_entry_object(sym_table, key);
+
+                              free(key);
                          }
 
                          //TODO: permitir coersão de inteiro para real?
@@ -375,14 +413,47 @@ var_initialization  : primitive_type ID '=' expression
 // TODO
 var_declaration  : primitive_type ID
                     {
+                         table_entry* entry = NULL;
+                         int index = stack.top;
+                         while(index >= 0){
+                              char* strStack = strdup(peek_position(&stack, index));
+                              
+                              if(strStack != NULL){
+                                   char * str_list[] = {strStack, "@", $2};
+                                   int list_size = 3;
+                                   char * key = cat(str_list, list_size);
+
+                                   entry = table_get_entry_object(sym_table, key);
+
+                                   if(entry != NULL){
+                                        break;
+                                   }
+                                   
+                                   free(key);
+                              }
+                              
+                              free(strStack);
+                              index--;
+                         }
+
+                         if (entry != NULL) {
+                              // Variable was already initialized
+                              printf("Erro! A variável %s já foi declarada!\n", $2);
+                         }
+                         else {
+                              // initilize variable
+                              char* key = strdup(peek(&stack));
+                              strcat(key, "@");
+                              strcat(key, $2);
+                              table_set(sym_table, key, $2, $1->type, EPRIMARY, NULL);
+                              free(key);
+                         }
+                         
                          //int exemplo
                          //int exemplo
                          char * str_list[] = {$1->code, $2};
                          int list_size = 2;
                          char * s = cat(str_list, list_size);
-                         
-                         table_set(sym_table, $2, $1->type, EPRIMARY, NULL);
-
                          $$ = createRecord(s, $1->type);
 
                          freeRecord($1);
@@ -399,6 +470,42 @@ var_declaration  : primitive_type ID
                     }
                     | ID ID
                     {
+                         table_entry* entry = NULL;
+                         int index = stack.top;
+                         while(index >= 0){
+                              char* strStack = strdup(peek_position(&stack, index));
+                              
+                              if(strStack != NULL){
+                                   char * str_list[] = {strStack, "@", $2};
+                                   int list_size = 3;
+                                   char * key = cat(str_list, list_size);
+
+                                   entry = table_get_entry_object(sym_table, key);
+
+                                   if(entry != NULL){
+                                        break;
+                                   }
+                                   
+                                   free(key);
+                              }
+                              
+                              free(strStack);
+                              index--;
+                         }
+
+                         if (entry != NULL) {
+                              // Variable was already initialized
+                              printf("Erro! A variável %s já foi declarada!\n", $2);
+                         }
+                         else {
+                              // initilize variable
+                              char* key = strdup(peek(&stack));
+                              strcat(key, "@");
+                              strcat(key, $2);
+                              table_set(sym_table, key, $2, UNDEFINED_TYPE, UNDEFINED_STRUCTURE, NULL);
+                              free(key);
+                         }
+
                          char * str_list[] = {"struct ", $1, " ", $2};
                          int list_size = 4;
                          char * s = cat(str_list, list_size);
@@ -437,13 +544,48 @@ var_declaration_list     : var_declaration
 
 list_declaration :  list_types ID
                     {
+                         // printf("TABLE SIZE: %d\n", stack.top);
+                         table_entry* entry = NULL;
+                         int index = stack.top;
+                         while(index >= 0){
+                              char* strStack = strdup(peek_position(&stack, index));
+                              
+                              if(strStack != NULL){
+                                   char * str_list[] = {strStack, "@", $2};
+                                   int list_size = 3;
+                                   char * key = cat(str_list, list_size);
+
+                                   entry = table_get_entry_object(sym_table, key);
+
+                                   if(entry != NULL){
+                                        break;
+                                   }
+                                   free(key);
+                              }
+
+                              free(strStack);
+                              index--;
+                         }
+
+                         if (entry != NULL) {
+                              // Variable was already initialized
+                              printf("Erro! A variável %s já foi declarada!\n", $2);
+                         }
+                         else {
+                              // initilize variable
+                              char* key = strdup(peek(&stack));
+                              strcat(key, "@");
+                              strcat(key, $2);
+                              table_set(sym_table, key, $2, $1->type, ELIST, NULL);
+                              entry = table_get_entry_object(sym_table, key);
+                              entry->size = 0;
+
+                              free(key);
+                         }
+
                          char * str_list[] = {$1->code, $2};
                          int list_size = 2;
                          char * s = cat(str_list, list_size);
-
-                         table_set(sym_table, $2, $1->type, ELIST, NULL);
-                         table_entry* entry = table_get_entry_object(sym_table, $2);
-                         entry->size = 0;
                          
                          $$ = createRecord(s, $1->type);
                          $$->structure = $1->structure;
@@ -516,7 +658,6 @@ list_initialization : list_declaration '=' NEW LIST '<' '>' '(' ')'
                          //table_set(sym_table, $5, $3->type, ELIST, NULL);
                          // table_entry* entry = table_get_entry_object(sym_table, $5);
                          // entry->size = 0;
-
                          char * str_list[] = {
                               $1->code, " = malloc(sizeof(", $1->type_string, ") * (", $10->code, "));\n"
                          };
@@ -745,6 +886,7 @@ float_literal  : FLOAT_LITERAL
 
 primitive_type : INTEGER
                {
+                    // printf("A3\n");
                     $$ = createRecord("int ",EINTEGER);
                }
                | FLOAT
@@ -790,7 +932,28 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
 var_assign : ID '=' expression
            {
                // VERIFICATIONS
-               table_entry* entry = table_get_entry_object(sym_table, $1);
+               table_entry* entry = NULL;
+               int index = stack.top;
+               while(index >= 0){
+                    char* strStack = strdup(peek_position(&stack, index));
+                    
+                    if(strStack != NULL){
+                         char * str_list[] = {strStack, "@", $1};
+                         int list_size = 3;
+                         char * key = cat(str_list, list_size);
+
+                         entry = table_get_entry_object(sym_table, key);
+
+                         if(entry != NULL){
+                              break;
+                         }
+                         free(key);
+                    }
+                    
+                    free(strStack);
+                    index--;
+               }
+
                if (entry == NULL) {
                     // Variable was not initialized
                     printf("Erro! A variável %s não foi declarada!\n", $1);
@@ -1093,7 +1256,28 @@ unary : '-' unary
       | ID UNARY_SUM
       {
           // VERIFICATIONS
-          table_entry* entry = table_get_entry_object(sym_table, $1);
+          table_entry* entry = NULL;
+          int index = stack.top;
+          while(index >= 0){
+               char* strStack = strdup(peek_position(&stack, index));
+               
+               if(strStack != NULL){
+                    char * str_list[] = {strStack, "@", $1};
+                    int list_size = 3;
+                    char * key = cat(str_list, list_size);
+
+                    entry = table_get_entry_object(sym_table, key);
+
+                    if(entry != NULL){
+                         break;
+                    }
+                    free(key);
+               }
+               
+               free(strStack);
+               index--;
+          }
+
           type entry_type = UNDEFINED_TYPE;
           if (entry == NULL) {
                // Variable was not initialized
@@ -1144,8 +1328,28 @@ unary : '-' unary
       }
       | ID
       {
-          // VERIFICATIONS
-          table_entry* entry = table_get_entry_object(sym_table, $1);
+          table_entry* entry = NULL;
+          int index = stack.top;
+          while(index >= 0){
+               char* strStack = strdup(peek_position(&stack, index));
+               
+               if(strStack != NULL){
+               char * str_list[] = {strStack, "@", $1};
+               int list_size = 3;
+               char * key = cat(str_list, list_size);
+
+               entry = table_get_entry_object(sym_table, key);
+
+                    if(entry != NULL){
+                         break;
+                    }
+                    free(key);
+               }
+               
+               free(strStack);
+               index--;
+          }
+
           type entry_type = UNDEFINED_TYPE;
           if (entry == NULL) {
                // Variable was not initialized
@@ -1193,7 +1397,28 @@ unary : '-' unary
       | ID access_suffix_list
       {
           // VERIFICATIONS
-          table_entry* entry = table_get_entry_object(sym_table, $1);
+          table_entry* entry = NULL;
+          int index = stack.top;
+          while(index >= 0){
+               char* strStack = strdup(peek_position(&stack, index));
+               
+               if(strStack != NULL){
+                    char * str_list[] = {strStack, "@", $1};
+                    int list_size = 3;
+                    char * key = cat(str_list, list_size);
+
+                    entry = table_get_entry_object(sym_table, key);
+
+                    if(entry != NULL){
+                         break;
+                    }
+                    free(key);
+               }
+               
+               free(strStack);
+               index--;
+          }
+          
           if (entry == NULL) {
                // Variable was already initialized
                printf("Erro! A variável %s não foi declarada!\n", $1);
@@ -1217,16 +1442,42 @@ unary : '-' unary
 
 func_call : ID '(' args ')'
           {
+               // VERIFICATIONS
+               table_entry* entry = NULL;
+               int index = stack.top;
+               while(index >= 0){
+                    char* strStack = strdup(peek_position(&stack, index));
+
+                    if(strStack != NULL){
+                         char * str_list[] = {strStack, "@", $1};
+                         int list_size = 3;
+                         char * key = cat(str_list, list_size);
+
+                         entry = table_get_entry_object(sym_table, key);
+
+                         if(entry != NULL){
+                              break;
+                         }
+                         free(key);
+                    }
+
+                    free(strStack);
+                    index--;
+               }
+
+               if (entry == NULL) {
+                    // Function was not initialized
+                    printf("Erro! A função %s não foi declarada!\n", $1);
+               }
+               // =============
+
                char * str_list[] = {$1, "(", $3->code, ")"};
                int list_size = 4;
                char * s = cat(str_list, list_size);
                
-               table_entry* entry = table_get_entry_object(sym_table, $1);
                type t = EUNTYPED;
                if(entry != NULL) {
                     t = entry->type;
-               } else {
-                    printf("Erro! Função %s não declarada!\n", $1);
                }
 
                $$ = createRecord(s, t);
@@ -1278,14 +1529,14 @@ if : IF '(' expression ')' '{' {push(&stack, "if"); push(&labels_stack, "out_if_
 
           char * str_list[] = {
                "if (!(", $3->code /*expression*/, ")) goto ", label_else, ";\n",
-               $7->code, //stmt_list
+               "{\n\t", $7->code, "}\n", //stmt_list
                "goto ", label_out, ";\n",
                label_else, ":\n",
                $10->code,//if_complement
                label_out, ":\n"
           };
 
-          int list_size = 14;
+          int list_size = 16;
           char * s = cat(str_list, list_size);
           
           freeRecord($3);
@@ -1301,8 +1552,16 @@ if : IF '(' expression ')' '{' {push(&stack, "if"); push(&labels_stack, "out_if_
 if_complement : ELSE '{' {push(&stack, "else");} stmt_list {pop(&stack);} '}'
                {
                     //OK
-                    $$ = createRecord($4->code, EUNTYPED);
+                    char * str_list[] = {
+                         "{\n\t", $4->code, "}\n" //stmt_list
+                    };
 
+                    int list_size = 3;
+                    char * s = cat(str_list, list_size);
+
+                    $$ = createRecord(s, EUNTYPED);
+                    
+                    free(s);
                     freeRecord($4);
                } 
               | else_if
@@ -1311,8 +1570,8 @@ if_complement : ELSE '{' {push(&stack, "else");} stmt_list {pop(&stack);} '}'
               | else_if ELSE '{' {push(&stack, "else_if");} stmt_list {pop(&stack);} '}'
               {
                     //OK
-                    char * str_list[] = {$1->code, $5->code, "\n"};
-                    int list_size = 3;
+                    char * str_list[] = {$1->code, "{\n\t", $5->code, "}", "\n"};
+                    int list_size = 5;
                     char * s = cat(str_list, list_size);
 
                     freeRecord($1);
@@ -1333,11 +1592,11 @@ else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stm
                char * str_list[] = {
                     $1->code,
                     "if (!(", $4->code/*expression*/, ")) goto ", label_out_else_if2, ";\n",
-                    $8->code, "\n",//stmt_list
+                    "{\n\t", $8->code, "}\n",//stmt_list
                     "_PLACEHOLDER_OUT_;\n",
                     label_out_else_if2, ":\n"
                };
-               int list_size = 11;
+               int list_size = 12;
                char * s = cat(str_list, list_size);
 
                $$ = createRecord(s, EUNTYPED);
@@ -1353,11 +1612,11 @@ else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stm
                char* label_out_else_if = new_label("out_else_if");
                char * str_list[] = {
                     "if (!(", $3->code/*expression*/, ")) goto ", label_out_else_if, ";\n",
-                    $7->code, "\n",//stmt_list
+                    "{\n\t", $7->code, "}\n",//stmt_list
                     "_PLACEHOLDER_OUT_;\n",
                     label_out_else_if, ":\n"
                };
-               int list_size = 10;
+               int list_size = 11;
                char * s = cat(str_list, list_size);
 
                $$ = createRecord(s, EUNTYPED);
@@ -1400,11 +1659,11 @@ while : WHILE '(' expression ')' '{' {push(&stack, "while");} stmt_list {pop(&st
      char * str_list[] = {
           label_start, ":\n",
           "if (!(", $3->code/*expression*/, ")) goto ", label_end, ";\n",
-          $7->code, "\n",//stmt_list
+          "{\n\t", $7->code, "}\n",//stmt_list
           "goto ", label_start, ";\n",
           label_end, ":\n"
           };
-     int list_size = 14;
+     int list_size = 15;
      char * s = cat(str_list, list_size);
      
      freeRecord($3);
@@ -1453,28 +1712,28 @@ for_step : var_assign
          }
          ;
 
-for : FOR '(' for_initialization ',' expression ',' for_step ')' '{' {push(&stack, "for");} stmt_list {pop(&stack);} '}'
+for : FOR {push(&stack, "for");} '(' for_initialization ',' expression ',' for_step ')' '{' stmt_list {pop(&stack);} '}'
      {
           char* label_start = new_label("for_start");
           char* label_out = new_label("for_out");
 
           char * str_list[] = {
-               $3->code, ";\n",//for_initialization
+               "{\n\t", $4->code, ";\n",//for_initialization
                label_start, ":\n",
-               "if (!(", $5->code/*expression*/, ")) goto ", label_out, ";\n",
-               $11->code, "\n",//stmt_list
-               $7->code, ";\n",//for_step
-               "goto ", label_start, ";\n",
+               "if (!(", $6->code/*expression*/, ")) goto ", label_out, ";\n",
+               "{", $11->code, "}\n",//stmt_list
+               $8->code, ";\n",//for_step
+               "goto ", label_start, ";\n}\n",
                label_out, ":\n"
           };
-          int list_size = 18;
+          int list_size = 20;
           char * s = cat(str_list, list_size);
           
           $$ = createRecord(s, EUNTYPED);
 
-          freeRecord($3);
-          freeRecord($5);
-          freeRecord($7);
+          freeRecord($4);
+          freeRecord($6);
+          freeRecord($8);
           freeRecord($11);
           free(s);
      }
