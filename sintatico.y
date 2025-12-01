@@ -192,7 +192,7 @@ func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"fu
                          table_entry* entry = table_get_entry_object(sym_table, key);
                           if (entry != NULL) {
                               // Variable was already initialized
-                              printf("Erro! A variável %s já foi declarada!\n", key);
+                              printf("Erro! A função %s já foi declarada!\n", $3);
                          }
                          else {
                               // initilize variable
