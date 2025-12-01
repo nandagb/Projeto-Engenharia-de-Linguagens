@@ -919,7 +919,7 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
                          $$->structure = ESTRUCT;
                          $$->type_string = strdup($2);
 
-                         table_set(sym_table, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
+                         table_set(sym_table, key, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
 
                          free($2);
                          freeRecord($5);
