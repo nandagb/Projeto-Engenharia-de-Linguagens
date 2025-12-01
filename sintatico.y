@@ -181,7 +181,7 @@ func_declaration_list    : func_declaration
                          }
 ;
 
-func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func"); } stmt_list '}' {pop(&stack);}
+func_declaration    : type FUNCTION ID { push(&stack,"func"); } '(' params_list ')' '{' stmt_list '}' {pop(&stack);}
                     {
                          char * key_list[] = {strdup(peek(&stack)), "@", $3};
                          char * key = cat(key_list, 3);
@@ -197,12 +197,12 @@ func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"fu
                               entry = table_get_entry_object(sym_table, key);
                          }
 
-                         char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $9->code, "}\n"};
+                         char * str_list[] = {$1->code, $3, "(", $6->code, ")", "{\n\t", $9->code, "}\n"};
                          int list_size = 8;
                          char * s = cat(str_list, list_size);
                          
                          freeRecord($1);
-                         freeRecord($5);
+                         freeRecord($6);
                          freeRecord($9);
                          
                          $$ = createRecord(s, EUNTYPED);
