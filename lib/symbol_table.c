@@ -41,7 +41,7 @@ void table_destroy(table* table) {
             curr = aux;
         }
 
-        if (table->entries[i].key) {
+        if (table->entries[i].key != NULL) {
             free(table->entries[i].key);
         }
     }
