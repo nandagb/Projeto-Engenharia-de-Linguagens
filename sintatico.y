@@ -843,24 +843,9 @@ float_literal  : FLOAT_LITERAL
 
           freeRecord($1);
      }
-     //| LIST '<' list_types '>'
-     /* {
-          ESTA DECLARAÇÃO NÃO VAI FUNCIONAR
-          TODO: Verficar como faz lista em C
-          char * str_list[] = {"list","<", $3->code, ">"};
-          int list_size = 4;
-          char * s = cat(str_list, list_size);
-
-          for(int i = 0; i < list_size; i++){
-               free(str_list[i]);
-          }
-          free($3);
-
-          $$ = createRecord(s,EUNTYPED);
-          free(s);
-     } */
      | ID
      {
+          //ADD KEY HERE
           char * str_list[] = {"struct ", $1, " "};
           int list_size = 3;
           char * s = cat(str_list, list_size);
