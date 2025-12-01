@@ -40,6 +40,9 @@ char * type_to_string(type t){
   else if(t == EVOID){
     return "vazio";
   }
+  else if(t == ESTRUCT_TYPE){
+    return "struct";
+  }
   else if(t == EUNTYPED || t == UNDEFINED_TYPE){
     return "indefinido";
   }

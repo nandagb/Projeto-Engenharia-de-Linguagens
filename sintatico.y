@@ -42,12 +42,12 @@ Stack labels_stack;
 
 %type <rec> primitive_type var_declaration params_list stmt general_stmt stmt_list type_conversion
 %type <rec> func_declaration func_declaration_list general_stmt_list type list_types return
-%type <rec> list_declaration list_initialization struct_declaration struct_var_declaration_list var_declaration_list /*list_push*/ access_suffix access_suffix_list access_assign
+%type <rec> list_declaration list_initialization struct_declaration var_declaration_list /*list_push*/ access_suffix access_suffix_list access_assign
 %type <rec> var_initialization expression comparison_expression relation_expression
 %type <rec> arithmatic_expression factor unary int_literal float_literal func_call args
 %type <rec> var_assign write
 
-%type <rec> if if_complement else_if while read input_args for for_initialization for_step
+%type <rec> if if_complement else_if while read input_args for for_initialization for_step write_args
 
 %start prog
  
@@ -187,6 +187,8 @@ func_declaration_list    : func_declaration
 
 func_declaration    : type FUNCTION ID '(' params_list ')' '{' { push(&stack,"func"); } stmt_list '}' {pop(&stack);}
                     {
+                         table_set(sym_table, $3, $1->type, EPRIMARY, NULL);
+
                          char * str_list[] = {$1->code, $3, "(", $5->code, ")", "{\n\t", $9->code, "}\n"};
                          int list_size = 8;
                          char * s = cat(str_list, list_size);
@@ -400,9 +402,13 @@ var_declaration  : primitive_type ID
                          char * str_list[] = {"struct ", $1, " ", $2};
                          int list_size = 4;
                          char * s = cat(str_list, list_size);
-                         
-                         $$ = createRecord(s, EUNTYPED);
-                         
+
+                         table_set(sym_table, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
+
+                         $$ = createRecord(s, ESTRUCT_TYPE);
+                         $$->structure = ESTRUCT;
+                         $$->type_string = strdup(s);
+
                          free($1);
                          free($2);
                          free(s);
@@ -637,13 +643,19 @@ access_suffix : '[' expression ']'
                     freeRecord($2);
                     free(s);
                }
-               | '.' ID
+              | '.' ID
                {
                     char * str_list[] = {".", $2};
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
 
-                    $$ = createRecord(s, EUNTYPED);
+                    table_entry* entry = table_get_entry_object(sym_table, $2);
+                    type t = EUNTYPED;
+                    if (entry != NULL) {
+                         t = entry->type;
+                    }
+
+                    $$ = createRecord(s, t);
 
                     free($2);
                     free(s);
@@ -690,7 +702,6 @@ float_literal  : FLOAT_LITERAL
 
  type: primitive_type
      {
-          //printf("A10");
           $$ = createRecord($1->code,$1->type);
           free($1);
      }
@@ -718,10 +729,27 @@ float_literal  : FLOAT_LITERAL
           $$ = createRecord(s,EUNTYPED);
           free(s);
      } */
-     | STRUCT                                
-     /* {
-          $$ = createRecord("struct ",EUNTYPED);
-     } */
+     | ID
+     {
+          char * str_list[] = {"struct ", $1, " "};
+          int list_size = 3;
+          char * s = cat(str_list, list_size);
+
+          $$ = createRecord(s, ESTRUCT_TYPE);
+          $$->structure = ESTRUCT;
+          $$->type_string = strdup(s);
+
+          table_set(sym_table, $1, ESTRUCT_TYPE, ESTRUCT, NULL);
+
+          free($1);
+          free(s);
+     }
+     | STRUCT
+     {
+          $$ = createRecord("struct ", ESTRUCT_TYPE);
+          $$->structure = ESTRUCT;
+          $$->type_string = strdup("struct ");
+     }
 ;
 
 primitive_type : INTEGER
@@ -746,44 +774,27 @@ primitive_type : INTEGER
                }
 ;
 
-struct_declaration  : STRUCT ID '=' '{' struct_var_declaration_list '}'
-                    {
+struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
+                    {                         
+                         for(int i = 0; $5->code[i]; i++) {
+                              if($5->code[i] == ',') $5->code[i] = ';';
+                         }
+
                          char * str_list[] = {"struct ", $2, "{\n\t", $5->code, ";\n}"};
                          int list_size = 5;
                          char * s = cat(str_list, list_size);
 
-                         $$ = createRecord(s, EUNTYPED);
+                         $$ = createRecord(s, ESTRUCT_TYPE);
+                         $$->structure = ESTRUCT;
+                         $$->type_string = strdup($2);
+
+                         table_set(sym_table, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
 
                          free($2);
-                         free($5);
+                         freeRecord($5);
                          free(s);
                     }
-; 
-
-struct_var_declaration_list : var_declaration
-                            {
-                                char *str_list[] = { $1->code };
-                                int list_size = 1;
-                                char *s = cat(str_list, list_size);
-
-                                $$ = createRecord(s, EUNTYPED);
-
-                                freeRecord($1);
-                                free(s);
-                            }
-                            | struct_var_declaration_list ',' var_declaration
-                            {
-                                char *str_list[] = { $1->code, ";\n\t", $3->code };
-                                int list_size = 3;
-                                char *s = cat(str_list, list_size);
-
-                                $$ = createRecord(s, EUNTYPED);
-
-                                freeRecord($1);
-                                freeRecord($3);
-                                free(s);
-                            }
-;
+;	
 
 var_assign : ID '=' expression
            {
@@ -1078,7 +1089,17 @@ factor    : factor '*' unary
           }
 ;
  
-unary : ID UNARY_SUM
+unary : '-' unary
+      {
+           char * str_list[] = {"-", $2->code};
+           int list_size = 2;
+           char * s = cat(str_list, list_size);
+           
+           $$ = createRecord(s, $2->type);
+           freeRecord($2);
+           free(s);
+      }
+      | ID UNARY_SUM
       {
           // VERIFICATIONS
           table_entry* entry = table_get_entry_object(sym_table, $1);
@@ -1192,7 +1213,7 @@ unary : ID UNARY_SUM
           int list_size = 2;
           char * s = cat(str_list, list_size);
 
-          $$ = createRecord(s, entry->type);
+          $$ = createRecord(s, $2->type);
           freeRecord($2);
           free(s);
       }
@@ -1209,8 +1230,15 @@ func_call : ID '(' args ')'
                int list_size = 4;
                char * s = cat(str_list, list_size);
                
-               // TODO: pegar tipo do func_call pela tabela de simbolos de ID
-               $$ = createRecord(s, EUNTYPED);
+               table_entry* entry = table_get_entry_object(sym_table, $1);
+               type t = EUNTYPED;
+               if(entry != NULL) {
+                    t = entry->type;
+               } else {
+                    printf("Erro! Função %s não declarada!\n", $1);
+               }
+
+               $$ = createRecord(s, t);
 
                freeRecord($3);
                free(s);
@@ -1526,17 +1554,81 @@ type_conversion : primitive_type '(' expression ')'
                }
 ;
 
-write : OUTPUT '(' expression ')'                                                                   
+write : OUTPUT '(' write_args ')'
           {
-               char * str_list[] = {"printf(\"%s\", ", $3->code, ")"};
-               int list_size = 3;
+               char * str_list[] = {"printf(\"", $3->type_string, "\", ", $3->code, ")"};
+               int list_size = 5;
                char * s = cat(str_list, list_size);
                
                $$ = createRecord(s, EUNTYPED);
-
+               
+               free($3->type_string);
                freeRecord($3);
                free(s);
           }
+;
+
+write_args : expression
+           {
+                char* fmt;
+                char* code_str = $1->code;
+                char* final_code = code_str;
+                bool free_final = false;
+
+                if ($1->type == EINTEGER) fmt = "%d";
+                else if ($1->type == EFLOAT) fmt = "%f";
+                else if ($1->type == ESTRING) fmt = "%s";
+                else if ($1->type == EBOOL) {
+                     fmt = "%s";
+                     final_code = malloc(strlen(code_str) + 40);
+                     sprintf(final_code, "(%s ? \"verdadeiro\" : \"falso\")", code_str);
+                     free_final = true;
+                }
+                else fmt = ""; // Void or other?
+
+                $$ = createRecord(final_code, EUNTYPED);
+                $$->type_string = strdup(fmt);
+
+                if (free_final) free(final_code);
+                freeRecord($1);
+           }
+           | write_args ',' expression
+           {
+                char* fmt;
+                char* code_str = $3->code;
+                char* final_code = code_str;
+                bool free_final = false;
+
+                if ($3->type == EINTEGER) fmt = "%d";
+                else if ($3->type == EFLOAT) fmt = "%f";
+                else if ($3->type == ESTRING) fmt = "%s";
+                else if ($3->type == EBOOL) {
+                     fmt = "%s";
+                     final_code = malloc(strlen(code_str) + 40);
+                     sprintf(final_code, "(%s ? \"verdadeiro\" : \"falso\")", code_str);
+                     free_final = true;
+                }
+                else fmt = "";
+
+                // Concatenate formats
+                char* new_fmt = malloc(strlen($1->type_string) + strlen(fmt) + 1);
+                strcpy(new_fmt, $1->type_string);
+                strcat(new_fmt, fmt);
+
+                // Concatenate codes
+                char * str_list[] = {$1->code, ", ", final_code};
+                int list_size = 3;
+                char * s = cat(str_list, list_size);
+
+                $$ = createRecord(s, EUNTYPED);
+                $$->type_string = new_fmt;
+
+                if (free_final) free(final_code);
+                free($1->type_string);
+                freeRecord($1);
+                freeRecord($3);
+                free(s);
+           }
 ;
 
 input_args : ID

@@ -1,0 +1,115 @@
+Registro rational_t = {
+    int numerador,
+    int denominador
+};
+
+rational_t func cria_racional(int a, int b) {
+    rational_t r;
+    se (b == 0) {
+        saida("denominador não pode ser igual a zero \n");
+        r.numerador = 0;
+        r.denominador = 1;
+        retorne r;
+    }
+    senao{
+        r.numerador = a;
+        r.denominador = b;
+        retorne r;
+    }
+}
+
+logico func racionais_iguais(rational_t r1, rational_t r2) {
+    int lhs;
+    int rhs;
+
+    lhs = r1.numerador * r2.denominador;
+    rhs = r2.numerador * r1.denominador;
+
+    retorne lhs == rhs;
+}
+
+rational_t func soma_racional(rational_t r1, rational_t r2) {
+    rational_t r;
+
+    r.numerador = r1.numerador * r2.denominador + r2.numerador * r1.denominador;
+    r.denominador = r1.denominador * r2.denominador;
+
+    retorne r;
+}
+
+rational_t func nega_racional(rational_t r_in) {
+    rational_t r;
+
+    r.numerador = -r_in.numerador;
+    r.denominador = r_in.denominador;
+
+    retorne r;
+}
+
+rational_t func subtrai_racional(rational_t r1, rational_t r2) {
+    rational_t ny;
+    rational_t r;
+
+    ny = nega_racional(r2);
+    r  = soma_racional(r1, ny);
+
+    retorne r;
+}
+
+rational_t func multiplica_racional(rational_t r1, rational_t r2) {
+    rational_t r;
+
+    r.numerador = r1.numerador * r2.numerador;
+    r.denominador = r1.denominador * r2.denominador;
+
+    retorne r;
+}
+
+rational_t func inverso_racional(rational_t r_in) {
+    rational_t r;
+
+    r.numerador = r_in.denominador;
+    r.denominador = r_in.numerador;
+
+    retorne r;
+}
+
+rational_t func divide_racional(rational_t r1, rational_t r2) {
+    rational_t invy;
+    rational_t r;
+
+    invy = inverso_racional(r2);
+    r    = multiplica_racional(r1, invy);
+
+    retorne r;
+}
+
+vazio func main() {
+    rational_t r1;
+    rational_t r2;
+    rational_t s;
+    rational_t n;
+    rational_t d;
+    rational_t m;
+    rational_t inv;
+    logico eq;
+
+    r1 = cria_racional(1, 2);
+    r2 = cria_racional(2, 4);
+
+    eq = racionais_iguais(r1, r2);
+
+    s   = soma_racional(r1, r2);
+
+    n   = nega_racional(r1);
+    d   = subtrai_racional(r1, r2);
+    m   = multiplica_racional(r1, r2);
+    inv = inverso_racional(r1);
+
+    saida("Racionais iguais: ", eq, "\n");
+    saida("Soma: ", s.numerador, "/", s.denominador, "\n");
+    saida("Negacao: ", n.numerador, "/", n.denominador, "\n");
+    saida("Subtracao: ", d.numerador, "/", d.denominador, "\n");
+    saida("Multiplicacao: ", m.numerador, "/", m.denominador, "\n");
+    saida("Inverso: ", inv.numerador, "/", inv.denominador, "\n");
+}
