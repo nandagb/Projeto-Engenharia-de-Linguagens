@@ -794,7 +794,7 @@ int_literal : INT_LITERAL
                $$ = createRecord($1, EINTEGER);
                free($1);
             }
-            | '-' INT_LITERAL             
+            /*| '-' INT_LITERAL
             {
                // printf("\n\nA6: %s\n\n", $2);
                char * str_list[] = {"-", $2};
@@ -805,7 +805,7 @@ int_literal : INT_LITERAL
 
                $$ = createRecord(s, EINTEGER);
                free(s);
-            }
+            }*/
 ;
 
 float_literal  : FLOAT_LITERAL
@@ -813,7 +813,7 @@ float_literal  : FLOAT_LITERAL
                     $$ = createRecord($1, EFLOAT);
                     free($1);
                }
-               | '-' FLOAT_LITERAL
+               /*| '-' FLOAT_LITERAL
                {
                     char * str_list[] = {"-", $2};
                     int list_size = 2;
@@ -823,7 +823,7 @@ float_literal  : FLOAT_LITERAL
 
                     $$ = createRecord(s, EFLOAT);
                     free(s);
-               }
+               }*/
 ;
 
  type: primitive_type
