@@ -97,7 +97,7 @@ prog_options : func_declaration_list
      }
      | general_stmt_list func_declaration_list
      {
-          printf("A0: \n%s%s\n", $1->code, $2->code);
+          //printf("A0: \n%s%s\n", $1->code, $2->code);
           char * include_list[] = {"#include <stdbool.h>", "\n", "#include <stdlib.h>", "\n", "#include <stdio.h>", "\n", "#include <string.h>", "\n"};
           char * include_str = cat(include_list, 8);
           
@@ -137,7 +137,6 @@ general_stmt   : var_declaration
 
 general_stmt_list   : general_stmt ';'
                     {
-                         // printf("A1: %s\n", $1->code);
                          
                          char * str_list[] = {$1->code, ";\n"};
                          int list_size = 2;
@@ -150,7 +149,6 @@ general_stmt_list   : general_stmt ';'
                     }
                     | general_stmt_list general_stmt ';'
                     {
-                         // printf("A2: %s\n", $1->code);
                          
                          char * str_list[] = {$1->code, $2->code, ";\n"};
                          int list_size = 3;
@@ -542,7 +540,6 @@ var_declaration_list     : var_declaration
 
 list_declaration :  list_types ID
                     {
-                         // printf("TABLE SIZE: %d\n", stack.top);
                          table_entry* entry = NULL;
                          int index = stack.top;
                          while(index >= 0){
@@ -857,8 +854,12 @@ float_literal  : FLOAT_LITERAL
           $$->structure = ESTRUCT;
           $$->type_string = strdup(s);
 
-          table_set(sym_table, $1, $1, ESTRUCT_TYPE, ESTRUCT, NULL);
+          char * key_list[] = {$1};
+          char * key = cat(key_list, 1);
 
+          table_set(sym_table, key, $1, ESTRUCT_TYPE, ESTRUCT, NULL);
+
+          free(key);
           free($1);
           free(s);
      }
@@ -872,7 +873,6 @@ float_literal  : FLOAT_LITERAL
 
 primitive_type : INTEGER
                {
-                    // printf("A3\n");
                     $$ = createRecord("int ",EINTEGER);
                }
                | FLOAT
@@ -894,7 +894,7 @@ primitive_type : INTEGER
 ;
 
 struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
-                    {                         
+                    {
                          //declaration of new type
                          //CHECK IF THERE IS A STRUCT WITH THIS NAME ALREADY (if there is, duplicate error)
                          //ADD SCOPE LATER
@@ -911,8 +911,12 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
                          $$->structure = ESTRUCT;
                          $$->type_string = strdup($2);
 
-                         table_set(sym_table, $2, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
+                         char * key_list[] = {$2};
+                         char * key = cat(key_list, 2);
 
+                         table_set(sym_table, key, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
+
+                         free(key);
                          free($2);
                          freeRecord($5);
                          free(s);
@@ -1087,7 +1091,6 @@ relation_expression : relation_expression '>' arithmatic_expression
                     }
                     | arithmatic_expression
                     {
-                         // printf("A4: %s -> %d\n", $1->code, $1->type);
                          $$ = createRecord($1->code, $1->type);
                          freeRecord($1);
                     }
@@ -1305,8 +1308,6 @@ unary : '-' unary
       {
           // TODO: SOLVE THIS ERROR BELLOW
           // int teste = 2.1 / (4 +1)  *5; is parsing to int teste = 2.1 / (4 + 1) + 5;
-          
-          // printf("M-A1: %s\n", $2->code);
           char * str_list[] = {"(", $2->code, ")"};
           int list_size = 3;
           char * s = cat(str_list, list_size);
@@ -1371,7 +1372,6 @@ unary : '-' unary
       }
       | STRING_LITERAL
       {
-          //printf("\n\nA4: %s\n\n", $1);
           $$ = createRecord($1, ESTRING);
           free($1);
       }
@@ -1514,7 +1514,7 @@ if : IF '(' expression ')' '{' {push(&stack, "if"); push(&labels_stack, "out_if_
           // in case there are else_if
           char * replacement_list[] = {"goto ", label_out};
           char * replacement_string = cat(replacement_list, 2);
-          $10->code = replace_all($10->code, "_PLACEHOLDER_OUT_", replacement_string);
+          $10->code = strdup(replace_all($10->code, "_PLACEHOLDER_OUT_", replacement_string));
           //
 
           char * str_list[] = {
