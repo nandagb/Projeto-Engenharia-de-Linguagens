@@ -162,9 +162,10 @@ static const char* table_set_entry(table_entry* entries, int capacity, const cha
         entries[index].type = type;
         entries[index].structure = structure;
         entries[index].value = value;
-        
+        //ERROR: If table gets expanded, it won't pass the collision list values to the new table instance
+        entries[index].next = NULL;
 
-        return key;
+        return entries[index].key;
     }
 }
 
