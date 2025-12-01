@@ -46,6 +46,7 @@
 ">="                   { return(GTE); }
 "<="                   { return(LTE); }
 "//"                   { return(INT_DIVISION); }
+"%%"                   { return(DIV_LEFTOVER); }
 "++"                   { return(UNARY_SUM); }
 "--"                   { return(UNARY_SUBTRACTION); }
 "+="                   { return(SUM_ASSIGN); }
@@ -71,7 +72,7 @@
 ">"                    { return(yytext[0]); }
 "<"                    { return(yytext[0]); }
 ":"                    { return(yytext[0]); }
-“%”                    { return'%'; }
+"%"                    { return(yytext[0]); }
 
 "verdadeiro"             { yylval.sValue = strdup(yytext); return(BOOL_LITERAL);}
 "falso"                  { yylval.sValue = strdup(yytext); return(BOOL_LITERAL);}
