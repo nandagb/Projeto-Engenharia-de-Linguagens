@@ -845,7 +845,10 @@ float_literal  : FLOAT_LITERAL
      }
      | ID
      {
-          //ADD KEY HERE
+          // declaration of new variable of user defined type
+          //CHECK IF THERE IS A STRUCT WITH THIS NAME ALREADY (if not, type/declaration error)
+          //ADD SCOPE LATER
+          //ADD KEY HERE (for now key and original_name are the same, because theres no scope)
           char * str_list[] = {"struct ", $1, " "};
           int list_size = 3;
           char * s = cat(str_list, list_size);
@@ -854,7 +857,7 @@ float_literal  : FLOAT_LITERAL
           $$->structure = ESTRUCT;
           $$->type_string = strdup(s);
 
-          table_set(sym_table, $1, ESTRUCT_TYPE, ESTRUCT, NULL);
+          table_set(sym_table, $1, $1, ESTRUCT_TYPE, ESTRUCT, NULL);
 
           free($1);
           free(s);
@@ -892,6 +895,10 @@ primitive_type : INTEGER
 
 struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
                     {                         
+                         //declaration of new type
+                         //CHECK IF THERE IS A STRUCT WITH THIS NAME ALREADY (if there is, duplicate error)
+                         //ADD SCOPE LATER
+                         //ADD KEY HERE (for now key and original_name are the same, because theres no scope)
                          for(int i = 0; $5->code[i]; i++) {
                               if($5->code[i] == ',') $5->code[i] = ';';
                          }
@@ -904,7 +911,7 @@ struct_declaration  : STRUCT ID '=' '{' var_declaration_list '}'
                          $$->structure = ESTRUCT;
                          $$->type_string = strdup($2);
 
-                         table_set(sym_table, key, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
+                         table_set(sym_table, $2, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
 
                          free($2);
                          freeRecord($5);
