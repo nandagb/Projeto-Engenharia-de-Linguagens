@@ -38,30 +38,30 @@ vazio func main() {
       matriz1[i] = coluna1;
     }
 
-    repita (int n = 0, n < linhas2, n++) {
+    repita (int i = 0, i < linhas2, i++) {
         Lista<int> coluna2 = novo Lista<>()(colunas2);
-        repita (int o=0, o<colunas2, o++) {
+        repita (int j=0, j<colunas2, j++) {
             int x;
-            saida("Digite o valor da posição (" + texto(n) + ", " + texto(o) + ") da matriz 2: \n");
+            saida("Digite o valor da posição (" + texto(i) + ", " + texto(j) + ") da matriz 2: \n");
             entrada(x);
-            coluna2[o] = x;
+            coluna2[j] = x;
         }
 
-      matriz2[n] = coluna2;
+      matriz2[i] = coluna2;
     }
 
     saida("Matriz1: " + "\n");
-    repita (int l = 0, l < linhas1, l++) {
-        repita (int m=0, m < colunas1, m++) {
-            saida(texto(matriz1[l][m]) + " ");
+    repita (int i = 0, i < linhas1, i++) {
+        repita (int j=0, j < colunas1, j++) {
+            saida(texto(matriz1[i][j]) + " ");
         }
         saida("\n");
     }
 
     saida("Matriz2: " + "\n");
-    repita (int y = 0, y < linhas2, y++) {
-        repita (int z=0, z < colunas2, z++) {
-            saida(texto(matriz2[y][z]) + " ");
+    repita (int i = 0, i < linhas2, i++) {
+        repita (int j=0, j < colunas2, j++) {
+            saida(texto(matriz2[i][j]) + " ");
         }
         saida("\n");
     }
@@ -70,15 +70,15 @@ vazio func main() {
         Lista<Lista<int>> soma = novo Lista<>()(linhas1);
 
         saida("Somando matrizes...\n");
-        repita (int ic = 0, ic < linhas1, ic++) {
+        repita (int i = 0, i < linhas1, i++) {
             Lista<int> coluna_soma = novo Lista<>()(colunas1);
-            repita (int jl = 0, jl < colunas1, jl++) {
-                int result_soma = matriz1[ic][jl] + matriz2[ic][jl];
-                coluna_soma[jl] = result_soma;
+            repita (int j = 0, j < colunas1, j++) {
+                int result_soma = matriz1[i][j] + matriz2[i][j];
+                coluna_soma[j] = result_soma;
                 saida(texto(result_soma) + " ");
             }
             printf("\n");
-            soma[n] = coluna_soma;
+            soma[i] = coluna_soma;
         }
     }
     senao {
@@ -91,27 +91,27 @@ vazio func main() {
         # float prod[l1][c2];
 
         # Inicializa resultado
-        repita (int a = 0, a < linhas1, a++){
+        repita (int i = 0, i < linhas1, i++){
             Lista<int> linha_prod = novo Lista<>()(colunas2);
-            repita (int b = 0, b < colunas2, b++){
-                linha_prod[b] = 0;
+            repita (int j = 0, j < colunas2, j++){
+                linha_prod[j] = 0;
             }
-            prod[a] = linha_prod;
+            prod[i] = linha_prod;
         }
 
         # Multiplicação
-        repita (int c = 0, c < linhas1, c++) {
-            repita (int d = 0, d < colunas2, d++) {
+        repita (int i = 0, i < linhas1, i++) {
+            repita (int j = 0, j < colunas2, j++) {
                 repita (int e = 0, e < colunas1, e++) {
-                    prod[c][d] = prod[c][d] + matriz1[c][e] * matriz2[e][d];
+                    prod[i][j] = prod[i][j] + matriz1[i][e] * matriz2[e][j];
                 }
             }
         }
 
         saida("\nProduto das matrizes:\n");
-        repita (int f = 0, f < linhas1, f++) {
-            repita (int g = 0, g < colunas2, g++) {
-                saida(texto(prod[f][g]) + " ");
+        repita (int i = 0, i < linhas1, i++) {
+            repita (int j = 0, j < colunas2, j++) {
+                saida(texto(prod[i][j]) + " ");
             }
             saida("\n");
         }
