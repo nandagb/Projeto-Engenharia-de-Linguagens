@@ -5,7 +5,10 @@
 
 void freeRecord(record * r){
   if (r) {
-    if (r->code != NULL) free(r->code);
+    if (r->code != NULL)
+    {
+      free(r->code);
+    }
     free(r);
   }
 }

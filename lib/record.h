@@ -2,7 +2,7 @@
 #define RECORD
 
 typedef enum { 
-	ELIST, ESTRUCT, EPRIMARY, UNDEFINED_STRUCTURE
+	ELIST, ESTRUCT, EPRIMARY, UNDEFINED_STRUCTURE, EFUNC
 } structure;
 
 typedef enum {

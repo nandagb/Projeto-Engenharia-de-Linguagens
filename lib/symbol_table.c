@@ -31,13 +31,21 @@ void table_destroy(table* table) {
         while(curr!=NULL){
             table_entry* aux = curr->next;
 
-            free(curr->key);
-            free(curr);
+            if (curr != NULL){
+                if (curr->key != NULL){
+                    free(curr->key);
+                }
+                free(curr);
+            }
             
             curr = aux;
         }
 
-        free(table->entries[i].key);
+        if (table->entries+i != NULL){
+            if (table->entries[i].key != NULL) {
+                free(table->entries[i].key);
+            }
+        }
     }
 
     free(table->entries);
@@ -162,13 +170,14 @@ static const char* table_set_entry(table_entry* entries, int capacity, const cha
         entries[index].type = type;
         entries[index].structure = structure;
         entries[index].value = value;
-        
+        //ERROR: If table gets expanded, it won't pass the collision list values to the new table instance
+        entries[index].next = NULL;
 
-        return key;
+        return entries[index].key;
     }
 }
 
-const char* table_set(table* table, const char* key, type type, structure structure, void* value) {
+const char* table_set(table* table, const char* key, const char* original_name, type type, structure structure, void* value) {
     /* if length will exceed half of current capacity, expand it. */
     if (table->length >= table->capacity / 2) {
         if (!table_expand(table)) {
@@ -176,6 +185,7 @@ const char* table_set(table* table, const char* key, type type, structure struct
         }
     }
 
+    table->length++;
     return table_set_entry(table->entries, table->capacity, key, type, structure, value, &table->length);
 }
 
