@@ -28,7 +28,9 @@ void table_destroy(table* table);
 
 void* table_get(table* table, const char* key);
 
-const char* table_set(table* table, const char* key, const char* original_name, type type, structure structure, void* value);
+table_entry* table_set(table* table, const char* key, const char* original_name, type type, structure structure, void* value);
+
+void print_table(table* table);
 
 static bool table_expand(table* table);
 
