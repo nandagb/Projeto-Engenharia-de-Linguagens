@@ -189,7 +189,7 @@ func_declaration    : type FUNCTION ID
                          table_entry* entry = table_get_entry_object(sym_table, key);
                          if (entry != NULL) {
                               // Function was already declared
-                              printf("Erro! A função %s já foi declarada!\n", $3);
+                              printf("Linha %d: Erro! A função %s já foi declarada!\n", yylineno, $3);
                          }
                          else {
                               // Initialize function
@@ -378,7 +378,7 @@ var_initialization  : primitive_type ID '=' expression
 
                          if (entry != NULL) {
                               // Variable was already initialized
-                              printf("Erro! A variável %s já foi declarada!\n", $2);
+                              printf("Linha %d: Erro! A variável %s já foi declarada!\n", yylineno, $2);
                          }
                          else {
                               // initilize variable
@@ -396,7 +396,7 @@ var_initialization  : primitive_type ID '=' expression
                          // Allow EUNTYPED for expressions that cannot be type-checked at compile time
                          if (entry->type != $4->type && $4->type != EUNTYPED){
                               // Type error!
-                              printf("Erro! A variável %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", $2, type_to_string(entry->type), type_to_string($4->type));
+                              printf("Linha %d: Erro! A variável %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", yylineno, $2, type_to_string(entry->type), type_to_string($4->type));
                          }
                          // =============
 
@@ -418,7 +418,7 @@ var_initialization  : primitive_type ID '=' expression
                          // Struct type initialization
                          table_entry* struct_entry = table_get_entry_object(sym_table, $1);
                          if (struct_entry == NULL || struct_entry->type != ESTRUCT_TYPE) {
-                              printf("Erro! O tipo %s não foi declarado!\n", $1);
+                              printf("Linha %d: Erro! O tipo %s não foi declarado!\n", yylineno, $1);
                          }
 
                          table_entry* entry = NULL;
@@ -445,7 +445,7 @@ var_initialization  : primitive_type ID '=' expression
 
                          if (entry != NULL) {
                               // Variable was already initialized
-                              printf("Erro! A variável %s já foi declarada!\n", $2);
+                              printf("Linha %d: Erro! A variável %s já foi declarada!\n", yylineno, $2);
                          }
                          else {
                               // initilize variable
@@ -462,7 +462,7 @@ var_initialization  : primitive_type ID '=' expression
                          // Check type compatibility
                          if ($4->type != ESTRUCT_TYPE && $4->type != EUNTYPED){
                               // Type error!
-                              printf("Erro! A variável %s é do tipo struct, e não pode ser inicializada com um valor do tipo %s!\n", $2, type_to_string($4->type));
+                              printf("Linha %d: Erro! A variável %s é do tipo struct, e não pode ser inicializada com um valor do tipo %s!\n", yylineno, $2, type_to_string($4->type));
                          }
 
                          char * str_list[] = {"struct ", $1, " ", $2, " = ", $4->code};
@@ -505,7 +505,7 @@ var_declaration  : primitive_type ID
 
                          if (entry != NULL) {
                               // Variable was already initialized
-                              printf("Erro! A variável %s já foi declarada!\n", $2);
+                              printf("Linha %d: Erro! A variável %s já foi declarada!\n", yylineno, $2);
                          }
                          else {
                               // initilize variable
@@ -540,7 +540,7 @@ var_declaration  : primitive_type ID
                          // First, check if the struct type exists
                          table_entry* struct_entry = table_get_entry_object(sym_table, $1);
                          if (struct_entry == NULL || struct_entry->type != ESTRUCT_TYPE) {
-                              printf("Erro! O tipo %s não foi declarado!\n", $1);
+                              printf("Linha %d: Erro! O tipo %s não foi declarado!\n", yylineno, $1);
                          }
 
                          table_entry* entry = NULL;
@@ -568,7 +568,7 @@ var_declaration  : primitive_type ID
 
                          if (entry != NULL) {
                               // Variable was already initialized
-                              printf("Erro! A variável %s já foi declarada!\n", $2);
+                              printf("Linha %d: Erro! A variável %s já foi declarada!\n", yylineno, $2);
                          }
                          else {
                               // initilize variable
@@ -639,7 +639,7 @@ list_declaration :  list_types ID
 
                          if (entry != NULL) {
                               // Variable was already initialized
-                              printf("Erro! A variável %s já foi declarada!\n", $2);
+                              printf("Linha %d: Erro! A variável %s já foi declarada!\n", yylineno, $2);
                          }
                          else {
                               // initilize variable
@@ -685,7 +685,7 @@ list_types     : LIST '<' primitive_type '>'
                     // Check if the struct type exists
                     table_entry* struct_entry = table_get_entry_object(sym_table, $3);
                     if (struct_entry == NULL || struct_entry->type != ESTRUCT_TYPE) {
-                         printf("Erro! O tipo %s não foi declarado!\n", $3);
+                         printf("Linha %d: Erro! O tipo %s não foi declarado!\n", yylineno, $3);
                     }
 
                     char * code_list[] = {"struct ", $3, " *"};
@@ -768,12 +768,12 @@ list_push: ID access_suffix_list '.' ADD '(' expression ')'
           table_entry* entry = table_get_entry_object(sym_table, $1);
           if (entry == NULL) {
                // Variable was not initialized
-               printf("Erro! A lista %s não foi declarada!\n", $1);
+               printf("Linha %d: Erro! A lista %s não foi declarada!\n", yylineno, $1);
           }
 
           if (entry->type != $6->type){
                // Type error!
-               printf("Erro! A lista %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", $1, type_to_string(entry->type), type_to_string($6->type));
+               printf("Linha %d: Erro! A lista %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", yylineno, $1, type_to_string(entry->type), type_to_string($6->type));
           }
           // =============
           // monta algo como:
@@ -936,7 +936,7 @@ float_literal  : FLOAT_LITERAL
           // Check if the struct type exists
           table_entry* struct_entry = table_get_entry_object(sym_table, $1);
           if (struct_entry == NULL || struct_entry->type != ESTRUCT_TYPE) {
-               printf("Erro! O tipo %s não foi declarado!\n", $1);
+               printf("Linha %d: Erro! O tipo %s não foi declarado!\n", yylineno, $1);
           }
 
           char * str_list[] = {"struct ", $1, " "};
@@ -1037,13 +1037,13 @@ var_assign : ID '=' expression
 
                if (entry == NULL) {
                     // Variable was not initialized
-                    printf("Erro! A variável %s não foi declarada!\n", $1);
+                    printf("Linha %d: Erro! A variável %s não foi declarada!\n", yylineno, $1);
                }
 
                //TODO: permitir coersão de inteiro para real?
                if (entry->type != $3->type){
                     // Type error!
-                    printf("Erro! A variável %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", $1, type_to_string(entry->type), type_to_string($3->type));
+                    printf("Linha %d: Erro! A variável %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", yylineno, $1, type_to_string(entry->type), type_to_string($3->type));
                }
                // =============
 
@@ -1194,7 +1194,7 @@ arithmatic_expression    : arithmatic_expression '+' factor
                                    char * s = cat(str_list, list_size);
 
                                    char buffer[256];
-                                   sprintf(buffer, "Erro! A expressão %s e é do tipo %s, e não podem ser somada a um valor do tipo %s!\n", $1->code, type_to_string($1->type), type_to_string($3->type));
+                                   sprintf(buffer, "Linha %d: Erro! A expressão %s e é do tipo %s, e não podem ser somada a um valor do tipo %s!\n", yylineno, $1->code, type_to_string($1->type), type_to_string($3->type));
                                    report_error(buffer);
 
                                    $$ = createRecord(s,expression_type);
@@ -1445,7 +1445,7 @@ unary : '-' unary
           type entry_type = UNDEFINED_TYPE;
           if (entry == NULL) {
                // Variable was not initialized
-               printf("Erro! A variável %s não foi declarada!\n", $1);
+               printf("Linha %d: Erro! A variável %s não foi declarada!\n", yylineno, $1);
           }
           else{
                entry_type = entry->type;
@@ -1512,7 +1512,7 @@ unary : '-' unary
           
           if (entry == NULL) {
                // Variable was already initialized
-               printf("Erro! A variável %s não foi declarada!\n", $1);
+               printf("Linha %d: Erro! A variável %s não foi declarada!\n", yylineno, $1);
           }
           // =============
 
@@ -1558,7 +1558,7 @@ func_call : ID '(' args ')'
 
                if (entry == NULL) {
                     // Function was not initialized
-                    printf("Erro! A função %s não foi declarada!\n", $1);
+                    printf("Linha %d: Erro! A função %s não foi declarada!\n", yylineno, $1);
                }
                // =============
 
@@ -1737,10 +1737,9 @@ while : WHILE '(' expression ')' '{' {push(&stack, "while");} stmt_list {pop(&st
      //only boolean expressions are allowed in while statements
      if ($3->type != EBOOL){
           // Type error!
-          char * error_list[] = {"Erro! A expressão utilizada é do tipo ", type_to_string($3->type), "! Enquanto só aceita expressões do tipo lógico!\n"};
-          char * error_string = cat(error_list, 3);
-          report_error(error_string);
-          free(error_string);
+          char error_buffer[512];
+          sprintf(error_buffer, "Linha %d: Erro! A expressão utilizada é do tipo %s! Enquanto só aceita expressões do tipo lógico!\n", yylineno, type_to_string($3->type));
+          report_error(error_buffer);
      }
      // =============
 
@@ -1790,10 +1789,9 @@ for_step : var_assign
           //only integer expressions are allowed in for step
           if ($1->type != EINTEGER){
                // Type error!
-               char * error_list[] = {"Erro! A expressão utilizada é do tipo ", type_to_string($1->type), "! O passo do repita só aceita expressões do tipo inteiro!\n"};
-               char * error_string = cat(error_list, 3);
-               report_error(error_string);
-               free(error_string);
+               char error_buffer[512];
+               sprintf(error_buffer, "Linha %d: Erro! A expressão utilizada é do tipo %s! O passo do repita só aceita expressões do tipo inteiro!\n", yylineno, type_to_string($1->type));
+               report_error(error_buffer);
           }
           //TODO: verify if $1->code ends in ++ or --
           // =============
