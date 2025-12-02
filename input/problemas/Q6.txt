@@ -122,22 +122,26 @@ vazio func main() {
             saida("No ");
             saida(idx);
             saida(" | Nivel ");
-            saida(arvore[idx].nivel);
+            int arvore_idx_nivel = arvore[idx].nivel;
+            saida(texto(arvore_idx_nivel));
             saida(" | Chave: ");
-            saida(arvore[idx].chave);
+            int arvore_idx_chave = arvore[idx].chave;
+            saida(texto(arvore_idx_chave));
 
             saida(" | Esq: ");
             se (i_esq == -1) {
                 saida(-1);
             } senao {
-                saida(arvore[i_esq].chave);
+                int arvore_i_esq_chave = arvore[i_esq].chave;
+                saida(texto(arvore_i_esq_chave));
             }
 
             saida(" | Dir: ");
             se (i_dir == -1) {
                 saida(-1);
             } senao {
-                saida(arvore[i_dir].chave);
+                int arvore_i_dir_chave = arvore[i_dir].chave;
+                saida(texto(arvore_i_dir_chave));
             }
 
             saida("\n");
@@ -160,9 +164,11 @@ vazio func main() {
         }
 
         saida("\nMenor chave da arvore: ");
-        saida(arvore[idx_min].chave);
+        int arvore_idx_min_chave = arvore[idx_min].chave;
+        saida(texto(arvore_idx_min_chave));
         saida(" (nivel ");
-        saida(arvore[idx_min].nivel);
+        int arvore_idx_min_nivel = arvore[idx_min].nivel;
+        saida(texto(arvore_idx_min_nivel));
         saida(")\n");
 
         int idx_max = raiz;
@@ -172,9 +178,11 @@ vazio func main() {
         }
 
         saida("Maior chave da arvore: ");
-        saida(arvore[idx_max].chave);
+        int arvore_idx_max_chave = arvore[idx_max].chave;
+        saida(texto(arvore_idx_max_chave));
         saida(" (nivel ");
-        saida(arvore[idx_max].nivel);
+        int arvore_idx_max_nivel = arvore[idx_max].nivel;
+        saida(texto(arvore_idx_max_nivel));
         saida(")\n");
     }
 }
