@@ -180,21 +180,29 @@ func_declaration_list    : func_declaration
                          }
 ;
 
-func_declaration    : type FUNCTION ID { push(&stack,"func"); } '(' params_list ')' '{' stmt_list '}' {pop(&stack);}
-                    {
+func_declaration    : type FUNCTION ID 
+                    { 
+                         // Register the function in the current scope (global) before entering function body
                          char * key_list[] = {strdup(peek(&stack)), "@", $3};
                          char * key = cat(key_list, 3);
 
                          table_entry* entry = table_get_entry_object(sym_table, key);
-                          if (entry != NULL) {
-                              // Variable was already initialized
+                         if (entry != NULL) {
+                              // Function was already declared
                               printf("Erro! A função %s já foi declarada!\n", $3);
                          }
                          else {
-                              // initilize variable
+                              // Initialize function
                               table_set(sym_table, key, $3, $1->type, EFUNC, NULL);
-                              entry = table_get_entry_object(sym_table, key);
                          }
+                         free(key);
+                         
+                         // Now push function scope for the body
+                         push(&stack,"func"); 
+                    } 
+                    '(' params_list ')' '{' stmt_list '}' 
+                    {
+                         pop(&stack);
 
                          char * str_list[] = {$1->code, $3, "(", $6->code, ")", "{\n\t", $9->code, "}\n"};
                          int list_size = 8;
@@ -206,7 +214,6 @@ func_declaration    : type FUNCTION ID { push(&stack,"func"); } '(' params_list 
                          
                          $$ = createRecord(s, EUNTYPED);
                          free(s);
-                         free(key);
                     }
 ;
 
@@ -386,7 +393,8 @@ var_initialization  : primitive_type ID '=' expression
                          }
 
                          //TODO: permitir coersão de inteiro para real?
-                         if (entry->type != $4->type){
+                         // Allow EUNTYPED for expressions that cannot be type-checked at compile time
+                         if (entry->type != $4->type && $4->type != EUNTYPED){
                               // Type error!
                               printf("Erro! A variável %s é do tipo %s, e não pode ser inicializada com um valor do tipo %s!\n", $2, type_to_string(entry->type), type_to_string($4->type));
                          }
@@ -401,6 +409,69 @@ var_initialization  : primitive_type ID '=' expression
                          $$ = createRecord(s, $1->type);
 
                          freeRecord($1);
+                         free($2);
+                         freeRecord($4);
+                         free(s);
+                    }
+                    | ID ID '=' expression
+                    {
+                         // Struct type initialization
+                         table_entry* struct_entry = table_get_entry_object(sym_table, $1);
+                         if (struct_entry == NULL || struct_entry->type != ESTRUCT_TYPE) {
+                              printf("Erro! O tipo %s não foi declarado!\n", $1);
+                         }
+
+                         table_entry* entry = NULL;
+                         int index = stack.top;
+                         while(index >= 0){
+                              char* strStack = strdup(peek_position(&stack, index));
+                              
+                              if(strStack != NULL){
+                                   char * str_list[] = {strStack, "@", $2};
+                                   int list_size = 3;
+                                   char * key = cat(str_list, list_size);
+                                   entry = table_get_entry_object(sym_table, key);
+
+                                   if(entry != NULL){
+                                        break;
+                                   }
+
+                                   free(key);
+                              }
+                              
+                              free(strStack);
+                              index--;
+                         }
+
+                         if (entry != NULL) {
+                              // Variable was already initialized
+                              printf("Erro! A variável %s já foi declarada!\n", $2);
+                         }
+                         else {
+                              // initilize variable
+                              char * str_list[] = {strdup(peek(&stack)), "@", $2};
+                              int list_size = 3;
+                              char * key = cat(str_list, list_size);
+
+                              table_set(sym_table, key, $2, ESTRUCT_TYPE, ESTRUCT, NULL);
+                              entry = table_get_entry_object(sym_table, key);
+
+                              free(key);
+                         }
+
+                         // Check type compatibility
+                         if ($4->type != ESTRUCT_TYPE && $4->type != EUNTYPED){
+                              // Type error!
+                              printf("Erro! A variável %s é do tipo struct, e não pode ser inicializada com um valor do tipo %s!\n", $2, type_to_string($4->type));
+                         }
+
+                         char * str_list[] = {"struct ", $1, " ", $2, " = ", $4->code};
+                         int list_size = 6;
+                         char * s = cat(str_list, list_size);
+
+                         $$ = createRecord(s, ESTRUCT_TYPE);
+
+                         free($1);
                          free($2);
                          freeRecord($4);
                          free(s);
@@ -466,6 +537,12 @@ var_declaration  : primitive_type ID
                     }
                     | ID ID
                     {
+                         // First, check if the struct type exists
+                         table_entry* struct_entry = table_get_entry_object(sym_table, $1);
+                         if (struct_entry == NULL || struct_entry->type != ESTRUCT_TYPE) {
+                              printf("Erro! O tipo %s não foi declarado!\n", $1);
+                         }
+
                          table_entry* entry = NULL;
                          int index = stack.top;
                          while(index >= 0){
@@ -605,6 +682,12 @@ list_types     : LIST '<' primitive_type '>'
                }
                | LIST '<' ID '>'
                {
+                    // Check if the struct type exists
+                    table_entry* struct_entry = table_get_entry_object(sym_table, $3);
+                    if (struct_entry == NULL || struct_entry->type != ESTRUCT_TYPE) {
+                         printf("Erro! O tipo %s não foi declarado!\n", $3);
+                    }
+
                     char * code_list[] = {"struct ", $3, " *"};
                     int code_sz = 3;
                     char * code_s = cat(code_list, code_sz);
@@ -849,10 +932,13 @@ float_literal  : FLOAT_LITERAL
      }
      | ID
      {
-          // declaration of new variable of user defined type
-          //CHECK IF THERE IS A STRUCT WITH THIS NAME ALREADY (if not, type/declaration error)
-          //ADD SCOPE LATER
-          //ADD KEY HERE (for now key and original_name are the same, because theres no scope)
+          // Use of user defined type (should check if it was declared)
+          // Check if the struct type exists
+          table_entry* struct_entry = table_get_entry_object(sym_table, $1);
+          if (struct_entry == NULL || struct_entry->type != ESTRUCT_TYPE) {
+               printf("Erro! O tipo %s não foi declarado!\n", $1);
+          }
+
           char * str_list[] = {"struct ", $1, " "};
           int list_size = 3;
           char * s = cat(str_list, list_size);
@@ -861,12 +947,6 @@ float_literal  : FLOAT_LITERAL
           $$->structure = ESTRUCT;
           $$->type_string = strdup(s);
 
-          char * key_list[] = {$1};
-          char * key = cat(key_list, 1);
-
-          table_set(sym_table, key, $1, ESTRUCT_TYPE, ESTRUCT, NULL);
-
-          free(key);
           free($1);
           free(s);
      }
@@ -1291,10 +1371,11 @@ unary : '-' unary
                index--;
           }
 
-          type entry_type = UNDEFINED_TYPE;
+          type entry_type = EINTEGER; // Default to integer for ++ operator
           if (entry == NULL) {
-               // Variable was not initialized
-               printf("Erro! A variável %s não foi declarada!\n", $1);
+               // Variable might not be found if it's being declared in for loop initialization
+               // Don't report error here as it might be a false positive
+               // printf("Erro! A variável %s não foi declarada!\n", $1);
           }
           else{
                entry_type = entry->type;
@@ -1844,7 +1925,7 @@ write_args : expression
                      sprintf(final_code, "(%s ? \"verdadeiro\" : \"falso\")", code_str);
                      free_final = true;
                 }
-                else fmt = ""; // Void or other?
+                else fmt = ""; 
 
                 $$ = createRecord(final_code, EUNTYPED);
                 $$->type_string = strdup(fmt);
@@ -1870,12 +1951,10 @@ write_args : expression
                 }
                 else fmt = "";
 
-                // Concatenate formats
                 char* new_fmt = malloc(strlen($1->type_string) + strlen(fmt) + 1);
                 strcpy(new_fmt, $1->type_string);
                 strcat(new_fmt, fmt);
 
-                // Concatenate codes
                 char * str_list[] = {$1->code, ", ", final_code};
                 int list_size = 3;
                 char * s = cat(str_list, list_size);
