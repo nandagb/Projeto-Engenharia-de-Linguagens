@@ -6,9 +6,9 @@ Registro rational_t = {
 rational_t func cria_racional(int a, int b) {
     rational_t r;
     se (b == 0) {
-        saida("denominador não pode ser igual a zero \n");
+        saida("ERRO FATAL: denominador não pode ser zero! Programa abortado.\n");
         r.numerador = 0;
-        r.denominador = 1;
+        r.denominador = 0;
         retorne r;
     }
     senao{
@@ -66,12 +66,18 @@ rational_t func multiplica_racional(rational_t r1, rational_t r2) {
 }
 
 rational_t func inverso_racional(rational_t r_in) {
-    rational_t r;
-
-    r.numerador = r_in.denominador;
-    r.denominador = r_in.numerador;
-
-    retorne r;
+    rational_t r2;
+    
+    se (r_in.numerador == 0) {
+        saida("ERRO: não existe inverso de zero!\n");
+        r2.numerador = 0;
+        r2.denominador = 1;
+        retorne r2;
+    }
+    
+    r2.numerador = r_in.denominador;
+    r2.denominador = r_in.numerador;
+    retorne r2;
 }
 
 rational_t func divide_racional(rational_t r1, rational_t r2) {
@@ -94,8 +100,8 @@ vazio func main() {
     rational_t inv;
     logico eq;
 
-    r1 = cria_racional(1, 2);
-    r2 = cria_racional(2, 4);
+    r1 = cria_racional(1, 0);
+    r2 = cria_racional(2, 0);
 
     eq = racionais_iguais(r1, r2);
 
