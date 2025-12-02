@@ -289,7 +289,7 @@ stmt : general_stmt ';'
      | BREAK ';'                                                                                  {/*printf("BREAK\n");*/}
      | CONTINUE ';'                                                                               {/*printf("CONTINUE\n");*/}
      | while
-     | do_while ';'
+     /*| do_while ';'*/
      | for
      | expression ';'
      {
@@ -316,9 +316,9 @@ stmt : general_stmt ';'
           free(s);
      }
      /* | struct_attr_assign ';' */
-     | switch
-     | list_push ';'
-     | list_remove ';'
+     /*| switch*/
+     /*| list_push ';'*/
+     /*| list_remove ';'*/
 ;
 
 
@@ -762,7 +762,7 @@ list_assign : ID '=' NEW LIST '<' '>' '(' ')'                                   
             | ID '=' NEW LIST '<' '>' '(' ID ')'                                                  { /* printf("LIST ASSIGN FROM ANOTHER LIST (NEW COPY)\n"); */ }
 ;
 
-list_push: ID access_suffix_list '.' ADD '(' expression ')'
+/*list_push: ID access_suffix_list '.' ADD '(' expression ')'*/
          /*{
           // VERIFICATIONS
           table_entry* entry = table_get_entry_object(sym_table, $1);
@@ -796,9 +796,10 @@ list_push: ID access_suffix_list '.' ADD '(' expression ')'
          | ID '.' ADD '(' expression ')'                                                          {}
 ;
 
-list_remove: ID access_suffix_list '.' REMOVE '(' ')'                                             {}
+/*list_remove: ID access_suffix_list '.' REMOVE '(' ')'                                             {}
            | ID '.' REMOVE '(' ')'                                                                {}
 ;
+*/
 
 access_assign : ID access_suffix_list '=' expression
               {
@@ -1717,19 +1718,20 @@ else_if : else_if ELSE_IF '(' expression ')' '{' {push(&stack, "else_iff");} stm
                free(s);
           } 
 
-switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'                                      {/*printf("SWITCH COM DEFAULT \n");*/}
-       | SWITCH '(' ID ')' '{' cases '}'                                                            {/*printf("SWITCH SEM DEFAULT \n");*/}
+/*switch : SWITCH '(' ID ')' '{' cases DEFAULT ':' stmt_list '}'
+       | SWITCH '(' ID ')' '{' cases '}'
 ;
+*/
 
-cases : cases case                                                                        
+/*cases : cases case
       | case                                                                                         
-      /* {
+       {
           $$ = createRecord("case",EUNTYPED);
-      } */
-;
+      }
+;*/
 
-case : CASE expression ':' stmt_list                                                                {/*printf("CASE \n");*/}
-;
+/*case : CASE expression ':' stmt_list
+;*/
 
 while : WHILE '(' expression ')' '{' {push(&stack, "while");} stmt_list {pop(&stack);} '}'
 {
@@ -1764,7 +1766,7 @@ while : WHILE '(' expression ')' '{' {push(&stack, "while");} stmt_list {pop(&st
 }
 
 
-do_while : DO '{' stmt_list '}' WHILE '(' expression ')'                                            {/*printf("DO WHILE\n");*/}
+/*do_while : DO '{' stmt_list '}' WHILE '(' expression ')'*/
 
 for_initialization : var_initialization
                    {
