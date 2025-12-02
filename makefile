@@ -34,6 +34,9 @@ q4: all
 q5: all
 	./output/parser < ./input/problemas/Q5.txt
 
+q6: all
+	./output/parser < ./input/problemas/Q6.txt
+
 run: 
 	# 1. Compila o arquivo C gerado pelo seu compilador
 	gcc ./output/output.c -o ./output/programa_final

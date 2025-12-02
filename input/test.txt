@@ -1,19 +1,14 @@
+Registro No = {
+    int chave,
+    int esquerda,
+    int direita,
+    int nivel
+};
+
 vazio func main() {
-   Lista<Lista<int>> matriz = novo Lista<>()(3);
+    Lista<No> arvore = novo Lista<>()(3);
 
-   repita (int j = 0, j<3, j++){
-      Lista<int> coluna = novo Lista<>()(4);
-      repita (int i=0, i<4, i++){
-         coluna[i] = i;
-      }
-      matriz[j] = coluna;
-   }
+    arvore[0].nivel = 0;
 
-   saida("Matriz: \n");
-    repita (int l = 0, l < 3, l++) {
-        repita (int m=0, m < 4, m++) {
-            saida(texto(matriz[l][m]) + " ");
-        }
-        saida("\n");
-    }
+    int x = arvore[0].nivel + 1;
 }

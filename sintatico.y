@@ -97,7 +97,6 @@ prog_options : func_declaration_list
      }
      | general_stmt_list func_declaration_list
      {
-          //printf("A0: \n%s%s\n", $1->code, $2->code);
           char * include_list[] = {"#include <stdbool.h>", "\n", "#include <stdlib.h>", "\n", "#include <stdio.h>", "\n", "#include <string.h>", "\n"};
           char * include_str = cat(include_list, 8);
           
@@ -593,7 +592,6 @@ list_declaration :  list_types ID
 
 list_types     : LIST '<' primitive_type '>'
                {
-                    //one dimension list
                     char * str_list[] = {string_to_type_in_C($3->code), " *"};
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
@@ -603,18 +601,28 @@ list_types     : LIST '<' primitive_type '>'
                     $$->type_string = strdup($3->code);
 
                     free($3);
-                    free(s);
-                    
+                    free(s);          
                }
-               /*| ID
+               | LIST '<' ID '>'
                {
-                    // TODO: change to LIST '<' primitive_type '>'
-                    //list of struct
-                    $$ = createRecord($1, EUNTYPED);
-               }*/
+                    char * code_list[] = {"struct ", $3, " *"};
+                    int code_sz = 3;
+                    char * code_s = cat(code_list, code_sz);
+
+                    char * type_list[] = {"struct ", $3};
+                    int type_sz = 2;
+                    char * type_s = cat(type_list, type_sz);
+
+                    $$ = createRecord(code_s, EUNTYPED);
+                    $$->structure = EPRIMARY;
+                    $$->type_string = strdup(type_s);
+
+                    free($3);
+                    free(code_s);
+                    free(type_s);
+               }
                | LIST '<' list_types '>'
                {
-                    //list of list
                     char * str_list[] = {$3->code, " *"};
                     int list_size = 2;
                     char * s = cat(str_list, list_size);
