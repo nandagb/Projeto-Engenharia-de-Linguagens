@@ -6,7 +6,7 @@
 #define INITIAL_CAPACITY 64
 
 table* table_create(void) {
-    table* table = malloc(sizeof(table));
+    table* table = malloc(sizeof(*table));
 
     if (table == NULL) {
         return NULL;
@@ -14,7 +14,7 @@ table* table_create(void) {
 
     table->length = 0;
     table->capacity = INITIAL_CAPACITY;
-
+    
     table->entries = calloc(table->capacity, sizeof(table_entry));
 
     if (table->entries == NULL) {
@@ -41,10 +41,8 @@ void table_destroy(table* table) {
             curr = aux;
         }
 
-        if (table->entries+i != NULL){
-            if (table->entries[i].key != NULL) {
-                free(table->entries[i].key);
-            }
+        if (table->entries[i].key != NULL) {
+            free(table->entries[i].key);
         }
     }
 
@@ -141,7 +139,7 @@ table_entry* table_get_entry_object(table* table, const char* key) {
     return entry;
 }
 
-static const char* table_set_entry(table_entry* entries, int capacity, const char* key, type type, structure structure, void* value, int* plength) {
+static table_entry* table_set_entry(table_entry* entries, int capacity, const char* key, type type, structure structure, void* value, int* plength) {
     // AND hash with capacity-1 to ensure it's within entries array.
     uint64_t hash = hash_key(key);
     int index = hash % capacity;
@@ -161,7 +159,7 @@ static const char* table_set_entry(table_entry* entries, int capacity, const cha
             if (plength) (*plength)++;
         };
         
-        return entry->key;
+        return entry;
     }else{
         /* key doesnt exists yet, allocate and if needed, then insert it. */
         if (plength) (*plength)++;
@@ -173,20 +171,47 @@ static const char* table_set_entry(table_entry* entries, int capacity, const cha
         //ERROR: If table gets expanded, it won't pass the collision list values to the new table instance
         entries[index].next = NULL;
 
-        return entries[index].key;
+        return entries+index;
     }
 }
 
-const char* table_set(table* table, const char* key, const char* original_name, type type, structure structure, void* value) {
+table_entry* table_set(table* table, const char* key, const char* original_name, type type, structure structure, void* value) {
     /* if length will exceed half of current capacity, expand it. */
     if (table->length >= table->capacity / 2) {
         if (!table_expand(table)) {
             return NULL;
         }
     }
-
-    table->length++;
     return table_set_entry(table->entries, table->capacity, key, type, structure, value, &table->length);
+}
+
+void print_table(table* table){
+    printf("\n----------- TABLE PROPERTIES -----------\n");
+
+    printf("CAPACITY: %d - LENGTH: %d", table->capacity, table->length);
+
+    printf("\n----------- TABLE ENTRIES -----------\n");
+
+    for(int i = 0; i < table->capacity; i++){
+        table_entry *entry = &table->entries[i];
+
+        if (entry->key == NULL) {
+            printf("INDEX: %d - EMPTY\n", i);
+            continue;
+        }
+
+        printf("INDEX: %d - VALUES: %s", i, entry->key);
+
+        table_entry *next = entry->next;
+        while(next != NULL){
+            printf(" -> ");
+            printf("%s", next->key);
+            next = next->next;
+        }
+        printf("\n");
+    }
+
+    printf("--------------------------------------\n\n");
 }
 
 /* expand hash table to twice its current size. Return true on success, false if out of memory*/
@@ -209,7 +234,16 @@ static bool table_expand(table* table) {
     for (int i = 0; i < table->capacity; i++) {
         table_entry entry = table->entries[i];
         if (entry.key != NULL) {
+            // Adicionar e pegar a entrada do valor adicionado;
             table_set_entry(new_entries, new_capacity, entry.key, entry.type, entry.structure, entry.value, NULL);
+
+            // Setar o next dele para ser igual ao next do valor na tabela original
+            table_entry *next = (table->entries+i)->next;
+            
+            while(next != NULL){
+                table_set_entry(new_entries, new_capacity, next->key, next->type, next->structure, next->value, NULL);
+                next = next->next;
+            }
         }
     }
 
